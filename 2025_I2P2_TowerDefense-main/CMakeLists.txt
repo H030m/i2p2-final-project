@@ -75,7 +75,7 @@ add_executable(2025_I2P2_TowerDefense
     Scene/ScoreboardScene.hpp
     Scene/SubmitScene.cpp
     Scene/SubmitScene.hpp
-
+ 
     Turret/LaserTurret.cpp
     Turret/LaserTurret.hpp
     Turret/MachineGunTurret.cpp
@@ -84,7 +84,9 @@ add_executable(2025_I2P2_TowerDefense
     Turret/Turret.hpp
     Turret/TurretButton.cpp
     Turret/TurretButton.hpp
-
+    Turret/AbsorptionTurret.hpp
+    Turret/AbsorptionTurret.cpp
+    
     UI/Animation/DirtyEffect.cpp
     UI/Animation/DirtyEffect.hpp
     UI/Animation/ExplosionEffect.cpp
