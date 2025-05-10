@@ -19,7 +19,7 @@ protected:
     int money;
     PlayScene *getPlayScene();
     virtual void OnExplode();
-
+    
 public:
     float reachEndTime;
     std::list<Turret *> lockedTurrets;
