@@ -7,6 +7,7 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "Enemy/Enemy.hpp"
 #include "Enemy/SoldierEnemy.hpp"
@@ -23,6 +24,7 @@
 #include "Turret/MachineGunTurret.hpp"
 #include "Turret/AbsorptionTurret.hpp"
 #include "Turret/TurretButton.hpp"
+#include "Turret/Shovel.hpp"
 #include "UI/Animation/DirtyEffect.hpp"
 #include "UI/Animation/Plane.hpp"
 #include "UI/Component/Label.hpp"
@@ -59,6 +61,7 @@ void PlayScene::Initialize() {
     lives = 10;
     money = 150;
     SpeedMult = 1;
+    time(&StartTime); 
     // Add groups from bottom to top.
     AddNewObject(TileMapGroup = new Group());
     AddNewObject(GroundEffectGroup = new Group());
@@ -154,6 +157,7 @@ void PlayScene::Update(float deltaTime) {
                 delete imgTarget;*/
                 
                 // record this play's grade
+                time(&EndTime);
                 SubmitScene* submitScene = dynamic_cast<SubmitScene *>(Engine::GameEngine::GetInstance().GetScene("submit-scene"));
                 if (submitScene) {
                     submitScene->MapId = MapId;
@@ -271,6 +275,54 @@ void PlayScene::OnMouseUp(int button, int mx, int my) {
     const int x = mx / BlockSize;
     const int y = my / BlockSize;
     if (button & 1) {
+        // shovel 
+        // if (preview->is_shovel) {
+        //     bool removed = false;
+        //     if(TowerGroup->GetObjects().begin() != TowerGroup->GetObjects().end())
+        //     for (auto it = TowerGroup->GetObjects().begin(); it != TowerGroup->GetObjects().end(); ++it) {
+        //         Engine::Point p = (*it)->Position;
+        //         int gx = floor(p.x / BlockSize);
+        //         int gy = floor(p.y / BlockSize);
+        //         if (gx == x && gy == y) {
+        //             (*it)->GetObjectIterator()->first = false;
+        //             TowerGroup->RemoveObject((*it)->GetObjectIterator());
+        //             mapState[y][x] = TILE_DIRT;
+        //             EarnMoney(50);
+        //             removed = true;
+        //             break;
+        //         }
+        //     }
+            
+        //     preview->GetObjectIterator()->first = false;
+        //     UIGroup->RemoveObject(preview->GetObjectIterator());
+        //     preview = nullptr;
+        //     OnMouseMove(mx, my);
+            
+        //     return;
+        // }
+        if (preview->is_shovel) {
+            bool removed = false;
+            auto towerObjs = TowerGroup->GetObjects();
+            for (auto it = towerObjs.begin(); it != towerObjs.end(); ++it) {
+                Engine::Point p = (*it)->Position;
+                int gx = floor(p.x / BlockSize);
+                int gy = floor(p.y / BlockSize);
+                if (gx == x && gy == y) {
+                    (*it)->GetObjectIterator()->first = false;
+                    TowerGroup->RemoveObject((*it)->GetObjectIterator());
+                    mapState[y][x] = TILE_DIRT;
+                    EarnMoney(50);
+                    removed = true;
+                    break;
+                }
+            }
+        
+            preview->GetObjectIterator()->first = false;
+            UIGroup->RemoveObject(preview->GetObjectIterator());
+            preview = nullptr;
+            OnMouseMove(mx, my);
+            return;
+        }
         if (mapState[y][x] != TILE_OCCUPIED) {
             if (!preview)
                 return;
@@ -321,6 +373,9 @@ void PlayScene::OnKeyDown(int keyCode) {
     } else if(keyCode == ALLEGRO_KEY_E) {
         // Hotkey for AbsorptionTurret.
         UIBtnClicked(2);
+    } else if(keyCode == ALLEGRO_KEY_0) {
+        // Hotkey for shovel
+        UIBtnClicked(3);
     }
     else if (keyCode >= ALLEGRO_KEY_0 && keyCode <= ALLEGRO_KEY_9) {
         // Hotkey for Speed up.
@@ -418,6 +473,13 @@ void PlayScene::ConstructUI() {
     btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 2));
     UIGroup->AddNewControlObject(btn);
 
+    //Button 4 = Shovel
+    btn = new TurretButton("play/sand.png", "play/sand.png",
+                           Engine::Sprite("play/sand.png", 1446, 1136, 0, 0, 0, 0),
+                           Engine::Sprite("play/shovel.png", 1446, 700, 0, 0, 0, 0), 1446, 700, Shovel::Price);
+    btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 3));
+    UIGroup->AddNewControlObject(btn);
+
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int shift = 135 + 25;
@@ -435,9 +497,14 @@ void PlayScene::UIBtnClicked(int id) {
         preview = new LaserTurret(0, 0);
     else if(id == 2 && money >= AbsorptionTurret::Price){
         preview = new AbsorptionTurret(0, 0);
+    }else if(id == 3 && money >= Shovel::Price){
+        preview = new Shovel(0, 0);
+        preview->is_shovel = 1;
     }
+
     if (!preview)
         return;
+    
     preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
     preview->Tint = al_map_rgba(255, 255, 255, 200);
     preview->Enabled = false;

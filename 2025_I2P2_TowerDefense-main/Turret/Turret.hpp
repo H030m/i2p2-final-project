@@ -20,8 +20,9 @@ protected:
     PlayScene *getPlayScene();
     // Reference: Design Patterns - Factory Method.
     virtual void CreateBullet() = 0;
-
 public:
+    bool is_shovel = 0;
+    bool aim_front = 1;
     bool Enabled = true;
     bool Preview = false;
     Enemy *Target = nullptr;

@@ -37,10 +37,12 @@ void Turret::Update(float deltaTime) {
         // Lock first seen target.
         // Can be improved by Spatial Hash, Quad Tree, ...
         // However simply loop through all enemies is enough for this program.
+        // DO aim the enemy without poison
         for (auto &it : scene->EnemyGroup->GetObjects()) {
             Engine::Point diff = it->Position - Position;
-            if (diff.Magnitude() <= CollisionRadius) {
-                Target = dynamic_cast<Enemy *>(it);
+            Enemy* enemy = dynamic_cast<Enemy*>(it);
+            if (diff.Magnitude() <= CollisionRadius && (aim_front == 1 || enemy->poison == 0)) {
+                Target = enemy;
                 Target->lockedTurrets.push_back(this);
                 lockedTurretIterator = std::prev(Target->lockedTurrets.end());
                 break;
@@ -70,6 +72,7 @@ void Turret::Update(float deltaTime) {
             reload = coolDown;
             CreateBullet();
         }
+        if(!aim_front)Target = nullptr;
     }
 }
 void Turret::Draw() const {
