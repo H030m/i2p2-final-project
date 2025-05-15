@@ -36,7 +36,7 @@ void SubmitScene::Initialize() {
     AddNewObject(new Engine::Label("Submit", "pirulen.ttf", 48, halfW + 250, halfH * 7 / 4, 0, 0, 0, 255, 0.5, 0.5));
 
     // score label
-    AddNewObject(new Engine::Label("SCORE: " + std::to_string(score), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("SCORE: " + std::to_string(score) + " " + std::to_string(EndTime - StartTime), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
 
     // input your name
     AddNewObject(new Engine::Label("Your Name", "pirulen.ttf", 64, halfW, 350, 255, 255, 255, 255, 0.5, 0.5));
@@ -67,7 +67,7 @@ void SubmitScene::SubmitOnClick(int stage){
     fin.close();
     std::ofstream fout(filename);
     for(auto it:files)fout<<it<<'\n';
-    fout<<name + " " + std::to_string(score) + std::to_string(EndTime) + std::to_string(StartTime - EndTime)<<'\n';
+    fout<<name + " " + std::to_string(score) + " " + std::to_string(EndTime) + " " + std::to_string(EndTime - StartTime)<<'\n';
     SubmitScene::BackOnClick(1);
 }
 void SubmitScene::CulGrade(){

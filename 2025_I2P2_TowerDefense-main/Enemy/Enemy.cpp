@@ -36,6 +36,7 @@ Enemy::Enemy(std::string img, float x, float y, float radius, float speed, float
     reachEndTime = 0;
 }
 void Enemy::Hit(float damage) {
+    std::cerr<<damage<<' '<<hp<<'\n';
     hp -= damage;
     if (hp <= 0) {
         OnExplode();
@@ -44,7 +45,7 @@ void Enemy::Hit(float damage) {
             it->Target = nullptr;
         for (auto &it : lockedBullets)
             it->Target = nullptr;
-        getPlayScene()->EarnMoney(money);
+        getPlayScene()->EarnMoney(money + poison*money);
         getPlayScene()->EnemyGroup->RemoveObject(objectIterator);
         AudioHelper::PlayAudio("explosion.wav");
     }
@@ -86,6 +87,7 @@ void Enemy::UpdatePath(const std::vector<std::vector<int>> &mapDistance) {
 
 void Enemy::Update(float deltaTime) {
     // Pre-calculate the velocity.
+
     float remainSpeed = speed * deltaTime;
     while (remainSpeed != 0) {
         if (path.empty()) {
@@ -115,6 +117,16 @@ void Enemy::Update(float deltaTime) {
     }
     Rotation = atan2(Velocity.y, Velocity.x);
     Sprite::Update(deltaTime);
+
+    // poison -> give money
+    poison_cooldown -= deltaTime;
+    
+    while(poison && poison_cooldown <= 0){
+        getPlayScene()->EarnMoney(money/5);
+        poison_cooldown += 4;
+        Tint = al_map_rgba(200 + rand()%50, 100, 100, 200  + rand()%50);
+        Hit(hp/1000);
+    }
 }
 void Enemy::Draw() const {
     Sprite::Draw();

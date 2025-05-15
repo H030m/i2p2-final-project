@@ -30,6 +30,9 @@ void Bullet::Update(float deltaTime) {
             continue;
         if (Engine::Collider::IsCircleOverlap(Position, CollisionRadius, enemy->Position, enemy->CollisionRadius)) {
             OnExplode(enemy);
+            if(poison){
+                enemy->poison = true;
+            }
             enemy->Hit(damage);
             getPlayScene()->BulletGroup->RemoveObject(objectIterator);
             return;
