@@ -11,7 +11,7 @@
 
 const int AbsorptionTurret::Price = 100;
 
-AbsorptionTurret::AbsorptionTurret(float x, float y) : Turret("play/tower-base.png", "play/absorption-turret.png", x, y, 200, Price, 0.1) {
+AbsorptionTurret::AbsorptionTurret(float x, float y) : Turret("play/tower-base.png", "play/absorption-turret.png", x, y, 200, Price, 1) {
     Anchor.y += 0.0f / GetBitmapHeight();
     aim_front = false;
 }

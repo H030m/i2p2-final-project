@@ -19,6 +19,7 @@ protected:
     virtual void OnExplode();
     
 public:
+    bool tag = 0;
     float hp;
     float speed;
     bool poison = 0;
