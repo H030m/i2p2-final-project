@@ -33,7 +33,6 @@ void ScoreboardScene::Initialize(){
     std::string buffer;
     scoreboard.clear();
     while(getline(fin,buffer)){
-        std::cerr<<"ola~~ "<<buffer<<'\n';
         std::stringstream ss(buffer);
         int score, gap;
         std::time_t Time;

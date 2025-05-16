@@ -14,6 +14,7 @@
 //TODO HACKATHON-3
 #include "Enemy/PlaneEnemy.hpp"
 #include "Enemy/TankEnemy.hpp"
+#include "Enemy/BossEnemy.hpp"
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Group.hpp"
@@ -194,7 +195,6 @@ void PlayScene::Update(float deltaTime) {
         const Engine::Point SpawnCoordinate = Engine::Point(SpawnGridPoint.x * BlockSize + BlockSize / 2, SpawnGridPoint.y * BlockSize + BlockSize / 2);
         Enemy *enemy;
         
-        // std::cerr<<"enemy"<<current.first<<'\n';
         switch (current.first) {
             case 1:
                 EnemyGroup->AddNewObject(enemy = new SoldierEnemy(SpawnCoordinate.x, SpawnCoordinate.y));
@@ -206,6 +206,9 @@ void PlayScene::Update(float deltaTime) {
             //     ...
             case 3:
                 EnemyGroup->AddNewObject(enemy = new TankEnemy(SpawnCoordinate.x, SpawnCoordinate.y));
+                break;
+            case 4:
+                EnemyGroup->AddNewObject(enemy = new BossEnemy(SpawnCoordinate.x, SpawnCoordinate.y));
                 break;
             default:
                 continue;
@@ -437,9 +440,7 @@ void PlayScene::ReadEnemyWave() {
     float type, wait, repeat;
     enemyWaveData.clear();
     std::ifstream fin(filename);
-    // std::cerr<<filename<<'\n';
     while (fin >> type && fin >> wait && fin >> repeat) {
-        // std::cerr<<"hello "<<type<<' '<<wait<<' '<<repeat<<'\n';
         for (int i = 0; i < repeat; i++)
             enemyWaveData.emplace_back(type, wait);
     }

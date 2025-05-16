@@ -11,11 +11,13 @@
 PlayScene *DirtyEffect::getPlayScene() {
     return dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetActiveScene());
 }
-DirtyEffect::DirtyEffect(std::string img, float timeSpan, float x, float y) : Sprite(img, x, y), timeSpan(timeSpan), alpha(1) {
+DirtyEffect::DirtyEffect(std::string img, float timeSpan, float x, float y, bool rotate) : Sprite(img, x, y), timeSpan(timeSpan), alpha(1) {
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_real_distribution<> dist(-ALLEGRO_PI, ALLEGRO_PI);
+    if(rotate)
     Rotation = dist(rng);
+    else Rotation = 0;
 }
 void DirtyEffect::Update(float deltaTime) {
     alpha -= deltaTime / timeSpan;

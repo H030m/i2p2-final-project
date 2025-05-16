@@ -2,6 +2,7 @@
 #include <allegro5/color.h>
 #include <cmath>
 #include <utility>
+#include <algorithm>
 
 #include "Enemy/Enemy.hpp"
 #include "Engine/GameEngine.hpp"
@@ -19,6 +20,13 @@ Turret::Turret(std::string imgBase, std::string imgTurret, float x, float y, flo
     CollisionRadius = radius;
 }
 void Turret::Update(float deltaTime) {
+    if(puase_time > 0){
+        puase_time -= std::min(deltaTime, puase_time);
+        Tint = al_map_rgba(100, 100, 200 + rand()%50, 200  + rand()%50);
+        return;
+    }else{
+        Tint = al_map_rgba(255,255,255,255);
+    }
     Sprite::Update(deltaTime);
     PlayScene *scene = getPlayScene();
     imgBase.Position = Position;

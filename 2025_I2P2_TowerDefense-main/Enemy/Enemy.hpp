@@ -14,12 +14,12 @@ class Turret;
 class Enemy : public Engine::Sprite {
 protected:
     std::vector<Engine::Point> path;
-    float hp;
     int money;
     PlayScene *getPlayScene();
     virtual void OnExplode();
     
 public:
+    float hp;
     float speed;
     bool poison = 0;
     float poison_cooldown = 0;

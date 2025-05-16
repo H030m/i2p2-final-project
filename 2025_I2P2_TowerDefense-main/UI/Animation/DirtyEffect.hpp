@@ -13,7 +13,7 @@ protected:
     PlayScene *getPlayScene();
 
 public:
-    DirtyEffect(std::string img, float timeSpan, float x, float y);
+    DirtyEffect(std::string img, float timeSpan, float x, float y, bool rotate = true);
     void Update(float deltaTime) override;
 };
 #endif   // DIRTYEFFECT_HPP
