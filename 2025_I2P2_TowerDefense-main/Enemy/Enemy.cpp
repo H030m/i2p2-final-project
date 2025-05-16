@@ -36,7 +36,6 @@ Enemy::Enemy(std::string img, float x, float y, float radius, float speed, float
     reachEndTime = 0;
 }
 void Enemy::Hit(float damage) {
-    std::cerr<<damage<<' '<<hp<<'\n';
     hp -= damage;
     if (hp <= 0) {
         OnExplode();
@@ -127,11 +126,14 @@ void Enemy::Update(float deltaTime) {
         Tint = al_map_rgba(200 + rand()%50, 100, 100, 200  + rand()%50);
         Hit(hp/1000);
     }
+    if(!poison){
+        Tint = al_map_rgba(255, 255, 255, 255);
+    }
 }
 void Enemy::Draw() const {
     Sprite::Draw();
     if (PlayScene::DebugMode) {
         // Draw collision radius.
-        al_draw_circle(Position.x, Position.y, CollisionRadius, al_map_rgb(255, 0, 0), 2);
+        al_draw_circle(Position.x, Position.y, 150, al_map_rgb(255, 0, 0), 2);
     }
 }

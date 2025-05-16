@@ -80,7 +80,6 @@ void SubmitScene::CulGrade(){
 
 void SubmitScene::OnKeyDown(int keyCode) {
     IScene::OnKeyDown(keyCode);
-    std::cerr<<keyCode<<" olasdff\n";
     if(keyCode == 63){
         name.pop_back();
     }else if(ALLEGRO_KEY_A <= keyCode && keyCode <= ALLEGRO_KEY_Z){
