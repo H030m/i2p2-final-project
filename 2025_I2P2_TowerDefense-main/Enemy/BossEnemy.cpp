@@ -37,8 +37,10 @@ void BossEnemy::Update(float deltaTime) {
             Enemy *enemy = dynamic_cast<Enemy *>(*it);
             if((enemy->Position.x - Position.x)*(enemy->Position.x - Position.x) + 
                (enemy->Position.y - Position.y)*(enemy->Position.y - Position.y) <= 22500){
-                    enemy->hp += 100;
+                    enemy->hp += 20;
                     enemy->poison = false;
+                    if(enemy->tag)
+                    enemy->speed += 20,enemy->tag = 0;
                }
         }
         // auto tower = getPlayScene()->TowerGroup->GetObjects();

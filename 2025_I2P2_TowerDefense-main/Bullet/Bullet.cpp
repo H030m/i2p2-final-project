@@ -32,6 +32,8 @@ void Bullet::Update(float deltaTime) {
             OnExplode(enemy);
             if(poison){
                 enemy->poison = true;
+                if(!enemy->tag)
+                enemy->speed /= 1.1, enemy->tag = 1;
             }
             enemy->Hit(damage);
             getPlayScene()->BulletGroup->RemoveObject(objectIterator);

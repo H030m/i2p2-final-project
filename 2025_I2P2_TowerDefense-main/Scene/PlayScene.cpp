@@ -313,7 +313,7 @@ void PlayScene::OnMouseUp(int button, int mx, int my) {
                 if (gx == x && gy == y) {
                     (*it)->GetObjectIterator()->first = false;
                     TowerGroup->RemoveObject((*it)->GetObjectIterator());
-                    mapState[y][x] = TILE_DIRT;
+                    mapState[y][x] = TILE_FLOOR;
                     EarnMoney(50);
                     removed = true;
                     break;
