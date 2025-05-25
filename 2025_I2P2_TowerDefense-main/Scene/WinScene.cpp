@@ -62,7 +62,7 @@ void WinScene::SubmitOnClick(int stage) {
 }
 void WinScene::CulGrade(){
     if(MapId == 1){
-        score = ((StartTime - EndTime) + 100) + money / 10 + lives*10;
+        score = money / 10 + lives*10;
     }else{
         score = 0;
     }

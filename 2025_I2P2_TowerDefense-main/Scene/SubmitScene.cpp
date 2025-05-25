@@ -36,7 +36,7 @@ void SubmitScene::Initialize() {
     AddNewObject(new Engine::Label("Submit", "pirulen.ttf", 48, halfW + 250, halfH * 7 / 4, 0, 0, 0, 255, 0.5, 0.5));
 
     // score label
-    AddNewObject(new Engine::Label("SCORE: " + std::to_string(score) + " " + std::to_string(EndTime - StartTime), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("SCORE: " + std::to_string(score) + " Time: " + std::to_string(EndTime - StartTime), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
 
     // input your name
     AddNewObject(new Engine::Label("Your Name", "pirulen.ttf", 64, halfW, 350, 255, 255, 255, 255, 0.5, 0.5));
@@ -72,7 +72,7 @@ void SubmitScene::SubmitOnClick(int stage){
 }
 void SubmitScene::CulGrade(){
     if(MapId == 1){
-        score = ((StartTime - EndTime) + 100) + money / 10 + lives*10;
+        score =  money / 10 + lives*10;
     }else{
         score = 0;
     }
