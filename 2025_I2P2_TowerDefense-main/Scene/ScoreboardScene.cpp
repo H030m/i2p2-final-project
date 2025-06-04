@@ -48,7 +48,7 @@ void ScoreboardScene::Initialize(){
     label.clear();
     label.resize(scoreboard.size(), std::vector<Engine::Label*>(3, nullptr));
     total_page = scoreboard.size() / NUM_IN_PAGE + (scoreboard.size() % NUM_IN_PAGE != 0);
-    this->LoadPage(page, 0);
+    this->LoadPage(page);
     
 
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
@@ -64,13 +64,13 @@ void ScoreboardScene::Initialize(){
     AddNewObject(new Engine::Label("Back", "pirulen.ttf", 48, halfW, halfH / 2 + 550, 0, 0, 0, 255, 0.5, 0.5));
     // next page
     btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 300  + 600, halfH / 2 + 500, 300, 100);
-    btn->SetOnClickCallback(std::bind(&ScoreboardScene::LoadPage, this, page, 1));
+    btn->SetOnClickCallback(std::bind(&ScoreboardScene::LoadPage, this,1));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("Next", "pirulen.ttf", 48, halfW + 450, halfH / 2 + 550, 0, 0, 0, 255, 0.5, 0.5));
 
     //prev
     btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 300 - 300, halfH / 2 + 500, 300, 100);
-    btn->SetOnClickCallback(std::bind(&ScoreboardScene::LoadPage, this, page, -1));
+    btn->SetOnClickCallback(std::bind(&ScoreboardScene::LoadPage, this, -1));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("prev", "pirulen.ttf", 48, halfW - 450, halfH / 2 + 550, 0, 0, 0, 255, 0.5, 0.5));
 
@@ -80,11 +80,14 @@ void ScoreboardScene::Initialize(){
 
     // BGM
     bgmInstance = AudioHelper::PlaySample("select.ogg", true, AudioHelper::BGMVolume);
+
+
 }
-void ScoreboardScene::LoadPage(int &page, int k){
+void ScoreboardScene::LoadPage(int k){
+    std::cerr<<total_page<<' '<<page<<'\n';
     page += k;
     if(page < 0) page = 0;
-    while(page >= total_page)page--;
+    if(page >= total_page)page = total_page - 1;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
