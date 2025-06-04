@@ -17,7 +17,7 @@ public:
     void Initialize() override;
     void Terminate() override;
     void BackOnClick(int stage);
-    void LoadPage(int &page, int k);
+    void LoadPage(int k);
 };
 
 
