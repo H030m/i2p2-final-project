@@ -11,7 +11,7 @@ typedef int socklen_t;
 #endif
 
 const int NUM = 2;// how many people can play together
-
+const int TARGET_FPS = 60;
 class RenderSender {
 public:
     RenderSender(int port);
