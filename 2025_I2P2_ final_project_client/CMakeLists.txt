@@ -79,7 +79,9 @@ add_executable(2025_I2P2_TowerDefense
     Scene/ScoreboardScene.hpp
     Scene/SubmitScene.cpp
     Scene/SubmitScene.hpp
- 
+    Scene/RemotePlayScene.hpp
+    Scene/RemotePlayScene.cpp
+
     Turret/LaserTurret.cpp
     Turret/LaserTurret.hpp
     Turret/MachineGunTurret.cpp
@@ -110,9 +112,9 @@ add_executable(2025_I2P2_TowerDefense
     UI/Component/Slider.hpp
     
     #Connecting
-    Connet/Client.cpp
-    Connet/Client.hpp
-    
+    Connect/Client.cpp
+    Connect/Client.hpp
+
     main.cpp
 )
 

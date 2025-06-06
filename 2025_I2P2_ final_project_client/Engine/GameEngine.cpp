@@ -18,7 +18,27 @@
 #include "Point.hpp"
 #include "Resources.hpp"
 
+#include <string>
+#include <map>
+#include <allegro5/allegro.h>
+
+
+const std::string host = "140.114.196.15";
+Engine::GameEngine::GameEngine():sender(){
+        //Check System
+	    #ifdef _WIN32
+        std::cout << "Running on Windows" << std::endl;
+	    #else
+        std::cout << "Running on Linux/Unix" << std::endl;
+	    #endif
+        if (!sender.connectToServer(host, 8888)){
+            std::cerr<<"cannot connect!!\n";
+            exit(1);
+        }
+
+    };  
 namespace Engine {
+
     void GameEngine::initAllegro5() {
         if (!al_init()) throw Allegro5Exception("failed to initialize allegro");
 
@@ -157,6 +177,10 @@ namespace Engine {
         }
     }
     void GameEngine::update(float deltaTime) {
+      
+        sender.recvOnce();
+    
+        
         if (!nextScene.empty()) {
             changeScene(nextScene);
             nextScene = "";
@@ -165,6 +189,11 @@ namespace Engine {
         if (deltaTime >= deltaTimeThreshold)
             deltaTime = deltaTimeThreshold;
         activeScene->Update(deltaTime);
+
+        
+        sender.sendOnce();
+        
+        sender.output_json.clear(); 
     }
     void GameEngine::draw() const {
         activeScene->Draw();
@@ -264,5 +293,8 @@ namespace Engine {
         // The classic way to lazy initialize a Singleton.
         static GameEngine instance;
         return instance;
+    }
+    GameClient& GameEngine::GetSender(){
+        return sender;
     }
 }

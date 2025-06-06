@@ -12,10 +12,11 @@ typedef int socklen_t;
 
 class GameClient {
 public:
+    nlohmann::json input_json,output_json;
     GameClient();
     bool connectToServer(const std::string& host, int port);
-    nlohmann::json receiveFrame();
-    void sendInput(nlohmann::json& inputJson);
+    void recvOnce();
+    void sendOnce();
     ~GameClient();
 
 private:

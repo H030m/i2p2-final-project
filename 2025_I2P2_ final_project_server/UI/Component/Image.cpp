@@ -33,7 +33,7 @@ namespace Engine {
         RenderSender& sender = Engine::GameEngine::GetInstance().GetSender();
         nlohmann::json imageJson = {
             {"type", "image"}, 
-            {"img", img_path},  // 這個成員你需要在 Image 類中存下來
+            {"img", img_path},  
             {"x", Position.x},
             {"y", Position.y},
             {"w", Size.x},

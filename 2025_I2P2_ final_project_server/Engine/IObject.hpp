@@ -34,6 +34,9 @@ namespace Engine {
         explicit IObject(float x, float y, float w = 0, float h = 0, float anchorX = 0, float anchorY = 0);
 
     public:
+        std::string Object_type;
+        int type_id; // Object's identity information
+        
         // Determines whether this object should be drawn and updated.
         bool Visible = true;
         // The object's position, center depends on Anchor.

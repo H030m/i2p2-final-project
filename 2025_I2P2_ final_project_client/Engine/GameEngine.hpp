@@ -6,6 +6,30 @@
 
 #include "Point.hpp"
 
+
+//Json
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+//Socket
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #pragma comment(lib, "ws2_32.lib")
+    typedef int socklen_t;
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <unistd.h>
+    #define SOCKET int
+    #define INVALID_SOCKET -1
+    #define SOCKET_ERROR -1
+    #define closesocket close
+#endif
+
+#include<Connect/Client.hpp>
+
 /// <summary>
 /// All general classes are under this namespace for clarity.
 /// </summary>
@@ -68,7 +92,7 @@ namespace Engine {
         /// Note: Singleton is a class that will only be instantiated once (single instance).
         /// Reference: Design Patterns - Singleton.
         /// </summary>
-        explicit GameEngine() = default;
+        explicit GameEngine();
         /// <summary>
         /// Change to another scene. Must return immediately and stop using anything initialized in
         /// the scene. Since this call destroys everything initialized.
@@ -155,6 +179,9 @@ namespace Engine {
         /// </summary>
         /// <returns>The Singleton instance of GameEngine.</returns>
         static GameEngine &GetInstance();
+        // Connect
+        GameClient sender;
+        GameClient& GetSender();
     };
 }
 #endif   // GAMEENGINE_HPP
