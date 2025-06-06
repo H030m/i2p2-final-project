@@ -43,22 +43,7 @@ int main(int argc, char **argv) {
     if (!client.connectToServer(host, 8888))
         return 1;
 
-    std::vector<std::string> keys;
-    std::string key;
-    std::cout << "Press key (W/A/S/D), type END to stop: ";
-    while (std::cin >> key && key != "END") {
-        keys.push_back(key);
-		client.sendInput(keys, 0, 0);
-		client.receiveFrame();
-    }
-
-    int mouseX = 0, mouseY = 0;
-    std::cout << "Mouse X Y: ";
-    std::cin >> mouseX >> mouseY;
-
-    client.sendInput(keys, mouseX, mouseY);
-
-    return 0;
-
+	
+	
 	return 0;
 }

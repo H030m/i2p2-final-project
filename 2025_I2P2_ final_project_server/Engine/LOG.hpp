@@ -10,7 +10,7 @@ namespace Engine {
         DEBUGGING,
         INFO,
         WARN,
-        ERROR
+        LOG_ERROR
     };
 
     /// <summary>

@@ -18,7 +18,18 @@
 #include "Point.hpp"
 #include "Resources.hpp"
 
+Engine::GameEngine::GameEngine():sender(8888){
+        //偵測會在哪裡跑
+	    #ifdef _WIN32
+        std::cout << "Running on Windows" << std::endl;
+	    #else
+        std::cout << "Running on Linux/Unix" << std::endl;
+	    #endif
+        sender.start();
+
+    };  // 等待多人連線，並個別傳送畫面
 namespace Engine {
+
     void GameEngine::initAllegro5() {
         if (!al_init()) throw Allegro5Exception("failed to initialize allegro");
 
@@ -157,6 +168,10 @@ namespace Engine {
         }
     }
     void GameEngine::update(float deltaTime) {
+        for(auto it:sender.clients){
+            sender.recvOnce(it);
+        }
+        
         if (!nextScene.empty()) {
             changeScene(nextScene);
             nextScene = "";
@@ -165,6 +180,11 @@ namespace Engine {
         if (deltaTime >= deltaTimeThreshold)
             deltaTime = deltaTimeThreshold;
         activeScene->Update(deltaTime);
+        for(auto it:sender.clients){
+            sender.sendOnce(it);
+        }
+        sender.frame.clear(); 
+        sender.cleanupInactiveClients();
     }
     void GameEngine::draw() const {
         activeScene->Draw();
@@ -264,5 +284,8 @@ namespace Engine {
         // The classic way to lazy initialize a Singleton.
         static GameEngine instance;
         return instance;
+    }
+    RenderSender& GameEngine::GetSender(){
+        return sender;
     }
 }

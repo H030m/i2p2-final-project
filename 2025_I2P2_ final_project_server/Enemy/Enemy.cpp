@@ -17,6 +17,7 @@
 #include "UI/Animation/DirtyEffect.hpp"
 #include "UI/Animation/ExplosionEffect.hpp"
 
+#include "Connect/RenderSender.hpp"
 PlayScene *Enemy::getPlayScene() {
     return dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetActiveScene());
 }
@@ -60,7 +61,7 @@ void Enemy::UpdatePath(const std::vector<std::vector<int>> &mapDistance) {
     int num = mapDistance[y][x];
     if (num == -1) {
         num = 0;
-        Engine::LOG(Engine::ERROR) << "Enemy path finding error";
+        Engine::LOG(Engine::LOG_ERROR) << "Enemy path finding error";
     }
     path = std::vector<Engine::Point>(num + 1);
     while (num != 0) {
@@ -135,5 +136,19 @@ void Enemy::Draw() const {
     if (PlayScene::DebugMode) {
         // Draw collision radius.
         al_draw_circle(Position.x, Position.y, 150, al_map_rgb(255, 0, 0), 2);
+        
+        
+        nlohmann::json circleJson = {
+        {"type", "circle"},
+        {"x", Position.x},
+        {"y", Position.y},
+        {"CollisionRadius", 150},
+        {"r", 255},
+        {"g", 0},
+        {"b", 0},
+        {"thickness",2}
+        };
+        RenderSender& sender = Engine::GameEngine::GetInstance().GetSender();
+        sender.AddToFrame(circleJson);
     }
 }
