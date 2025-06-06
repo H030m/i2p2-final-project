@@ -38,15 +38,37 @@ bool GameClient::connectToServer(const std::string& host, int port) {
 }
 
 nlohmann::json GameClient::receiveFrame() {
-    char buffer[4096] = {};
-    int len = recv(sock, buffer, sizeof(buffer), 0);
+    static std::string recvBuffer;  // 持久 buffer 保留未完整接收的資料
+    char temp[4096];
+    int len = recv(sock, temp, sizeof(temp), 0);
+
     if (len <= 0) {
         std::cerr << "Disconnected or error.\n";
         return {};
     }
-    std::string msg(buffer, len);
-    std::cout<<buffer<<'\n';
-    return nlohmann::json::parse(msg);
+
+    recvBuffer += std::string(temp, len);  // 累積資料
+
+    // ? 安全檢查：避免無窮堆積
+    if (recvBuffer.size() > 8192) {
+        std::cerr << "[Warning] Buffer overflow, discarding old data.\n";
+        recvBuffer = recvBuffer.substr(recvBuffer.size() - 1024);
+    }
+
+    // ? 切出每個完整 JSON（用 \n 分隔），只保留最後一個合法的
+    size_t pos;
+    nlohmann::json latest;
+    while ((pos = recvBuffer.find('\n')) != std::string::npos) {
+        std::string jsonStr = recvBuffer.substr(0, pos);
+        recvBuffer.erase(0, pos + 1);
+        try {
+            latest = nlohmann::json::parse(jsonStr);
+        } catch (...) {
+            std::cerr << "Invalid JSON skipped.\n";
+        }
+    }
+    std::cerr<<latest.dump()<<'\n';
+    return latest;  // 可能是空的（如果都解析失敗），也可能是最新合法的一幀
 }
 
 void GameClient::sendInput(const std::vector<std::string>& keys, int mouseX, int mouseY) {
