@@ -71,12 +71,8 @@ nlohmann::json GameClient::receiveFrame() {
     return latest;  // 可能是空的（如果都解析失敗），也可能是最新合法的一幀
 }
 
-void GameClient::sendInput(const std::vector<std::string>& keys, int mouseX, int mouseY) {
-    nlohmann::json inputJson;
-    inputJson["type"] = "input";
-    inputJson["keys"] = keys;
-    inputJson["mouse"] = { {"x", mouseX}, {"y", mouseY} };
-
+// 傳入一個json檔，然後他就會自動幫你送過去
+void GameClient::sendInput(nlohmann::json& inputJson) {
     std::string data = inputJson.dump();
     send(sock, data.c_str(), data.size(), 0);
 }

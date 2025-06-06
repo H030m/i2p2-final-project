@@ -15,7 +15,7 @@ public:
     GameClient();
     bool connectToServer(const std::string& host, int port);
     nlohmann::json receiveFrame();
-    void sendInput(const std::vector<std::string>& keys, int mouseX, int mouseY);
+    void sendInput(nlohmann::json& inputJson);
     ~GameClient();
 
 private:

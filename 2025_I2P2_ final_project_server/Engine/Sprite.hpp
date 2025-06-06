@@ -12,6 +12,9 @@ namespace Engine {
     /// </summary>
     class Sprite : public Image {
     public:
+        std::string img_path;
+        int id; // <-- 每個 Image 的唯一 id
+        static int id_counter; // <-- 靜態變數，每次建構 +1
         // Rotation angle in radians.
         float Rotation;
         // Pixel in seconds.

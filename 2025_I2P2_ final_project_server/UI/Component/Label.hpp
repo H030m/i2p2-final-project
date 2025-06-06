@@ -15,8 +15,12 @@ namespace Engine {
     protected:
         // Smart pointer to font.
         std::shared_ptr<ALLEGRO_FONT> font;
-
+        
     public:
+    
+        int id; // <-- 每個 Image 的唯一 id
+        static int id_counter; // <-- 靜態變數，每次建構 +1
+        std::string font_path;
         // Text to draw.
         std::string Text;
         // Text's color.

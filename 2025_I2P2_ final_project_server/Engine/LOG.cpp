@@ -37,7 +37,7 @@ namespace Engine {
             case DEBUGGING: return "DEBUGGING";
             case INFO: return "INFO";
             case WARN: return "WARN";
-            case ERROR: return "ERROR";
+            case LOG_ERROR: return "ERROR";
         }
         return "UNKNOWN";
     }

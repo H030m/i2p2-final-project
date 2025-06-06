@@ -86,12 +86,36 @@ void Turret::Update(float deltaTime) {
 void Turret::Draw() const {
     if (Preview) {
         al_draw_filled_circle(Position.x, Position.y, CollisionRadius, al_map_rgba(0, 255, 0, 50));
+        nlohmann::json circleJson = {
+        {"type", "filled_circle"},
+        {"x", Position.x},
+        {"y", Position.y},
+        {"CollisionRadius", CollisionRadius},
+        {"r", 0},
+        {"g", 255},
+        {"b", 0},
+        {"a", 50}
+        };
+        RenderSender& sender = Engine::GameEngine::GetInstance().GetSender();
+        sender.AddToFrame(circleJson);
     }
     imgBase.Draw();
     Sprite::Draw();
     if (PlayScene::DebugMode) {
         // Draw target radius.
         al_draw_circle(Position.x, Position.y, CollisionRadius, al_map_rgb(0, 0, 255), 2);
+        nlohmann::json circleJson = {
+        {"type", "circle"},
+        {"x", Position.x},
+        {"y", Position.y},
+        {"CollisionRadius", CollisionRadius},
+        {"r", 0},
+        {"g", 0},
+        {"b", 255},
+        {"thickness",2}
+        };
+        RenderSender& sender = Engine::GameEngine::GetInstance().GetSender();
+        sender.AddToFrame(circleJson);
     }
 }
 int Turret::GetPrice() const {

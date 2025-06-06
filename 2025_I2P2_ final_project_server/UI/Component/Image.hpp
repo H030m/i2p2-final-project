@@ -12,6 +12,9 @@ namespace Engine {
     /// </summary>
     class Image : public IObject {
     public:
+        std::string img_path;
+        int id; // <-- 每個 Image 的唯一 id
+        static int id_counter; // <-- 靜態變數，每次建構 +1
         // Smart pointer to bitmap.
         std::shared_ptr<ALLEGRO_BITMAP> bmp;
         /// <summary>
