@@ -18,16 +18,60 @@
 #include "Point.hpp"
 #include "Resources.hpp"
 
+#include <string>
+#include <map>
+#include <allegro5/allegro.h>
+
+
+int name_to_keycode(const std::string& name) {
+    static const std::map<std::string, int> keyMap = {
+        // A~Z
+        {"A", ALLEGRO_KEY_A}, {"B", ALLEGRO_KEY_B}, {"C", ALLEGRO_KEY_C}, {"D", ALLEGRO_KEY_D},
+        {"E", ALLEGRO_KEY_E}, {"F", ALLEGRO_KEY_F}, {"G", ALLEGRO_KEY_G}, {"H", ALLEGRO_KEY_H},
+        {"I", ALLEGRO_KEY_I}, {"J", ALLEGRO_KEY_J}, {"K", ALLEGRO_KEY_K}, {"L", ALLEGRO_KEY_L},
+        {"M", ALLEGRO_KEY_M}, {"N", ALLEGRO_KEY_N}, {"O", ALLEGRO_KEY_O}, {"P", ALLEGRO_KEY_P},
+        {"Q", ALLEGRO_KEY_Q}, {"R", ALLEGRO_KEY_R}, {"S", ALLEGRO_KEY_S}, {"T", ALLEGRO_KEY_T},
+        {"U", ALLEGRO_KEY_U}, {"V", ALLEGRO_KEY_V}, {"W", ALLEGRO_KEY_W}, {"X", ALLEGRO_KEY_X},
+        {"Y", ALLEGRO_KEY_Y}, {"Z", ALLEGRO_KEY_Z},
+
+        // 0~9
+        {"0", ALLEGRO_KEY_0}, {"1", ALLEGRO_KEY_1}, {"2", ALLEGRO_KEY_2}, {"3", ALLEGRO_KEY_3},
+        {"4", ALLEGRO_KEY_4}, {"5", ALLEGRO_KEY_5}, {"6", ALLEGRO_KEY_6}, {"7", ALLEGRO_KEY_7},
+        {"8", ALLEGRO_KEY_8}, {"9", ALLEGRO_KEY_9},
+
+        // Arrow keys
+        {"UP", ALLEGRO_KEY_UP}, {"DOWN", ALLEGRO_KEY_DOWN},
+        {"LEFT", ALLEGRO_KEY_LEFT}, {"RIGHT", ALLEGRO_KEY_RIGHT},
+
+        // Control keys
+        {"SPACE", ALLEGRO_KEY_SPACE}, {"ENTER", ALLEGRO_KEY_ENTER},
+        {"ESC", ALLEGRO_KEY_ESCAPE}, {"TAB", ALLEGRO_KEY_TAB},
+        {"LSHIFT", ALLEGRO_KEY_LSHIFT}, {"RSHIFT", ALLEGRO_KEY_RSHIFT},
+        {"LCTRL", ALLEGRO_KEY_LCTRL}, {"RCTRL", ALLEGRO_KEY_RCTRL},
+        {"ALT", ALLEGRO_KEY_ALT}, {"BACKSPACE", ALLEGRO_KEY_BACKSPACE},
+
+        // function key F1~F12
+        {"F1", ALLEGRO_KEY_F1}, {"F2", ALLEGRO_KEY_F2}, {"F3", ALLEGRO_KEY_F3}, {"F4", ALLEGRO_KEY_F4},
+        {"F5", ALLEGRO_KEY_F5}, {"F6", ALLEGRO_KEY_F6}, {"F7", ALLEGRO_KEY_F7}, {"F8", ALLEGRO_KEY_F8},
+        {"F9", ALLEGRO_KEY_F9}, {"F10", ALLEGRO_KEY_F10}, {"F11", ALLEGRO_KEY_F11}, {"F12", ALLEGRO_KEY_F12}
+    };
+
+    auto it = keyMap.find(name);
+    if (it != keyMap.end()) return it->second;
+    return 0;  // 0 -> not found
+}
+
+
 Engine::GameEngine::GameEngine():sender(8888){
-        //偵測會在哪裡跑
+        //Check System
 	    #ifdef _WIN32
         std::cout << "Running on Windows" << std::endl;
 	    #else
         std::cout << "Running on Linux/Unix" << std::endl;
 	    #endif
-        sender.start();
+        sender.start(); // listen 
 
-    };  // 等待多人連線，並個別傳送畫面
+    };  
 namespace Engine {
 
     void GameEngine::initAllegro5() {
@@ -171,7 +215,54 @@ namespace Engine {
         for(auto it:sender.clients){
             sender.recvOnce(it);
         }
-        
+        //deal the data from client
+        for (auto& client : sender.clients) {
+            if (!client->active || client->lastInput.is_null()) continue;
+
+            nlohmann::json& input = client->lastInput;
+
+            if (input["type"] == "input") {
+                // === KeyDown ===
+                if (input.contains("keys_down")) {
+                    for (auto& keyName : input["keys_down"]) {
+                        int keycode = name_to_keycode(keyName.get<std::string>());
+                        if (keycode != 0) {
+                            activeScene->OnKeyDown(keycode);
+                        }
+                    }
+                }
+
+                // === KeyUp ===
+                if (input.contains("keys_up")) {
+                    for (auto& keyName : input["keys_up"]) {
+                        int keycode = name_to_keycode(keyName.get<std::string>());
+                        if (keycode != 0) {
+                            activeScene->OnKeyUp(keycode);
+                        }
+                    }
+                }
+
+                // === Mouse ===
+                if (input.contains("mouse")) {
+                    int mx = input["mouse"]["x"];
+                    int my = input["mouse"]["y"];
+                    activeScene->OnMouseMove(mx, my);
+
+                    if (input["mouse"].contains("mouse_down")) {
+                        for (auto& btn : input["mouse"]["mouse_down"]) {
+                            activeScene->OnMouseDown(btn, mx, my);
+                        }
+                    }
+                    if (input["mouse"].contains("mouse_up")) {
+                        for (auto& btn : input["mouse"]["mouse_up"]) {
+                            activeScene->OnMouseUp(btn, mx, my);
+                        }
+                    }
+                }
+
+
+            }
+        }
         if (!nextScene.empty()) {
             changeScene(nextScene);
             nextScene = "";
@@ -180,6 +271,7 @@ namespace Engine {
         if (deltaTime >= deltaTimeThreshold)
             deltaTime = deltaTimeThreshold;
         activeScene->Update(deltaTime);
+
         for(auto it:sender.clients){
             sender.sendOnce(it);
         }

@@ -37,25 +37,25 @@ bool GameClient::connectToServer(const std::string& host, int port) {
     return true;
 }
 
-nlohmann::json GameClient::receiveFrame() {
-    static std::string recvBuffer;  // 持久 buffer 保留未完整接收的資料
+void GameClient::recvOnce() {
+    static std::string recvBuffer;  // Persistent buffer retains incomplete received data
     char temp[4096];
     int len = recv(sock, temp, sizeof(temp), 0);
 
     if (len <= 0) {
         std::cerr << "Disconnected or error.\n";
-        return {};
+        return ;
     }
 
-    recvBuffer += std::string(temp, len);  // 累積資料
+    recvBuffer += std::string(temp, len);  // Accumulated data
 
-    // ? 安全檢查：避免無窮堆積
+    // Safety check: avoid infinite accumulation
     if (recvBuffer.size() > 8192) {
         std::cerr << "[Warning] Buffer overflow, discarding old data.\n";
         recvBuffer = recvBuffer.substr(recvBuffer.size() - 1024);
     }
 
-    // ? 切出每個完整 JSON（用 \n 分隔），只保留最後一個合法的
+    //Cut out each complete JSON (separated by \n), leaving only the last valid one
     size_t pos;
     nlohmann::json latest;
     while ((pos = recvBuffer.find('\n')) != std::string::npos) {
@@ -67,13 +67,13 @@ nlohmann::json GameClient::receiveFrame() {
             std::cerr << "Invalid JSON skipped.\n";
         }
     }
-    std::cerr<<latest.dump()<<'\n';
-    return latest;  // 可能是空的（如果都解析失敗），也可能是最新合法的一幀
+    // std::cerr<<latest.dump()<<'\n';
+    input_json = latest;
 }
 
-// 傳入一個json檔，然後他就會自動幫你送過去
-void GameClient::sendInput(nlohmann::json& inputJson) {
-    std::string data = inputJson.dump();
+// Pass in a json file, and it will automatically send it to you.
+void GameClient::sendOnce() {
+    std::string data = input_json.dump() + "\n";
     send(sock, data.c_str(), data.size(), 0);
 }
 

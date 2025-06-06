@@ -57,7 +57,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
     if (len > 0) {
         std::string raw(buffer, len);
         size_t start = 0;
-        ctx->lastInput = nullptr; // 清空先前訊息
+        ctx->lastInput = nullptr; // Clear previous messages
 
         while (start < raw.size()) {
             size_t end = raw.find('\n', start);
@@ -72,18 +72,18 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
         }
         // std::cerr<<"recv: "<<ctx->lastInput<<'\n';
     } else if (len == 0) {
-        // client 正常關閉連線
+        // client Close the connection normally
         ctx->active = false;
         closesocket(ctx->socket);
     } else {
         int err = WSAGetLastError();
         if (err != WSAEWOULDBLOCK) {
-            // 真正錯誤才關閉
+            // Close only if it is a real error
             std::cerr << "recv error: " << err << "\n";
             ctx->active = false;
             closesocket(ctx->socket);
         }
-        // 否則是沒有資料，不做事
+        // Otherwise, there is no information and no work.
     }
 }
 void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
@@ -99,7 +99,7 @@ void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
             ctx->active = false;
             closesocket(ctx->socket);
         }
-        // 否則只是不能立即送，不處理
+        // Otherwise, it just cannot be delivered immediately and will not be processed.
     }
 }
 

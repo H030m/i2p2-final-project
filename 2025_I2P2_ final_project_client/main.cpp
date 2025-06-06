@@ -33,15 +33,12 @@ using json = nlohmann::json;
     #define closesocket close
 #endif
 
-#include<Connet/Client.hpp>
-const std::string host = "140.114.196.15";
+#include<Connect/Client.hpp>
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
 	Engine::GameEngine& game = Engine::GameEngine::GetInstance();
 	
-	GameClient client;
-    if (!client.connectToServer(host, 8888))
-        return 1;
+	
 
 	
 	

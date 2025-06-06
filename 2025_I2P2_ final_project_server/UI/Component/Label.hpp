@@ -18,8 +18,8 @@ namespace Engine {
         
     public:
     
-        int id; // <-- 每個 Image 的唯一 id
-        static int id_counter; // <-- 靜態變數，每次建構 +1
+        int id; // <-- Unique id for each Label
+        static int id_counter; // <-- Static variable, +1 per construction
         std::string font_path;
         // Text to draw.
         std::string Text;
