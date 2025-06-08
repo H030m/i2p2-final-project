@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
 	Engine::GameEngine& game = Engine::GameEngine::GetInstance();
 
-	//°»´ú·|¦b­þ¸Ì¶]
+	//hello
 	#ifdef _WIN32
     std::cout << "Running on Windows" << std::endl;
 	#else
@@ -37,20 +37,20 @@ int main(int argc, char **argv) {
 
 }
 /*
-? ¨¾¤õÀð³]©w¤è¦¡¡]¹Ï§Î¤¶­±¡^
-¦b Server ¹q¸£¤W¡A·j´M¡uWindows Defender ¨¾¤õÀð¡v
+? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]ï¿½wï¿½è¦¡ï¿½]ï¿½Ï§Î¤ï¿½ï¿½ï¿½ï¿½^
+ï¿½b Server ï¿½qï¿½ï¿½ï¿½Wï¿½Aï¿½jï¿½Mï¿½uWindows Defender ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½v
 
-ÂI¥ª°¼¡u¶i¶¥³]©w¡v
+ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½uï¿½iï¿½ï¿½ï¿½]ï¿½wï¿½v
 
-¿ï¡u¿é¤J³W«h¡v¡÷ ¥k°¼¡u·s¼W³W«h¡v
+ï¿½ï¿½uï¿½ï¿½Jï¿½Wï¿½hï¿½vï¿½ï¿½ ï¿½kï¿½ï¿½ï¿½uï¿½sï¿½Wï¿½Wï¿½hï¿½v
 
-Ãþ«¬¿ï¾Ü¡GPort
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü¡GPort
 
-TCP¡A¯S©w¥»¾÷ port¡G¿é¤J 7000
+TCPï¿½Aï¿½Sï¿½wï¿½ï¿½ï¿½ï¿½ portï¿½Gï¿½ï¿½J 7000
 
-°Ê§@¡G¤¹³\³s½u
+ï¿½Ê§@ï¿½Gï¿½ï¿½ï¿½\ï¿½sï¿½u
 
-³]©wÀÉ¡G¥þ³¡¤Ä¿ï¡]ºô°ì¡B¨p±K¡B¤½¥Î¡^
+ï¿½]ï¿½wï¿½É¡Gï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½]ï¿½ï¿½ï¿½ï¿½Bï¿½pï¿½Kï¿½Bï¿½ï¿½ï¿½Î¡^
 
-¦WºÙÀH«K¨ú¤@­Ó¡]¨Ò¦p GameServer7000¡^
+ï¿½Wï¿½ï¿½ï¿½Hï¿½Kï¿½ï¿½ï¿½@ï¿½Ó¡]ï¿½Ò¦p GameServer7000ï¿½^
 */
