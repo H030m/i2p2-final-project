@@ -15,6 +15,7 @@ public:
     nlohmann::json input_json,output_json;
     GameClient();
     bool connectToServer(const std::string& host, int port);
+    bool setNonBlocking();
     void recvOnce();
     void sendOnce();
     ~GameClient();

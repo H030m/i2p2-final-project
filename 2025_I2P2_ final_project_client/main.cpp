@@ -34,12 +34,17 @@ using json = nlohmann::json;
 #endif
 
 #include<Connect/Client.hpp>
+#include<Scene/RemotePlayScene.hpp>
+#include "UI/Component/Label.hpp"     
+#include "Engine/GameEngine.hpp"
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
 	Engine::GameEngine& game = Engine::GameEngine::GetInstance();
 	
 	
+    game.AddNewScene("RemotePlayScene", new RemotePlayScene);
 
+    game.Start("RemotePlayScene");
 	
 	
 	return 0;

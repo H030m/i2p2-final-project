@@ -109,6 +109,8 @@ add_executable(2025_I2P2_TowerDefense
     UI/Component/Slider.cpp
     UI/Component/Slider.hpp
     
+    Player/Player.hpp
+    Player/Player.cpp
     #Connecting
     Connect/RenderSender.hpp
     Connect/RenderSender.cpp

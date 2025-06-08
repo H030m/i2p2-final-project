@@ -18,6 +18,7 @@
 #include <memory>
 #include <mutex>
 #include <nlohmann/json.hpp>
+#include <thread>
 
 #define TARGET_FPS 60
 #define NUM 5
@@ -28,6 +29,7 @@ struct ClientContext {
         nlohmann::json lastInput;
         std::thread recvThread;
         std::thread sendThread;
+        int id;
         //camera position
 };
 
