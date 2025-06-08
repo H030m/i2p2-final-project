@@ -70,7 +70,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
                 std::cerr << "Invalid JSON chunk from client.\n";
             }
         }
-        // std::cerr<<"recv: "<<ctx->lastInput<<'\n';
+        std::cerr<<"recv: "<<ctx->lastInput<<'\n';
     } else if (len == 0) {
         // client Close the connection normally
         ctx->active = false;

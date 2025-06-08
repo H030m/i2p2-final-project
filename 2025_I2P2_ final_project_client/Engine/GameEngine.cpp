@@ -22,6 +22,42 @@
 #include <map>
 #include <allegro5/allegro.h>
 
+#include <Connect/Client.hpp>
+
+std::string keycode_to_name(int code) {
+    static const std::map<int, std::string> reverseKeyMap = [] {
+        std::map<int, std::string> m;
+        m[ALLEGRO_KEY_A] = "A"; m[ALLEGRO_KEY_B] = "B"; m[ALLEGRO_KEY_C] = "C"; m[ALLEGRO_KEY_D] = "D";
+        m[ALLEGRO_KEY_E] = "E"; m[ALLEGRO_KEY_F] = "F"; m[ALLEGRO_KEY_G] = "G"; m[ALLEGRO_KEY_H] = "H";
+        m[ALLEGRO_KEY_I] = "I"; m[ALLEGRO_KEY_J] = "J"; m[ALLEGRO_KEY_K] = "K"; m[ALLEGRO_KEY_L] = "L";
+        m[ALLEGRO_KEY_M] = "M"; m[ALLEGRO_KEY_N] = "N"; m[ALLEGRO_KEY_O] = "O"; m[ALLEGRO_KEY_P] = "P";
+        m[ALLEGRO_KEY_Q] = "Q"; m[ALLEGRO_KEY_R] = "R"; m[ALLEGRO_KEY_S] = "S"; m[ALLEGRO_KEY_T] = "T";
+        m[ALLEGRO_KEY_U] = "U"; m[ALLEGRO_KEY_V] = "V"; m[ALLEGRO_KEY_W] = "W"; m[ALLEGRO_KEY_X] = "X";
+        m[ALLEGRO_KEY_Y] = "Y"; m[ALLEGRO_KEY_Z] = "Z";
+
+        m[ALLEGRO_KEY_0] = "0"; m[ALLEGRO_KEY_1] = "1"; m[ALLEGRO_KEY_2] = "2"; m[ALLEGRO_KEY_3] = "3";
+        m[ALLEGRO_KEY_4] = "4"; m[ALLEGRO_KEY_5] = "5"; m[ALLEGRO_KEY_6] = "6"; m[ALLEGRO_KEY_7] = "7";
+        m[ALLEGRO_KEY_8] = "8"; m[ALLEGRO_KEY_9] = "9";
+
+        m[ALLEGRO_KEY_UP] = "UP"; m[ALLEGRO_KEY_DOWN] = "DOWN";
+        m[ALLEGRO_KEY_LEFT] = "LEFT"; m[ALLEGRO_KEY_RIGHT] = "RIGHT";
+
+        m[ALLEGRO_KEY_SPACE] = "SPACE"; m[ALLEGRO_KEY_ENTER] = "ENTER";
+        m[ALLEGRO_KEY_ESCAPE] = "ESC"; m[ALLEGRO_KEY_TAB] = "TAB";
+        m[ALLEGRO_KEY_LSHIFT] = "LSHIFT"; m[ALLEGRO_KEY_RSHIFT] = "RSHIFT";
+        m[ALLEGRO_KEY_LCTRL] = "LCTRL"; m[ALLEGRO_KEY_RCTRL] = "RCTRL";
+        m[ALLEGRO_KEY_ALT] = "ALT"; m[ALLEGRO_KEY_BACKSPACE] = "BACKSPACE";
+
+        m[ALLEGRO_KEY_F1] = "F1"; m[ALLEGRO_KEY_F2] = "F2"; m[ALLEGRO_KEY_F3] = "F3"; m[ALLEGRO_KEY_F4] = "F4";
+        m[ALLEGRO_KEY_F5] = "F5"; m[ALLEGRO_KEY_F6] = "F6"; m[ALLEGRO_KEY_F7] = "F7"; m[ALLEGRO_KEY_F8] = "F8";
+        m[ALLEGRO_KEY_F9] = "F9"; m[ALLEGRO_KEY_F10] = "F10"; m[ALLEGRO_KEY_F11] = "F11"; m[ALLEGRO_KEY_F12] = "F12";
+        return m;
+    }();
+
+    auto it = reverseKeyMap.find(code);
+    if (it != reverseKeyMap.end()) return it->second;
+    return "UNKNOWN";
+}
 
 const std::string host = "140.114.196.15";
 Engine::GameEngine::GameEngine():sender(){
@@ -114,25 +150,60 @@ namespace Engine {
                         // The redraw timer has ticked.
                         redraws++;
                     break;
-                case ALLEGRO_EVENT_KEY_DOWN:
+                case ALLEGRO_EVENT_KEY_DOWN:{
                     // Event for keyboard key down.
                     LOG(VERBOSE) << "Key with keycode " << event.keyboard.keycode << " down";
                     activeScene->OnKeyDown(event.keyboard.keycode);
+
+                    // update output_json
+                    auto& downList = sender.output_json["mouse"]["mouse_down"];
+                    if (std::find(downList.begin(), downList.end(), event.mouse.button) == downList.end()) {
+                        downList.push_back(event.mouse.button);
+                    }
                     break;
-                case ALLEGRO_EVENT_KEY_UP:
+                }
+                case ALLEGRO_EVENT_KEY_UP:{
                     // Event for keyboard key up.
                     LOG(VERBOSE) << "Key with keycode " << event.keyboard.keycode << " up";
                     activeScene->OnKeyUp(event.keyboard.keycode);
+
+                    // update output_json
+                    auto& upList = sender.output_json["mouse"]["mouse_up"];
+                    if (std::find(upList.begin(), upList.end(), event.mouse.button) == upList.end()) {
+                        upList.push_back(event.mouse.button);
+                    }
                     break;
+                }
                 case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
                     // Event for mouse key down.
                     LOG(VERBOSE) << "Mouse button " << event.mouse.button << " down at (" << event.mouse.x << ", " << event.mouse.y << ")";
                     activeScene->OnMouseDown(event.mouse.button, event.mouse.x, event.mouse.y);
+
+                    // update output_json
+                    sender.output_json["mouse"]["mouse_down"].push_back(event.mouse.button);
+                    if (event.mouse.dz != 0) {
+                        sender.output_json["mouse"]["scroll"] = event.mouse.dz;
+                    }
+                    if(sender.output_json.contains("mouse")&&!sender.output_json["mouse"].contains("x")){
+                        sender.output_json["mouse"]["x"] = event.mouse.x;
+                        sender.output_json["mouse"]["y"] = event.mouse.y;
+                    }
                     break;
                 case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
                     // Event for mouse key up.
                     LOG(VERBOSE) << "Mouse button " << event.mouse.button << " down at (" << event.mouse.x << ", " << event.mouse.y << ")";
                     activeScene->OnMouseUp(event.mouse.button, event.mouse.x, event.mouse.y);
+
+                    // update output_json
+                    sender.output_json["mouse"]["mouse_up"].push_back(event.mouse.button);
+                    
+                    if (event.mouse.dz != 0) {
+                        sender.output_json["mouse"]["scroll"] = event.mouse.dz;
+                    }
+                    if(sender.output_json.contains("mouse")&&!sender.output_json["mouse"].contains("x")){
+                        sender.output_json["mouse"]["x"] = event.mouse.x;
+                        sender.output_json["mouse"]["y"] = event.mouse.y;
+                    }
                     break;
                 case ALLEGRO_EVENT_MOUSE_AXES:
                     if (event.mouse.dx != 0 || event.mouse.dy != 0) {
@@ -144,6 +215,15 @@ namespace Engine {
                         LOG(VERBOSE) << "Mouse scroll at (" << event.mouse.x << ", " << event.mouse.y << ") with delta " << event.mouse.dz;
                         activeScene->OnMouseScroll(event.mouse.x, event.mouse.y, event.mouse.dz);
                     }
+                    if(!sender.output_json["mouse"].contains("Move"))
+                    sender.output_json["mouse"]["Move"] = true;
+                    if (event.mouse.dz != 0) {
+                        sender.output_json["mouse"]["scroll"] = event.mouse.dz;
+                    }
+                    if(sender.output_json.contains("mouse")&&!sender.output_json["mouse"].contains("x")){
+                        sender.output_json["mouse"]["x"] = event.mouse.x;
+                        sender.output_json["mouse"]["y"] = event.mouse.y;
+                    }
                     break;
                 case ALLEGRO_EVENT_MOUSE_LEAVE_DISPLAY:
                     LOG(VERBOSE) << "Mouse leave display.";
@@ -151,6 +231,8 @@ namespace Engine {
                     al_get_mouse_state(&state);
                     // Fake mouse out.
                     activeScene->OnMouseMove(-1, -1);
+                    sender.output_json["mouse"]["x"] = -1;
+                    sender.output_json["mouse"]["y"] = -1;
                     break;
                 case ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY:
                     LOG(VERBOSE) << "Mouse enter display.";
@@ -160,7 +242,7 @@ namespace Engine {
                     break;
             }
             // Can process more events and call callbacks by adding more cases.
-
+            
             // Redraw the scene.
             if (redraws > 0 && al_is_event_queue_empty(event_queue)) {
                 if (redraws > 1)
@@ -189,7 +271,9 @@ namespace Engine {
         if (deltaTime >= deltaTimeThreshold)
             deltaTime = deltaTimeThreshold;
         activeScene->Update(deltaTime);
-
+        
+        //give a type
+        sender.output_json["type"] = "input";
         
         sender.sendOnce();
         

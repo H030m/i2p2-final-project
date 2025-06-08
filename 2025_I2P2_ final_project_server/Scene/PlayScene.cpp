@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include <algorithm>
 #include <allegro5/allegro.h>
 #include <cmath>
@@ -32,6 +33,9 @@
 #include "SubmitScene.hpp"
 #include "WinScene.hpp"
 
+#include "Player/Player.hpp"
+#include "Connect/RenderSender.hpp"
+
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
 const int PlayScene::MapWidth = 20, PlayScene::MapHeight = 13;
@@ -40,17 +44,14 @@ const float PlayScene::DangerTime = 7.61;
 const Engine::Point PlayScene::SpawnGridPoint = Engine::Point(-1, 0);
 const Engine::Point PlayScene::EndGridPoint = Engine::Point(MapWidth, MapHeight - 1);
 
+
 // key sequence
 const std::vector<int> PlayScene::code = {
     ALLEGRO_KEY_UP, ALLEGRO_KEY_UP, ALLEGRO_KEY_DOWN, ALLEGRO_KEY_DOWN,
     ALLEGRO_KEY_LEFT, ALLEGRO_KEY_RIGHT, ALLEGRO_KEY_LEFT, ALLEGRO_KEY_RIGHT,
     ALLEGRO_KEY_B, ALLEGRO_KEY_A, 216, ALLEGRO_KEY_ENTER
 };
-// TODO HACKATHON-4 (1/3): Trace how the game handles keyboard input.
-// TODO HACKATHON-4 (2/3): Find the cheat code sequence in this file.
-// TODO HACKATHON-4 (3/3): When the cheat code is entered, a plane should be spawned and added to the scene.
-// TODO HACKATHON-5 (1/4): There's a bug in this file, which crashes the game when you win. Try to find it.
-// TODO HACKATHON-5 (2/4): The "LIFE" label are not updated when you lose a life. Try to fix it.
+
 Engine::Point PlayScene::GetClientSize() {
     return Engine::Point(MapWidth * BlockSize, MapHeight * BlockSize);
 }
@@ -62,6 +63,7 @@ void PlayScene::Initialize() {
     lives = 10;
     money = 150;
     SpeedMult = 1;
+    player_num = 0;
     time(&StartTime); 
     // Add groups from bottom to top.
     AddNewObject(TileMapGroup = new Group());
@@ -73,6 +75,17 @@ void PlayScene::Initialize() {
     AddNewObject(EffectGroup = new Group());
     // Should support buttons.
     AddNewControlObject(UIGroup = new Group());
+
+    //Add player to PlayerGroup
+    AddNewObject(PlayerGroup = new Group());
+    Player* player;
+    Engine::GameEngine& game = Engine::GameEngine::GetInstance();
+    RenderSender &sender = game.GetSender();
+    for (std::shared_ptr<ClientContext> client: sender.clients) {
+        player_num++;
+        PlayerGroup->AddNewObject(player = new Player(0, 0));
+    }
+
     ReadMap();
     ReadEnemyWave();
     mapDistance = CalculateBFSDistance();
@@ -87,6 +100,7 @@ void PlayScene::Initialize() {
     // Start BGM.
     bgmId = AudioHelper::PlayBGM("play.ogg");
 }
+
 void PlayScene::Terminate() {
     AudioHelper::StopBGM(bgmId);
     AudioHelper::StopSample(deathBGMInstance);
@@ -146,16 +160,6 @@ void PlayScene::Update(float deltaTime) {
         if (enemyWaveData.empty()) {
         // if (true) {
             if (EnemyGroup->GetObjects().empty()) {
-                // Free resources.
-                /*delete TileMapGroup;
-                delete GroundEffectGroup;
-                delete DebugIndicatorGroup;
-                delete TowerGroup;
-                delete EnemyGroup;
-                delete BulletGroup;
-                delete EffectGroup;
-                delete UIGroup;
-                delete imgTarget;*/
                 
                 // record this play's grade
                 time(&EndTime);
@@ -234,6 +238,49 @@ void PlayScene::Update(float deltaTime) {
         Plane *plane;
         UIGroup->AddNewObject(plane = new Plane());
     }
+
+
+    Engine::GameEngine& game = Engine::GameEngine::GetInstance();
+    RenderSender &sender = game.GetSender();
+
+    // new player join game
+    Player* player;
+    if (sender.clients.size() > player_num) {
+        while (sender.clients.size() > player_num) {
+            PlayerGroup->AddNewObject(player = new Player(0, 0));
+            player_num++;
+        }
+    }
+
+    // iterate through all player in clients
+    for (std::shared_ptr<ClientContext> client : sender.clients) {
+        Player* cur; // current player ptr
+        for (auto &n : PlayerGroup->GetObjects()) {
+            Player* p = dynamic_cast<Player*>(n);
+            if (p->id == client->id) {
+                cur = p;
+                break;
+            }
+        }
+
+        // read W, A, S, D from keys_down[]
+        for (auto it : client->lastInput["keys_down"]) {
+            if (it == "W" || it == "w") {
+                cur->Position.y += cur->speed;
+            }
+            else if (it == "A" || it == "a") {
+                cur->Position.x -= cur->speed;
+            } 
+            else if (it == "S" || it == "s") {
+                cur->Position.y -= cur->speed;
+            }
+            else if (it == "D" || it == "d") {
+                cur->Position.x += cur->speed;
+            }
+            else continue;
+        }
+    }
+    
 }
 void PlayScene::Draw() const {
     IScene::Draw();
@@ -278,31 +325,7 @@ void PlayScene::OnMouseUp(int button, int mx, int my) {
     const int x = mx / BlockSize;
     const int y = my / BlockSize;
     if (button & 1) {
-        // shovel 
-        // if (preview->is_shovel) {
-        //     bool removed = false;
-        //     if(TowerGroup->GetObjects().begin() != TowerGroup->GetObjects().end())
-        //     for (auto it = TowerGroup->GetObjects().begin(); it != TowerGroup->GetObjects().end(); ++it) {
-        //         Engine::Point p = (*it)->Position;
-        //         int gx = floor(p.x / BlockSize);
-        //         int gy = floor(p.y / BlockSize);
-        //         if (gx == x && gy == y) {
-        //             (*it)->GetObjectIterator()->first = false;
-        //             TowerGroup->RemoveObject((*it)->GetObjectIterator());
-        //             mapState[y][x] = TILE_DIRT;
-        //             EarnMoney(50);
-        //             removed = true;
-        //             break;
-        //         }
-        //     }
-            
-        //     preview->GetObjectIterator()->first = false;
-        //     UIGroup->RemoveObject(preview->GetObjectIterator());
-        //     preview = nullptr;
-        //     OnMouseMove(mx, my);
-            
-        //     return;
-        // }
+        
         if (preview->is_shovel) {
             bool removed = false;
             auto towerObjs = TowerGroup->GetObjects();
@@ -554,9 +577,7 @@ std::vector<std::vector<int>> PlayScene::CalculateBFSDistance() {
     while (!que.empty()) {
         Engine::Point p = que.front();
         que.pop();
-        // TODO PROJECT-1 (1/1): Implement a BFS starting from the most right-bottom block in the map.
-        //               For each step you should assign the corresponding distance to the most right-bottom block.
-        //               mapState[y][x] is TILE_DIRT if it is empty.
+
         int x[4] = {0,0,1,-1}, y[4] = {1,-1,0,0};
         for(int i = 0; i < 4; i++){
             int nx = x[i] + p.x, ny = y[i] + p.y;
@@ -570,3 +591,6 @@ std::vector<std::vector<int>> PlayScene::CalculateBFSDistance() {
     }
     return map;
 }
+// void PlayScene::OnKeyUp(int keyCode) {
+//     // 實際要做的事（例如忽略也可以留空）
+// }

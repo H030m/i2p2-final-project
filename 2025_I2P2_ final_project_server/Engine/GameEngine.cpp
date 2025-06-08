@@ -246,7 +246,10 @@ namespace Engine {
                 if (input.contains("mouse")) {
                     int mx = input["mouse"]["x"];
                     int my = input["mouse"]["y"];
-                    activeScene->OnMouseMove(mx, my);
+                    if(input["mouse"].contains("Move")){
+                        activeScene->OnMouseMove(mx, my);
+                    }
+                    
 
                     if (input["mouse"].contains("mouse_down")) {
                         for (auto& btn : input["mouse"]["mouse_down"]) {

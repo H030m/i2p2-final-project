@@ -8,6 +8,7 @@
 
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
+#include "Player/Player.hpp"
 
 class Turret;
 namespace Engine {
@@ -46,6 +47,9 @@ public:
     int MapId;
     float ticks;
     float deathCountDown;
+
+    int player_num;
+    
     // Map tiles.
     Group *TileMapGroup;
     Group *GroundEffectGroup;
@@ -54,6 +58,7 @@ public:
     Group *TowerGroup;
     Group *EnemyGroup;
     Group *EffectGroup;
+    Group *PlayerGroup;
     Group *UIGroup;
     Engine::Label *UIMoney;
     Engine::Label *UILives;
@@ -87,6 +92,9 @@ public:
     bool CheckSpaceValid(int x, int y);
     std::vector<std::vector<int>> CalculateBFSDistance();
     // void ModifyReadMapTiles();
+
+    // for player
+    // void OnKeyUp(int keyCode) override;
 };
 
 #endif   // PLAYSCENE_HPP
