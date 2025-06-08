@@ -28,6 +28,7 @@ struct ClientContext {
         nlohmann::json lastInput;
         std::thread recvThread;
         std::thread sendThread;
+        //camera position
 };
 
 class RenderSender {

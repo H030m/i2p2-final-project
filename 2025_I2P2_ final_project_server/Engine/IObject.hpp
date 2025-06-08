@@ -2,7 +2,7 @@
 #define IOBJECT_HPP
 #include <list>
 #include <utility>
-
+#include <string>
 #include "Engine/Point.hpp"
 
 namespace Engine {

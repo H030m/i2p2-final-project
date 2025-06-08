@@ -263,6 +263,7 @@ namespace Engine {
 
             }
         }
+        
         if (!nextScene.empty()) {
             changeScene(nextScene);
             nextScene = "";
