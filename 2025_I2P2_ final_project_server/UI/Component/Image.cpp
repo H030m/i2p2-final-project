@@ -38,12 +38,9 @@ namespace Engine {
             {"y", Position.y},
             {"w", Size.x},
             {"h", Size.y},
-            {"rotation", 0},
-            {"r", 1.0},
-            {"g", 1.0},
-            {"b", 1.0},
-            {"a", 1.0},
-            {"id",id}
+            {"id",id},
+            {"AnchorX",Anchor.x},
+            {"AnchorY",Anchor.y}
         };
         sender.AddToFrame(imageJson);
     }

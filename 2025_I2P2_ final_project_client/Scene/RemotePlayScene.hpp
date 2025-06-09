@@ -7,6 +7,7 @@
 #include <map>
 #include <list>
 #include <utility>
+#include <unordered_map>
 
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
@@ -27,9 +28,12 @@ private:
     circle
     filledcircle
     */
-    Engine::Group AllSprite;
-    Engine::Group AllImage;
-    std::list<Engine::Label> AllLabel;
+    Engine::Group *AllSprite;
+    std::unordered_map<int,std::list<std::pair<bool, IObject *>>::iterator> IdToSprite; 
+    Engine::Group *AllImage;
+    std::unordered_map<int,std::list<std::pair<bool, IObject *>>::iterator> IdToImage; 
+    Engine::Group *AllLabel;
+    std::unordered_map<int,std::list<std::pair<bool, IObject *>>::iterator> IdToAllLabel; 
 
     // ? For circle rendering
     struct Circle {

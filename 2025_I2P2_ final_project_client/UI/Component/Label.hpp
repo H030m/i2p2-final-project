@@ -17,6 +17,7 @@ namespace Engine {
         std::shared_ptr<ALLEGRO_FONT> font;
 
     public:
+        int label_id;
         // Text to draw.
         std::string Text;
         // Text's color.

@@ -428,7 +428,7 @@ void PlayScene::ReadMap() {
             const int num = mapData[i * MapWidth + j];
             mapState[i][j] = num ? TILE_FLOOR : TILE_DIRT;
             if (num)
-                TileMapGroup->AddNewObject(new Engine::Image("play/floor.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
+                TileMapGroup->AddNewObject(new Engine::Image(std::string("play/floor.png"), j * BlockSize, i * BlockSize, BlockSize, BlockSize));
             else
                 TileMapGroup->AddNewObject(new Engine::Image("play/dirt.png", j * BlockSize, i * BlockSize, BlockSize, BlockSize));
         }
