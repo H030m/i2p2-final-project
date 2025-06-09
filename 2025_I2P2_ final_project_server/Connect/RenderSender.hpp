@@ -4,6 +4,7 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+using socket_t = SOCKET;
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -12,6 +13,7 @@
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 #define closesocket close
+using socket_t = int;
 #endif
 
 #include <vector>
@@ -24,7 +26,7 @@
 #define NUM 5
 
 struct ClientContext {
-        SOCKET socket;
+        socket_t socket;
         bool active = true;
         nlohmann::json lastInput;
         std::thread recvThread;
@@ -53,7 +55,7 @@ public:
     std::mutex clientMutex;
 private:
 
-    SOCKET serverSock;
+    socket_t serverSock;
 #ifdef _WIN32
     WSADATA wsa;
 #endif
