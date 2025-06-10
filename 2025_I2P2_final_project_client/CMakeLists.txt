@@ -81,7 +81,8 @@ add_executable(2025_I2P2_TowerDefense
     Scene/SubmitScene.hpp
     Scene/RemotePlayScene.hpp
     Scene/RemotePlayScene.cpp
-
+    Scene/DrawMapScene.hpp
+    Scene/DrawMapScene.cpp
     Turret/LaserTurret.cpp
     Turret/LaserTurret.hpp
     Turret/MachineGunTurret.cpp
@@ -121,7 +122,10 @@ add_executable(2025_I2P2_TowerDefense
     # map
     Map/Texture.hpp
     Map/Texture.cpp
+
     main.cpp
+
+    
 )
 include(FetchContent)
 

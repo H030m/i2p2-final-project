@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
-
+#include <set>
 #include "Enemy/Enemy.hpp"
 #include "Enemy/SoldierEnemy.hpp"
 //TODO HACKATHON-3
@@ -108,11 +108,17 @@ void PlayScene::Update(float deltaTime) {
     // // check new player join & update all players' position
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
+
+    // record active playerAdd commentMore actions
+    std::set<int> activePlayerIds;
+    activePlayerIds.insert(game.my_id);
+    
     for (auto [_id, client_info] : sender.input_json.items()) {
         if (_id == "my_id") continue;
         int id = std::stoi(_id);
 
-        // 確保有 player 欄位且為 array
+        activePlayerIds.insert(id);
+
         if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 2)
             continue;
 
@@ -121,7 +127,7 @@ void PlayScene::Update(float deltaTime) {
 
         auto it = player_dict.find(id);
         if (it == player_dict.end()) {
-            Player* newPlayer = new Player(x, y);
+            Player* newPlayer = new Player(x, y, id);
             PlayerGroup->AddNewObject(newPlayer);
             player_dict[id] = newPlayer;
         } else {
@@ -131,7 +137,35 @@ void PlayScene::Update(float deltaTime) {
         }
         
     }
-    player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
+    // delete not active playerAdd commentMore actions
+    for (auto it = player_dict.begin(); it != player_dict.end(); ) {
+        int playerId = it->first;
+
+        if (playerId == game.my_id) {
+            ++it;
+            continue;
+        }
+
+        if (activePlayerIds.find(playerId) == activePlayerIds.end()) {
+            std::cout << "[Remove] removing player id: " << playerId << std::endl;
+            auto objs = PlayerGroup->GetObjects();
+            for(auto obj: objs) {
+                if(obj == it->second){
+                    obj->GetObjectIterator()->first = false;
+                    PlayerGroup->RemoveObject(obj->GetObjectIterator());
+                }
+            }
+            it = player_dict.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    
+    // update myself
+    if (player_dict.find(game.my_id) != player_dict.end()) {
+        player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
+    }
+    
     IScene::Update(deltaTime);
 }
 void PlayScene::Draw() const {
