@@ -268,7 +268,7 @@ namespace Engine {
         
         //give a type
         sender.output_json["type"] = "input";
-        
+        std::cerr<<"hello "<<sender.output_json.dump()<<'\n';
         sender.sendOnce();
         
         sender.output_json.clear(); 

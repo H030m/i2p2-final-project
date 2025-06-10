@@ -32,6 +32,8 @@
 #include "SubmitScene.hpp"
 #include "WinScene.hpp"
 #include "Map/Texture.hpp"
+#include "Player/Player.hpp"
+
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
 const int PlayScene::MapWidth = 20, PlayScene::MapHeight = 13;
@@ -68,6 +70,8 @@ void PlayScene::Initialize() {
     AddNewObject(BulletGroup = new Group());
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
+    PlayerGroup->AddNewObject(new Player(0, 0));
+
     // Should support buttons.
     AddNewControlObject(UIGroup = new Group());
     ReadMap();
@@ -94,6 +98,35 @@ void PlayScene::Terminate() {
 
 void PlayScene::Update(float deltaTime) {
     IScene::Update(deltaTime);
+
+    // update client's W, A, S, D
+    PlayerGroup->Update(deltaTime);
+
+    // check new player join & update all players' position
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    GameClient sender = game.GetSender();
+    for (auto [_id, client_info] : sender.input_json.items()) {
+        if (_id == "my_id") continue;
+        int id = std::stoi(_id);
+
+        // 確保有 player 欄位且為 array
+        if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 2)
+            continue;
+
+        float x = client_info["player"][0];
+        float y = client_info["player"][1];
+
+        auto it = player_dict.find(id);
+        if (it == player_dict.end()) {
+            Player* newPlayer = new Player(x, y);
+            PlayerGroup->AddNewObject(newPlayer);
+            player_dict[id] = newPlayer;
+        } else {
+            it->second->Position.x = x;
+            it->second->Position.y = y;
+        }
+    }
+    
 }
 void PlayScene::Draw() const {
     IScene::Draw();
@@ -123,7 +156,16 @@ void PlayScene::OnMouseUp(int button, int mx, int my) {
 }
 void PlayScene::OnKeyDown(int keyCode) {
     IScene::OnKeyDown(keyCode);
-    
+    for (auto n: PlayerGroup->GetObjects()) {
+        Player* player = dynamic_cast<Player*>(n);
+        player->OnKeyDown(keyCode);
+    }
+}
+void PlayScene::OnKeyUp(int keyCode) {
+    for (auto n: PlayerGroup->GetObjects()) {
+        Player* player = dynamic_cast<Player*>(n);
+        player->OnKeyUp(keyCode);
+    }
 }
 void PlayScene::Hit() {
     lives--;

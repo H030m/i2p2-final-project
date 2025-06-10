@@ -75,7 +75,7 @@ void GameClient::recvOnce() {
 void GameClient::sendOnce() {
     std::string data = output_json.dump() + "\n";
     send(sock, data.c_str(), data.size(), 0);
-    // std::cerr << "send " << output_json.dump() << '\n';
+    std::cerr << "send " << output_json.dump() << '\n';
 }
 
 GameClient::~GameClient() {
@@ -103,7 +103,7 @@ void recvCompressedJson(SOCKET sock, nlohmann::json& outJson) {
         outJson = nlohmann::json::parse(decompressed);
     } catch (const std::exception& e) {
         std::cerr << "JSON parse failed: " << e.what() << "\n";
-        return; // ©Î«O¯dÂÂ¸ê®Æ
+        return; // ï¿½Î«Oï¿½dï¿½Â¸ï¿½ï¿½
     }
     
 }

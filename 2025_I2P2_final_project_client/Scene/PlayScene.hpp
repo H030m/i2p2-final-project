@@ -5,9 +5,11 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <unordered_map>
 
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
+#include "Player/Player.hpp"
 
 class Turret;
 namespace Engine {
@@ -35,6 +37,9 @@ protected:
     time_t EndTime;
 
 public:
+    // record all players' id and position
+    std::unordered_map<int, Player*> player_dict;
+
     static bool DebugMode;
     static const std::vector<Engine::Point> directions;
     static const int MapWidth, MapHeight;
@@ -78,6 +83,7 @@ public:
     void OnMouseMove(int mx, int my) override;
     void OnMouseUp(int button, int mx, int my) override;
     void OnKeyDown(int keyCode) override;
+    void OnKeyUp(int keyCode) override;
     void Hit();
     int GetMoney() const;
     void EarnMoney(int money);
