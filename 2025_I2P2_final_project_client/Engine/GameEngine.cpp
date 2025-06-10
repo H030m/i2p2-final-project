@@ -391,7 +391,6 @@ namespace Engine {
     Point GameEngine::GetMousePosition() const {
         ALLEGRO_MOUSE_STATE state;
         al_get_mouse_state(&state);
-        
         #ifdef FULL_SCREEN
             state.x /= ((float)al_get_display_width(display) / screenW);
             state.y /= ((float)al_get_display_height(display) / screenH);

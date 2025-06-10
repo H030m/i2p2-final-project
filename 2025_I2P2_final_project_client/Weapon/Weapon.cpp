@@ -29,10 +29,10 @@ void Weapon::Update(float deltaTime) {
 
     ALLEGRO_MOUSE_STATE mouseState;
     al_get_mouse_state(&mouseState);
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
 
-    float dx = mouseState.x - Position.x;
-    float dy = mouseState.y - Position.y;
-
+    float dx = mouseState.x / ((float)al_get_display_width(game.display) / game.screenW) - Position.x ;// ((float)al_get_display_width(game.display) / game.screenW);
+    float dy = mouseState.y / ((float)al_get_display_height(game.display) / game.screenH)- Position.y ;// ((float)al_get_display_height(game.display) / game.screenH);
     this->Rotation = atan2(dy, dx);
     this->Rotation = atan2(dy, dx) + ALLEGRO_PI / 2;
     if (!aim_front) {
