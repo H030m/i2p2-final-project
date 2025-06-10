@@ -123,6 +123,8 @@ add_executable(2025_I2P2_TowerDefense
     Map/Texture.hpp
     Map/Texture.cpp
 
+    # Weapon/Weapon.hpp
+    # Weapon/Weapon.cpp
     main.cpp
 
     

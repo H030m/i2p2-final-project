@@ -5,11 +5,13 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <nlohmann/json.hpp>
 
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
 #include <unordered_map>
 #include "Player/Player.hpp"
+
 class Turret;
 namespace Engine {
     class Group;
@@ -26,15 +28,17 @@ private:
         TILE_OCCUPIED,
     };
     static const int MapWidth, MapHeight;
+    static const int BlockSize;
 protected:
 
 
 public:
     std::unordered_map<int, Player*> player_dict;
-    
+    std::vector<std::vector<nlohmann::json>>MapState;
     Group *PlayerGroup;
     Group *TileMapGroup;
     Group *UIGroup;
+
     explicit DrawMapScene() = default;
     void Initialize() override;
     void Terminate() override;
@@ -45,7 +49,7 @@ public:
     void OnMouseUp(int button, int mx, int my) override;
     void OnKeyDown(int keyCode) override;
     void OnKeyUp(int keyCode) override;
-    
+    void ReadMap();
     void ConstructUI();
 };
 

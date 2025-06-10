@@ -28,7 +28,7 @@ void StageSelectScene::Initialize() {
     
     //MapEdit
     btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 300, halfH / 2 + 100, 600, 100);
-    btn->SetOnClickCallback(std::bind(&StageSelectScene::PlayOnClick, this, 2));
+    btn->SetOnClickCallback(std::bind(&StageSelectScene::MapEditOnClick, this));
     AddNewControlObject(btn);
     AddNewObject(new Engine::Label("Draw Map", "pirulen.ttf", 48, halfW, halfH / 2 + 150, 0, 0, 0, 255, 0.5, 0.5));
     
@@ -84,4 +84,8 @@ void StageSelectScene::BGMSlideOnValueChanged(float value) {
 }
 void StageSelectScene::SFXSlideOnValueChanged(float value) {
     AudioHelper::SFXVolume = value;
+}
+
+void StageSelectScene::MapEditOnClick() {
+    Engine::GameEngine::GetInstance().ChangeScene("DrawMapScene");
 }

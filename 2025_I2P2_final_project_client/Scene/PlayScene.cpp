@@ -286,49 +286,6 @@ void PlayScene::ReadMap() {
         }
         std::cerr<<'\n';
     }
-        // std::cerr<<"h1\n";
-        // {
-        //     auto [tileX, tileY] = std::make_pair(0,0);
-        //     const int TileWidth = 16;
-        //     const int TileHeight = 16;
-
-        //     // Create sprite and set source region
-        //     auto* spr = new Engine::Sprite(
-        //         "play/grass.png",
-        //         1 * BlockSize, 1 * BlockSize,       // screen position
-        //         0, 0,               // draw size
-        //         0, 0                                 // anchor top-left
-        //     );
-        //  std::cerr<<"h3\n";
-        //     // spr->SourceX = 10;
-        //     // spr->SourceY = 0;
-        //     // spr->SourceW = 16;
-        //     // spr->SourceH = 16;
-
-        //     TileMapGroup->AddNewObject(spr);
-        //  std::cerr<<"h5\n";
-        // }
-        //  {
-        //     auto [tileX, tileY] = std::make_pair(2,0);
-        //     const int TileWidth = 16;
-        //     const int TileHeight = 16;
-
-        //     // Create sprite and set source region
-        //     auto* spr = new Engine::Sprite(
-        //         "play/grass.png",
-        //        3 * BlockSize, 1 * BlockSize,       // screen position
-        //         BlockSize, BlockSize,               // draw size
-        //         0, 0                                 // anchor top-left
-        //     );
-        //  std::cerr<<"h3\n";
-        //     spr->SourceX = 16;
-        //     spr->SourceY = 0;
-        //     spr->SourceW = TileWidth;
-        //     spr->SourceH = TileHeight;
-
-        //     TileMapGroup->AddNewObject(spr);
-        //  std::cerr<<"h5\n";
-        // }
 }
 void PlayScene::ReadEnemyWave() {
     std::string filename = std::string("Resource/enemy") + std::to_string(MapId) + ".txt";

@@ -16,7 +16,7 @@ public:
     void PlayOnClick(int stage);
     void ScoreboardOnClick();
     void BackOnClick(int stage);
-
+    void MapEditOnClick();
     void BGMSlideOnValueChanged(float value);
     void SFXSlideOnValueChanged(float value);
 };

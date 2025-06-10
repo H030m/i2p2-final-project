@@ -1,4 +1,4 @@
-#ifndef WEAPON_HPPAdd commentMore actions
+#ifndef WEAPON_HPPAdd
 #define WEAPON_HPP
 #include <allegro5/base.h>
 #include <list>

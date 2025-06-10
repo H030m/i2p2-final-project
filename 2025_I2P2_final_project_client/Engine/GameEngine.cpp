@@ -96,8 +96,24 @@ namespace Engine {
         if (!al_install_mouse()) throw Allegro5Exception("failed to install mouse");
 
         // Setup game display.
+        #define FULL_SCREEN
+
+        #ifdef FULL_SCREEN
+                al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
+        #endif
+
         display = al_create_display(screenW, screenH);
         if (!display) throw Allegro5Exception("failed to create display");
+        
+        #ifdef FULL_SCREEN
+            const float scale_factor_x = ((float)al_get_display_width(display)) / screenW;
+            const float scale_factor_y = ((float)al_get_display_height(display)) / screenH;
+
+            ALLEGRO_TRANSFORM t;
+            al_identity_transform(&t);
+            al_scale_transform(&t, scale_factor_x, scale_factor_y);
+            al_use_transform(&t);
+        #endif
         al_set_window_title(display, title);
         // Set alpha blending mode.
         al_set_blender(ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA);
@@ -154,7 +170,10 @@ namespace Engine {
                     // Event for keyboard key down.
                     LOG(VERBOSE) << "Key with keycode " << event.keyboard.keycode << " down";
                     activeScene->OnKeyDown(event.keyboard.keycode);
-
+                    #ifdef FULL_SCREEN
+                        // For full screen, leave game by pressing ESC.
+                       if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) done = true;
+                    #endif
                     // update output_json
                     sender.output_json["keys_down"].push_back(keycode_to_name(event.keyboard.keycode));
                     break;
@@ -170,6 +189,10 @@ namespace Engine {
                 }
                 case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
                     // Event for mouse key down.
+                    #ifdef FULL_SCREEN
+                        event.mouse.x /= ((float)al_get_display_width(display) / screenW);
+                        event.mouse.y /= ((float)al_get_display_height(display) / screenH);
+                    #endif
                     LOG(VERBOSE) << "Mouse button " << event.mouse.button << " down at (" << event.mouse.x << ", " << event.mouse.y << ")";
                     activeScene->OnMouseDown(event.mouse.button, event.mouse.x, event.mouse.y);
 
@@ -185,6 +208,10 @@ namespace Engine {
                     break;
                 case ALLEGRO_EVENT_MOUSE_BUTTON_UP:
                     // Event for mouse key up.
+                    #ifdef FULL_SCREEN
+                        event.mouse.x /= ((float)al_get_display_width(display) / screenW);
+                        event.mouse.y /= ((float)al_get_display_height(display) / screenH);
+                    #endif
                     LOG(VERBOSE) << "Mouse button " << event.mouse.button << " down at (" << event.mouse.x << ", " << event.mouse.y << ")";
                     activeScene->OnMouseUp(event.mouse.button, event.mouse.x, event.mouse.y);
 
@@ -201,6 +228,10 @@ namespace Engine {
                     break;
                 case ALLEGRO_EVENT_MOUSE_AXES:
                     if (event.mouse.dx != 0 || event.mouse.dy != 0) {
+                        #ifdef FULL_SCREEN
+                            event.mouse.x /= ((float)al_get_display_width(display) / screenW);
+                            event.mouse.y /= ((float)al_get_display_height(display) / screenH);
+                        #endif
                         // Event for mouse move.
                         LOG(VERBOSE) << "Mouse move to (" << event.mouse.x << ", " << event.mouse.y << ")";
                         activeScene->OnMouseMove(event.mouse.x, event.mouse.y);
@@ -360,6 +391,12 @@ namespace Engine {
     Point GameEngine::GetMousePosition() const {
         ALLEGRO_MOUSE_STATE state;
         al_get_mouse_state(&state);
+        
+        #ifdef FULL_SCREEN
+            state.x /= ((float)al_get_display_width(display) / screenW);
+            state.y /= ((float)al_get_display_height(display) / screenH);
+        #endif
+
         return Point(state.x, state.y);
     }
     bool GameEngine::IsKeyDown(int keyCode) const {

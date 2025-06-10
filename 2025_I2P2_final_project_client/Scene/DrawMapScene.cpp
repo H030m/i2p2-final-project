@@ -19,10 +19,10 @@
 #include "Engine/Resources.hpp"
 #include "UI/Animation/DirtyEffect.hpp"
 #include "UI/Component/Label.hpp"
-
+#include "Map/Texture.hpp"
 
 const int DrawMapScene::MapWidth = 30, DrawMapScene::MapHeight = 30;
-
+const int DrawMapScene::BlockSize = 64;
 void DrawMapScene::Initialize() {
     AddNewObject(TileMapGroup = new Group());
     AddNewControlObject(UIGroup = new Group());
@@ -35,6 +35,9 @@ void DrawMapScene::Initialize() {
     }
 
     ConstructUI();
+    nlohmann::json tile = { {"Tile", "G"} };
+    MapState.resize(MapHeight, std::vector<nlohmann::json>(MapWidth,tile));
+    ReadMap();
 }
 
 void DrawMapScene::Terminate() {
@@ -98,6 +101,44 @@ void DrawMapScene::OnKeyUp(int keyCode) {
         player->OnKeyUp(keyCode);
     }
     
+}
+
+void DrawMapScene::ReadMap(){
+    std::vector<std::vector<int>>mapState_2(MapHeight, std::vector<int>(MapWidth));
+    for (int i = 0; i < MapHeight; ++i) {
+        for (int j = 0; j < MapWidth; ++j) {
+            if (!MapState[i][j].contains("Tile")) {
+                std::cerr << "Missing tile at index " << i<<' '<<j << "\n";
+                nlohmann::json tile = { {"Tile", "G"} };
+                MapState[i][j] = tile;
+                continue;
+            }
+            mapState_2[i][j] = (MapState[i][j]["Tile"] == "G")? 0: 1;
+        }
+    }
+
+    for (int i = 0; i < MapHeight; ++i) {
+        for (int j = 0; j < MapWidth; ++j) {
+            int linearIndex = i + j * MapHeight;
+            std::string key = std::to_string(linearIndex);
+            // Get (tileX, tileY) in tile sheet
+            auto [tileX, tileY] = getTileCoord(i,j,mapState_2, MapHeight, MapWidth);
+            
+            const int TileWidth = 16;
+            const int TileHeight = 16;
+
+            // Create sprite and set source region
+            auto* spr = new Engine::Sprite(
+                "play/grass/" + std::to_string(tileY) + std::to_string(tileX) + ".png",
+                j * BlockSize, i * BlockSize,       // screen position
+                BlockSize,BlockSize,               // draw size
+                0, 0                                 // anchor top-left
+            );
+
+            TileMapGroup->AddNewObject(spr);
+        }
+        std::cerr<<'\n';
+    }
 }
 
 void DrawMapScene::ConstructUI() {
