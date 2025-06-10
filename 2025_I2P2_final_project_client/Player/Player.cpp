@@ -50,7 +50,7 @@ void Player::Update(float deltaTime) {
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
     if(game.my_id == id)
-    sender.output_json["player"] = {nextPosition.x, nextPosition.y};
+    sender.output_json["player"] = {Position.x, Position.y};
 
 }
 
@@ -80,7 +80,7 @@ void Player::UpdateMyPlayer(float deltaTime) {
     newX = std::max(0.0f, std::min(newX, (float)(mapWidth)));
     newY = std::max(0.0f, std::min(newY, (float)(mapHeight)));
     
-    nextPosition.x = newX, nextPosition.y = newY;
+    Position.x = newX, Position.y = newY;
 }
 
 void Player::Draw() const {

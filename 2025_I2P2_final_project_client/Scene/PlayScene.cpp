@@ -125,12 +125,13 @@ void PlayScene::Update(float deltaTime) {
             PlayerGroup->AddNewObject(newPlayer);
             player_dict[id] = newPlayer;
         } else {
+            if(id == game.my_id)continue;
             it->second->Position.x = x;
             it->second->Position.y = y;
-            if(id == game.my_id)player_dict[id]->UpdateMyPlayer(deltaTime);
         }
         
     }
+    player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
     IScene::Update(deltaTime);
 }
 void PlayScene::Draw() const {

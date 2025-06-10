@@ -20,7 +20,7 @@
 #include <nlohmann/json.hpp>
 #include <thread>
 #include <zlib.h>
-#define TARGET_FPS 60
+#define TARGET_FPS 30
 #define NUM 5
 
 struct ClientContext {
