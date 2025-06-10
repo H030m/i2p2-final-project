@@ -1,26 +1,33 @@
 #include "Client.hpp"
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+typedef SOCKET socket_t;
+#else
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 #define closesocket close
-#endif
-
-#ifdef _WIN32
-#include <ws2tcpip.h>
+typedef int socket_t;
 #endif
 
 #include <iostream>
-#include <sys/types.h>
 #include <stdexcept>
-void recvCompressedJson(SOCKET sock, nlohmann::json& outJson);
+#include <nlohmann/json.hpp>
+#include <zlib.h>
+#include <cstring>
+
+void recvCompressedJson(socket_t sock, nlohmann::json& outJson);
 std::string decompress_string(const std::string& str);
+
 GameClient::GameClient() {
 #ifdef _WIN32
-    WSAStartup(MAKEWORD(2,2), &wsa);
+    WSAStartup(MAKEWORD(2, 2), &wsa);
 #endif
     sock = INVALID_SOCKET;
 }
@@ -45,9 +52,10 @@ bool GameClient::connectToServer(const std::string& host, int port) {
     std::cout << "Connected to server.\n";
     return true;
 }
+
 char temp[3000000];
 void GameClient::recvOnce() {
-     bool enable_compression = true;
+    bool enable_compression = true;
     try {
         nlohmann::json latest;
         if (enable_compression) {
@@ -66,7 +74,7 @@ void GameClient::recvOnce() {
             }
         }
         input_json = latest;
-        std::cerr<<"recv "<<input_json.dump()<<'\n';
+        std::cerr << "recv " << input_json.dump() << '\n';
     } catch (const std::exception& e) {
         std::cerr << "[recvOnce] error: " << e.what() << '\n';
     }
@@ -88,14 +96,23 @@ GameClient::~GameClient() {
     WSACleanup();
 #endif
 }
-void recvCompressedJson(SOCKET sock, nlohmann::json& outJson) {
+
+void recvCompressedJson(socket_t sock, nlohmann::json& outJson) {
     uint32_t net_len = 0;
+
+#ifdef _WIN32
+    int ret = recv(sock, (char*)&net_len, sizeof(net_len), 0);
+#else
     int ret = recv(sock, (char*)&net_len, sizeof(net_len), MSG_WAITALL);
+#endif
+
     if (ret <= 0) throw std::runtime_error("Connection closed or error (reading length)");
     uint32_t data_len = ntohl(net_len);
     std::string buffer(data_len, 0);
-
+    std::cerr << "[recv compressed size]: " << net_len << "\n";
+    std::cerr << "[actual received]: " << ret << "\n";
     int received = 0;
+
     while (received < (int)data_len) {
         int n = recv(sock, &buffer[received], data_len - received, 0);
         if (n <= 0) throw std::runtime_error("Connection closed or error (reading body)");
@@ -107,10 +124,10 @@ void recvCompressedJson(SOCKET sock, nlohmann::json& outJson) {
         outJson = nlohmann::json::parse(decompressed);
     } catch (const std::exception& e) {
         std::cerr << "JSON parse failed: " << e.what() << "\n";
-        return; // 或保留舊資料
+        return;
     }
-    
 }
+
 std::string decompress_string(const std::string& str) {
     z_stream zs;
     memset(&zs, 0, sizeof(zs));

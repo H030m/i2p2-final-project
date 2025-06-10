@@ -1,4 +1,4 @@
-#ifndef WEAPON_HPPAdd
+#ifndef WEAPON_HPP
 #define WEAPON_HPP
 #include <allegro5/base.h>
 #include <list>
@@ -26,4 +26,4 @@ public:
     void Update(float deltaTime) override;
     void Draw() const override;
 };
-#endif   // Weapon_HPP
+#endif   // WEAPON_HPP

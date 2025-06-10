@@ -1,30 +1,33 @@
-#pragma once
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
+
 #include <string>
 #include <nlohmann/json.hpp>
 
 #ifdef _WIN32
 #include <winsock2.h>
-typedef int socklen_t;
+typedef SOCKET socket_t;
 #else
-#include <sys/socket.h>
-#define SOCKET int
+typedef int socket_t;
 #endif
-
-#include <zlib.h>
 
 class GameClient {
 public:
-    nlohmann::json input_json,output_json;
     GameClient();
-    bool connectToServer(const std::string& host, int port);
-    // bool setNonBlocking();
-    void recvOnce();
-    void sendOnce();
     ~GameClient();
 
+    bool connectToServer(const std::string& host, int port);
+    void recvOnce();
+    void sendOnce();
+
+    nlohmann::json input_json;
+    nlohmann::json output_json;
+
 private:
-    SOCKET sock;
 #ifdef _WIN32
     WSADATA wsa;
 #endif
+    socket_t sock;
 };
+
+#endif // CLIENT_HPP

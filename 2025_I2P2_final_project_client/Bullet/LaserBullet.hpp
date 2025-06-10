@@ -3,14 +3,14 @@
 #include "Bullet.hpp"
 
 class Enemy;
-class Turret;
+class Weapon;
 namespace Engine {
     struct Point;
 }   // namespace Engine
 
 class LaserBullet : public Bullet {
 public:
-    explicit LaserBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Turret *parent);
+    explicit LaserBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent);
     void OnExplode(Enemy *enemy) override;
 };
 #endif   // LASERBULLET_HPP

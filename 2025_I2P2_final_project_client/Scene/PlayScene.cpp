@@ -33,6 +33,11 @@
 #include "WinScene.hpp"
 #include "Map/Texture.hpp"
 #include "Player/Player.hpp"
+
+#include "Weapon/Weapon.hpp"
+#include "Weapon/GunWeapon.hpp"
+#include "Weapon/ShotgunWeapon.hpp"
+#include "Weapon/CircleWeapon.hpp"
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
 const int PlayScene::MapWidth = 20, PlayScene::MapHeight = 13;
@@ -64,14 +69,18 @@ void PlayScene::Initialize() {
     AddNewObject(TileMapGroup = new Group());
     AddNewObject(GroundEffectGroup = new Group());
     AddNewObject(DebugIndicatorGroup = new Group());
-    AddNewObject(TowerGroup = new Group());
+    
     AddNewObject(EnemyGroup = new Group());
     AddNewObject(BulletGroup = new Group());
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
+    AddNewObject(WeaponGroup = new Group());
+    WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
+    WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-        Player* newPlayer = new Player(100, 100, game.my_id);
+        Player* newPlayer = new Player(500, 500, game.my_id);
+        my_id = game.my_id;
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
         
@@ -85,7 +94,7 @@ void PlayScene::Initialize() {
     ConstructUI();
     imgTarget = new Engine::Image("play/target.png", 0, 0);
     imgTarget->Visible = false;
-    preview = nullptr;
+    // preview = nullptr;
     UIGroup->AddNewObject(imgTarget);
     // Preload Lose Scene
     deathBGMInstance = Engine::Resources::GetInstance().GetSampleInstance("astronomia.ogg");
