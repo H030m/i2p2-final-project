@@ -139,7 +139,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
 }
 void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
     if (!ctx->active) return;
-    // std::cerr<<"framesize "<<frame.dump().size()<<'\n';
+    std::cerr<<"framesize "<<frame.dump()<<'\n';
     std::string raw = frame.dump(); // ­ì©l JSON ¦r¦ê
     // std::cerr << "[send raw size]: " << raw.size() << " bytes\n";
     // std::cerr << "[send raw content]: " << raw << "\n";

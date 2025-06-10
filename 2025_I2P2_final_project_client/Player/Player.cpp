@@ -19,10 +19,16 @@ Player::Player(float x, float y) :
     
     SourceH = 32;
     SourceW = 32;
+
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    GameClient &sender = game.GetSender();
+    sender.output_json["player"] = {x, y};
 }
 
 
 void Player::Update(float deltaTime) {
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    GameClient &sender = game.GetSender();
     
     Engine::Point velocity(0, 0);
     
@@ -45,14 +51,15 @@ void Player::Update(float deltaTime) {
     const int mapWidth = PlayScene::MapWidth * PlayScene::BlockSize;
     const int mapHeight = PlayScene::MapHeight * PlayScene::BlockSize;
     
-    newX = std::max(0.0f, std::min(newX, (float)(mapWidth - Size.x)));
-    newY = std::max(0.0f, std::min(newY, (float)(mapHeight - Size.y)));
+    newX = std::max(0.0f, std::min(newX, (float)(mapWidth)));
+    newY = std::max(0.0f, std::min(newY, (float)(mapHeight)));
+
+    // Position.x = newX;
+    // Position.y = newY;
+
     
-
-    Position.x = newX;
-    Position.y = newY;
-
-
+    sender.output_json["player"] = {newX, newY};
+    std::cerr<<"hello "<<sender.output_json.dump()<<'\n';
     Sprite::Update(deltaTime);
 }
 
@@ -61,6 +68,7 @@ void Player::Draw() const {
 }
 // move by input_json
 void Player::OnKeyDown(int keyCode) {
+    std::cerr << "Key Down: " << keyCode << std::endl;
     switch (keyCode) {
         case ALLEGRO_KEY_UP:
         case ALLEGRO_KEY_W:

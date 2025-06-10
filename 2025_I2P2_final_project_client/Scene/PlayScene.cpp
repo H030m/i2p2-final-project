@@ -32,6 +32,7 @@
 #include "SubmitScene.hpp"
 #include "WinScene.hpp"
 #include "Map/Texture.hpp"
+#include "Player/Player.hpp"
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
 const int PlayScene::MapWidth = 20, PlayScene::MapHeight = 13;
@@ -68,6 +69,13 @@ void PlayScene::Initialize() {
     AddNewObject(BulletGroup = new Group());
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
+    {
+        Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+        Player* newPlayer = new Player(100, 100);
+        PlayerGroup->AddNewObject(newPlayer);
+        player_dict[game.my_id] = newPlayer;
+        
+    }
     // Should support buttons.
     AddNewControlObject(UIGroup = new Group());
     ReadMap();
@@ -94,6 +102,33 @@ void PlayScene::Terminate() {
 
 void PlayScene::Update(float deltaTime) {
     IScene::Update(deltaTime);
+    // update client's W, A, S, DAdd commentMore actions
+    // PlayerGroup->Update(deltaTime);
+
+    // // check new player join & update all players' position
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    GameClient &sender = game.GetSender();
+    for (auto [_id, client_info] : sender.input_json.items()) {
+        if (_id == "my_id") continue;
+        int id = std::stoi(_id);
+
+        // 確保有 player 欄位且為 array
+        if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 2)
+            continue;
+
+        float x = client_info["player"][0];
+        float y = client_info["player"][1];
+
+        auto it = player_dict.find(id);
+        if (it == player_dict.end()) {
+            Player* newPlayer = new Player(x, y);
+            PlayerGroup->AddNewObject(newPlayer);
+            player_dict[id] = newPlayer;
+        } else {
+            it->second->Position.x = x;
+            it->second->Position.y = y;
+        }
+    }
 }
 void PlayScene::Draw() const {
     IScene::Draw();
@@ -123,6 +158,16 @@ void PlayScene::OnMouseUp(int button, int mx, int my) {
 }
 void PlayScene::OnKeyDown(int keyCode) {
     IScene::OnKeyDown(keyCode);
+    for (auto n: PlayerGroup->GetObjects()) {
+        Player* player = dynamic_cast<Player*>(n);
+        player->OnKeyDown(keyCode);
+    }
+}
+void PlayScene::OnKeyUp(int keyCode) {
+    for (auto n: PlayerGroup->GetObjects()) {
+        Player* player = dynamic_cast<Player*>(n);
+        player->OnKeyUp(keyCode);
+    }
     
 }
 void PlayScene::Hit() {
@@ -150,7 +195,7 @@ void PlayScene::ReadMap() {
     json data;
     file >> data;
 
-    mapState = std::vector<std::vector<TileType>>(MapHeight, std::vector<TileType>(MapWidth));
+    mapState = std::vector<std::vector<TileType>>(MapHeight, std::vector<TileType>(MapWidth,TILE_DIRT));
     for (int i = 0; i < MapHeight; ++i) {
         for (int j = 0; j < MapWidth; ++j) {
             int linearIndex = i + j * MapHeight;
@@ -187,27 +232,24 @@ void PlayScene::ReadMap() {
 
             // Get (tileX, tileY) in tile sheet
             auto [tileX, tileY] = getTileCoord(i,j,mapState_2, MapHeight, MapWidth);
-            std::cerr<<"("<<tileX<<", "<<tileY<<") ";
+            
             const int TileWidth = 16;
             const int TileHeight = 16;
 
             // Create sprite and set source region
             auto* spr = new Engine::Sprite(
-                "play/grass.png",
+                "play/grass/" + std::to_string(tileY) + std::to_string(tileX) + ".png",
                 j * BlockSize, i * BlockSize,       // screen position
-                BlockSize, BlockSize,               // draw size
+                BlockSize,BlockSize,               // draw size
                 0, 0                                 // anchor top-left
             );
-            spr->SourceX = tileX * TileWidth;
-            spr->SourceY = tileY * TileHeight;
-            spr->SourceW = TileWidth;
-            spr->SourceH = TileHeight;
 
             TileMapGroup->AddNewObject(spr);
         }
         std::cerr<<'\n';
     }
         // std::cerr<<"h1\n";
+        // {
         //     auto [tileX, tileY] = std::make_pair(0,0);
         //     const int TileWidth = 16;
         //     const int TileHeight = 16;
@@ -216,17 +258,39 @@ void PlayScene::ReadMap() {
         //     auto* spr = new Engine::Sprite(
         //         "play/grass.png",
         //         1 * BlockSize, 1 * BlockSize,       // screen position
+        //         0, 0,               // draw size
+        //         0, 0                                 // anchor top-left
+        //     );
+        //  std::cerr<<"h3\n";
+        //     // spr->SourceX = 10;
+        //     // spr->SourceY = 0;
+        //     // spr->SourceW = 16;
+        //     // spr->SourceH = 16;
+
+        //     TileMapGroup->AddNewObject(spr);
+        //  std::cerr<<"h5\n";
+        // }
+        //  {
+        //     auto [tileX, tileY] = std::make_pair(2,0);
+        //     const int TileWidth = 16;
+        //     const int TileHeight = 16;
+
+        //     // Create sprite and set source region
+        //     auto* spr = new Engine::Sprite(
+        //         "play/grass.png",
+        //        3 * BlockSize, 1 * BlockSize,       // screen position
         //         BlockSize, BlockSize,               // draw size
         //         0, 0                                 // anchor top-left
         //     );
         //  std::cerr<<"h3\n";
-        //     spr->SourceX = tileX * TileWidth;
-        //     spr->SourceY = tileY * TileHeight;
+        //     spr->SourceX = 16;
+        //     spr->SourceY = 0;
         //     spr->SourceW = TileWidth;
         //     spr->SourceH = TileHeight;
 
         //     TileMapGroup->AddNewObject(spr);
         //  std::cerr<<"h5\n";
+        // }
 }
 void PlayScene::ReadEnemyWave() {
     std::string filename = std::string("Resource/enemy") + std::to_string(MapId) + ".txt";
@@ -249,58 +313,58 @@ void PlayScene::UIBtnClicked(int id) {
 }
 
 bool PlayScene::CheckSpaceValid(int x, int y) {
-    if (x < 0 || x >= MapWidth || y < 0 || y >= MapHeight)
-        return false;
-    auto map00 = mapState[y][x];
-    mapState[y][x] = TILE_OCCUPIED;
-    std::vector<std::vector<int>> map = CalculateBFSDistance();
-    mapState[y][x] = map00;
-    if (map[0][0] == -1)
-        return false;
-    for (auto &it : EnemyGroup->GetObjects()) {
-        Engine::Point pnt;
-        pnt.x = floor(it->Position.x / BlockSize);
-        pnt.y = floor(it->Position.y / BlockSize);
-        if (pnt.x < 0) pnt.x = 0;
-        if (pnt.x >= MapWidth) pnt.x = MapWidth - 1;
-        if (pnt.y < 0) pnt.y = 0;
-        if (pnt.y >= MapHeight) pnt.y = MapHeight - 1;
-        if (map[pnt.y][pnt.x] == -1)
-            return false;
-    }
-    // All enemy have path to exit.
-    mapState[y][x] = TILE_OCCUPIED;
-    mapDistance = map;
-    for (auto &it : EnemyGroup->GetObjects())
-        dynamic_cast<Enemy *>(it)->UpdatePath(mapDistance);
+    // if (x < 0 || x >= MapWidth || y < 0 || y >= MapHeight)
+    //     return false;
+    // auto map00 = mapState[y][x];
+    // mapState[y][x] = TILE_OCCUPIED;
+    // std::vector<std::vector<int>> map = CalculateBFSDistance();
+    // mapState[y][x] = map00;
+    // if (map[0][0] == -1)
+    //     return false;
+    // for (auto &it : EnemyGroup->GetObjects()) {
+    //     Engine::Point pnt;
+    //     pnt.x = floor(it->Position.x / BlockSize);
+    //     pnt.y = floor(it->Position.y / BlockSize);
+    //     if (pnt.x < 0) pnt.x = 0;
+    //     if (pnt.x >= MapWidth) pnt.x = MapWidth - 1;
+    //     if (pnt.y < 0) pnt.y = 0;
+    //     if (pnt.y >= MapHeight) pnt.y = MapHeight - 1;
+    //     if (map[pnt.y][pnt.x] == -1)
+    //         return false;
+    // }
+    // // All enemy have path to exit.
+    // mapState[y][x] = TILE_OCCUPIED;
+    // mapDistance = map;
+    // for (auto &it : EnemyGroup->GetObjects())
+    //     dynamic_cast<Enemy *>(it)->UpdatePath(mapDistance);
     return true;
 }
 std::vector<std::vector<int>> PlayScene::CalculateBFSDistance() {
-    // Reverse BFS to find path.
+    // // Reverse BFS to find path.
     std::vector<std::vector<int>> map(MapHeight, std::vector<int>(std::vector<int>(MapWidth, -1)));
-    std::queue<Engine::Point> que;
-    // Push end point.
-    // BFS from end point.
-    if (mapState[MapHeight - 1][MapWidth - 1] != TILE_DIRT)
-        return map;
-    que.push(Engine::Point(MapWidth - 1, MapHeight - 1));
-    map[MapHeight - 1][MapWidth - 1] = 0;
-    while (!que.empty()) {
-        Engine::Point p = que.front();
-        que.pop();
-        // TODO PROJECT-1 (1/1): Implement a BFS starting from the most right-bottom block in the map.
-        //               For each step you should assign the corresponding distance to the most right-bottom block.
-        //               mapState[y][x] is TILE_DIRT if it is empty.
-        int x[4] = {0,0,1,-1}, y[4] = {1,-1,0,0};
-        for(int i = 0; i < 4; i++){
-            int nx = x[i] + p.x, ny = y[i] + p.y;
-            if (nx < 0 || nx >= MapWidth || ny < 0 || ny >= MapHeight)
-                continue;
-            if(mapState[ny][nx] == TILE_DIRT && map[ny][nx] == -1){
-                map[ny][nx] = map[p.y][p.x] + 1;
-                que.push(Engine::Point(nx, ny));
-            }
-        }
-    }
+    // std::queue<Engine::Point> que;
+    // // Push end point.
+    // // BFS from end point.
+    // if (mapState[MapHeight - 1][MapWidth - 1] != TILE_DIRT)
+    //     return map;
+    // que.push(Engine::Point(MapWidth - 1, MapHeight - 1));
+    // map[MapHeight - 1][MapWidth - 1] = 0;
+    // while (!que.empty()) {
+    //     Engine::Point p = que.front();
+    //     que.pop();
+    //     // TODO PROJECT-1 (1/1): Implement a BFS starting from the most right-bottom block in the map.
+    //     //               For each step you should assign the corresponding distance to the most right-bottom block.
+    //     //               mapState[y][x] is TILE_DIRT if it is empty.
+    //     int x[4] = {0,0,1,-1}, y[4] = {1,-1,0,0};
+    //     for(int i = 0; i < 4; i++){
+    //         int nx = x[i] + p.x, ny = y[i] + p.y;
+    //         if (nx < 0 || nx >= MapWidth || ny < 0 || ny >= MapHeight)
+    //             continue;
+    //         if(mapState[ny][nx] == TILE_DIRT && map[ny][nx] == -1){
+    //             map[ny][nx] = map[p.y][p.x] + 1;
+    //             que.push(Engine::Point(nx, ny));
+    //         }
+    //     }
+    // }
     return map;
 }

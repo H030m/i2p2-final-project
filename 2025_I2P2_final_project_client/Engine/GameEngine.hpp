@@ -182,6 +182,7 @@ namespace Engine {
         // Connect
         GameClient sender;
         GameClient& GetSender();
+        int my_id;
     };
 }
 #endif   // GAMEENGINE_HPP
