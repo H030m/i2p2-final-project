@@ -49,7 +49,6 @@ void RemotePlayScene::Update(float deltaTime) {
     // }
 
     
-    // // std::cerr<<"hello1"<<'\n';
     // for(auto it:sender.input_json["image"]){
     //     if (it.is_null() || !it.contains("id")) {
     //         std::cerr << "[WARN] Invalid image entry skipped: " << it.dump() << "\n";

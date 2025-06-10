@@ -71,7 +71,7 @@ void PlayScene::Initialize() {
     AddNewObject(PlayerGroup = new Group());
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-        Player* newPlayer = new Player(100, 100);
+        Player* newPlayer = new Player(100, 100, game.my_id);
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
         
@@ -101,7 +101,7 @@ void PlayScene::Terminate() {
 }
 
 void PlayScene::Update(float deltaTime) {
-    IScene::Update(deltaTime);
+    
     // update client's W, A, S, DAdd commentMore actions
     // PlayerGroup->Update(deltaTime);
 
@@ -127,8 +127,11 @@ void PlayScene::Update(float deltaTime) {
         } else {
             it->second->Position.x = x;
             it->second->Position.y = y;
+            if(id == game.my_id)player_dict[id]->UpdateMyPlayer(deltaTime);
         }
+        
     }
+    IScene::Update(deltaTime);
 }
 void PlayScene::Draw() const {
     IScene::Draw();
