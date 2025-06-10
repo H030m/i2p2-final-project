@@ -275,7 +275,6 @@ namespace Engine {
     }
     void GameEngine::draw() const {
         activeScene->Draw();
-        std::cerr<<"filped\n";
         al_flip_display();
     }
     void GameEngine::destroy() {

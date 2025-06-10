@@ -55,6 +55,7 @@ public:
     Group *EnemyGroup;
     Group *EffectGroup;
     Group *UIGroup;
+    Group *PlayerGroup;
     Engine::Label *UIMoney;
     Engine::Label *UILives;
     Engine::Image *imgTarget;
@@ -86,7 +87,8 @@ public:
     void UIBtnClicked(int id);
     bool CheckSpaceValid(int x, int y);
     std::vector<std::vector<int>> CalculateBFSDistance();
-    // void ModifyReadMapTiles();
+    
+    int id_counter;
 };
 
 #endif   // PLAYSCENE_HPP

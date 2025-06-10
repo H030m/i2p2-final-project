@@ -55,6 +55,7 @@ public:
     nlohmann::json frame;
     std::vector<std::shared_ptr<ClientContext>> clients;
     std::mutex clientMutex;
+    int nextClientId = 1; 
 private:
 
     SOCKET serverSock;

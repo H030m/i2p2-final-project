@@ -17,12 +17,6 @@ namespace Engine {
         SourceH = GetBitmapHeight();
     }
     void Sprite::Draw() const {
-        std::cerr << "[SpriteDraw] id=" << id
-          << " Pos=(" << Position.x << "," << Position.y << ")"
-          << " Size=(" << Size.x << "," << Size.y << ")"
-          << " Anchor=(" << Anchor.x << "," << Anchor.y << ")"
-          << " SrcWH=(" << SourceW << "," << SourceH << ")"
-          << '\n';
 
         al_draw_tinted_scaled_rotated_bitmap_region(
             bmp.get(), SourceX, SourceY, SourceW, SourceH, Tint,
@@ -32,13 +26,6 @@ namespace Engine {
             Rotation, 0
         );
 
-        al_draw_rectangle(
-            Position.x - Size.x / 2,
-            Position.y - Size.y / 2,
-            Position.x + Size.x / 2,
-            Position.y + Size.y / 2,
-            al_map_rgb(255, 0, 0), 2
-        );
 
     }
     void Sprite::Update(float deltaTime) {

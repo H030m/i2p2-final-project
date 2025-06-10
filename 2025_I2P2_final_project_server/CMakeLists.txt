@@ -9,108 +9,11 @@ set(ALLEGRO_ROOT "C:/allegro")
 include_directories(.)
 include_directories(Resource)
 
-# 複製資源與 DLL
-file(COPY Resource/audios DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY Resource/fonts DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY Resource/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY Resource DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 file(COPY allegro_monolith-5.2.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(2025_I2P2_TowerDefense
-    Bullet/Bullet.cpp
-    Bullet/Bullet.hpp
-    Bullet/FireBullet.cpp
-    Bullet/FireBullet.hpp
-    Bullet/LaserBullet.cpp
-    Bullet/LaserBullet.hpp
-    Bullet/FireNetBullet.hpp
-    Bullet/FireNetBullet.cpp
     
-    # TODO HACKATHON-3 (3/3): Add the new enemy source files here
-    Enemy/Enemy.cpp
-    Enemy/Enemy.hpp
-    Enemy/SoldierEnemy.cpp
-    Enemy/SoldierEnemy.hpp
-    Enemy/TankEnemy.cpp
-    Enemy/TankEnemy.hpp
-    Enemy/PlaneEnemy.cpp
-    Enemy/PlaneEnemy.hpp
-    Enemy/BossEnemy.cpp
-    Enemy/BossEnemy.hpp
-    
-    Engine/Allegro5Exception.cpp
-    Engine/Allegro5Exception.hpp
-    Engine/AudioHelper.cpp
-    Engine/AudioHelper.hpp
-    Engine/Collider.cpp
-    Engine/Collider.hpp
-    Engine/GameEngine.cpp
-    Engine/GameEngine.hpp
-    Engine/Group.cpp
-    Engine/Group.hpp
-    Engine/IControl.cpp
-    Engine/IControl.hpp
-    Engine/IObject.cpp
-    Engine/IObject.hpp
-    Engine/IScene.cpp
-    Engine/IScene.hpp
-    Engine/LOG.cpp
-    Engine/LOG.hpp
-    Engine/Point.cpp
-    Engine/Point.hpp
-    Engine/Resources.cpp
-    Engine/Resources.hpp
-    Engine/Sprite.cpp
-    Engine/Sprite.hpp
-    
-    # TODO HACKATHON-2 (3/3): Add the new scene source files here OK
-    Scene/LoseScene.cpp
-    Scene/LoseScene.hpp
-    Scene/PlayScene.cpp
-    Scene/PlayScene.hpp
-    Scene/StageSelectScene.cpp
-    Scene/StageSelectScene.hpp
-    Scene/StartScene.cpp
-    Scene/StartScene.h
-    Scene/WinScene.cpp
-    Scene/WinScene.hpp
-    Scene/SettingsScene.cpp
-    Scene/ScoreboardScene.cpp
-    Scene/ScoreboardScene.hpp
-    Scene/SubmitScene.cpp
-    Scene/SubmitScene.hpp
- 
-    Turret/LaserTurret.cpp
-    Turret/LaserTurret.hpp
-    Turret/MachineGunTurret.cpp
-    Turret/MachineGunTurret.hpp
-    Turret/Turret.cpp
-    Turret/Turret.hpp
-    Turret/TurretButton.cpp
-    Turret/TurretButton.hpp
-    Turret/AbsorptionTurret.hpp
-    Turret/AbsorptionTurret.cpp
-    Turret/Shovel.cpp
-    Turret/Shovel.hpp
-
-    UI/Animation/DirtyEffect.cpp
-    UI/Animation/DirtyEffect.hpp
-    UI/Animation/ExplosionEffect.cpp
-    UI/Animation/ExplosionEffect.hpp
-    UI/Animation/Plane.cpp
-    UI/Animation/Plane.hpp
-
-    UI/Component/Image.cpp
-    UI/Component/Image.hpp
-    UI/Component/ImageButton.cpp
-    UI/Component/ImageButton.hpp
-    UI/Component/Label.cpp
-    UI/Component/Label.hpp
-    UI/Component/Slider.cpp
-    UI/Component/Slider.hpp
-    
-    Player/Player.hpp
-    Player/Player.cpp
     #Connecting
     Connect/RenderSender.hpp
     Connect/RenderSender.cpp

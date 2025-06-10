@@ -41,11 +41,15 @@ int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
 	Engine::GameEngine& game = Engine::GameEngine::GetInstance();
 	
-	
-    game.AddNewScene("RemotePlayScene", new RemotePlayScene);
-
-    game.Start("RemotePlayScene", 60, 1600, 832);
-	
+	game.AddNewScene("stage-select", new StageSelectScene());
+	game.AddNewScene("play", new PlayScene());
+	game.AddNewScene("lose", new LoseScene());
+	game.AddNewScene("win", new WinScene());
+	game.AddNewScene("settings", new SettingsScene());
+	game.AddNewScene("scoreboard-scene", new ScoreboardScene());
+	game.AddNewScene("submit-scene", new SubmitScene());
+	game.AddNewScene("start", new StartScene());
+	game.Start("start", 60, 1600, 832);
 	
 	return 0;
 }

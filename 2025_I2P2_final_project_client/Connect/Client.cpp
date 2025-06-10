@@ -66,7 +66,7 @@ void GameClient::recvOnce() {
             }
         }
         input_json = latest;
-        std::cerr << "recv: " << latest.dump().size() << '\n';
+        // std::cerr << "recv: " << latest.dump().size() << '\n';
     } catch (const std::exception& e) {
         std::cerr << "[recvOnce] error: " << e.what() << '\n';
     }

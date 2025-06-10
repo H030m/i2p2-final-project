@@ -33,7 +33,9 @@ RenderSender::~RenderSender() {
     }
 }
 
+
 void RenderSender::start() {
+    // accept
     std::thread([this]() {
         std::cout << "Client accept thread started.\n";
         while (true) {
@@ -45,13 +47,59 @@ void RenderSender::start() {
             auto context = std::make_shared<ClientContext>();
             context->socket = clientSock;
 
+            // give a client id
+            context->id = nextClientId++;
+            std::cout << "Client connected with ID: " << context->id << "\n";
+
             {
                 std::lock_guard<std::mutex> lock(clientMutex);
                 clients.push_back(context);
             }
         }
     }).detach();
+
+   
+    using namespace std::chrono;
+    const auto interval = milliseconds(1000 / TARGET_FPS);
+
+    while (true) {
+        auto start_time = steady_clock::now();
+
+        // 1. recv from all client
+        {
+            std::lock_guard<std::mutex> lock(clientMutex);
+            for (auto& ctx : clients) {
+                if (ctx->active)
+                    recvOnce(ctx);
+            }
+
+            // 2. collect all data
+            frame.clear();
+            for (auto& ctx : clients) {
+                if (ctx->active) {
+                    frame[std::to_string(ctx->id)] = ctx->lastInput;
+                }
+            }
+
+            // 3. send to all clients
+            for (auto& ctx : clients) {
+                if (ctx->active){
+                    frame["my_id"] = ctx->id;
+                    sendOnce(ctx);
+                }
+                    
+            }
+
+            cleanupInactiveClients();
+        }
+
+        
+        auto elapsed = steady_clock::now() - start_time;
+        if (elapsed < interval)
+            std::this_thread::sleep_for(interval - elapsed);
+    }
 }
+
 char buffer[1000000];
 void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
     

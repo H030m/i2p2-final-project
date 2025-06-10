@@ -115,6 +115,12 @@ add_executable(2025_I2P2_TowerDefense
     Connect/Client.cpp
     Connect/Client.hpp
 
+    Player/Player.cpp
+    Player/Player.hpp
+
+    # map
+    Map/Texture.hpp
+    Map/Texture.cpp
     main.cpp
 )
 include(FetchContent)
