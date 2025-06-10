@@ -36,6 +36,8 @@
 #include "Player/Player.hpp"
 #include "Weapon/Weapon.hpp"
 #include "Weapon/GunWeapon.hpp"
+#include "Weapon/ShotgunWeapon.hpp"
+#include "Weapon/CircleWeapon.hpp"
 
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
@@ -74,10 +76,11 @@ void PlayScene::Initialize() {
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(WeaponGroup = new Group());
-    WeaponGroup->AddNewObject(new GunWeapon(100, 100));
+    WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
+    WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-        Player* newPlayer = new Player(100, 100, game.my_id);
+        Player* newPlayer = new Player(500, 500, game.my_id);
         my_id = game.my_id;
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;

@@ -53,4 +53,5 @@ void Weapon::Update(float deltaTime) {
 
 void Weapon::Draw() const {
     Sprite::Draw();
+
 }
