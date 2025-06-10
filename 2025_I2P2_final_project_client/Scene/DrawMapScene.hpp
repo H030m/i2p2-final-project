@@ -18,7 +18,7 @@ namespace Engine {
     class Sprite;
 }   // namespace Engine
 
-class PlayScene final : public Engine::IScene {
+class DrawMapScene final : public Engine::IScene {
 private:
     enum TileType {
         TILE_DIRT,

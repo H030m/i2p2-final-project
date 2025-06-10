@@ -21,14 +21,41 @@ Player::Player(float x, float y) :
     SourceW = 32;
 
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-    GameClient sender = game.GetSender();
+    GameClient &sender = game.GetSender();
     sender.output_json["player"] = {x, y};
-    
 }
 
 
+Player::Player(float x, float y, int id):id(id), 
+    speed(250.0f), 
+    health(100), 
+    maxHealth(100),
+    movingUp(false), 
+    movingDown(false), 
+    movingLeft(false), 
+    movingRight(false),Engine::Sprite("play/Player/mPlayer_ [human].png", x, y,0,0) {
+    
+    Position = Engine::Point(x, y);
+    Size = Engine::Point(128, 128);
+    
+    SourceH = 32;
+    SourceW = 32;
+
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    GameClient &sender = game.GetSender();
+    sender.output_json["player"] = {x, y};
+}
+
 void Player::Update(float deltaTime) {
-    std::cerr << "Player::Update called. movingUp: " << movingUp << ", movingDown: " << movingDown << ", movingLeft: " << movingLeft << ", movingRight: " << movingRight << "\n";
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    GameClient &sender = game.GetSender();
+    if(game.my_id == id)
+    sender.output_json["player"] = {Position.x, Position.y};
+
+}
+
+void Player::UpdateMyPlayer(float deltaTime) {
+    
     Engine::Point velocity(0, 0);
     
     if (movingUp) velocity.y -= speed;
@@ -53,21 +80,13 @@ void Player::Update(float deltaTime) {
     newX = std::max(0.0f, std::min(newX, (float)(mapWidth)));
     newY = std::max(0.0f, std::min(newY, (float)(mapHeight)));
     
-
-    Position.x = newX;
-    Position.y = newY;
-
-    // Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-    // GameClient &sender = game.GetSender();
-    // sender.output_json["player"] = {newX, newY};
-    // std::cerr<<"hello "<<sender.output_json.dump()<<'\n';
-    Sprite::Update(deltaTime);
+    Position.x = newX, Position.y = newY;
 }
 
 void Player::Draw() const {
     Sprite::Draw();
 }
-
+// move by input_json
 void Player::OnKeyDown(int keyCode) {
     std::cerr << "Key Down: " << keyCode << std::endl;
     switch (keyCode) {

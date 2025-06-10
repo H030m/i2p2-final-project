@@ -15,11 +15,12 @@ public:
     int health;
     float speed;
     int maxHealth;
-
+    Engine::Point nextPosition;
 
     Player(float x, float y);
-
+    Player(float x, float y, int id);
     void Update(float deltaTime) override;
+    void UpdateMyPlayer(float deltaTime);
     void Draw() const override;
     
 

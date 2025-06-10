@@ -71,7 +71,7 @@ Engine::GameEngine::GameEngine():sender(){
             std::cerr<<"cannot connect!!\n";
             exit(1);
         }
-
+        
     };  
 namespace Engine {
 
@@ -255,7 +255,7 @@ namespace Engine {
     void GameEngine::update(float deltaTime) {
       
         sender.recvOnce();
-    
+        my_id = sender.input_json["my_id"];
         
         if (!nextScene.empty()) {
             changeScene(nextScene);
@@ -268,7 +268,7 @@ namespace Engine {
         
         //give a type
         sender.output_json["type"] = "input";
-        std::cerr<<"hello "<<sender.output_json.dump()<<'\n';
+        
         sender.sendOnce();
         
         sender.output_json.clear(); 
