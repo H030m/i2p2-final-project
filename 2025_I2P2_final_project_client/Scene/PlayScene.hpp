@@ -10,7 +10,8 @@
 #include "Engine/Point.hpp"
 #include <unordered_map>
 #include "Player/Player.hpp"
-class Turret;
+// class Turret;
+class Weapon;
 namespace Engine {
     class Group;
     class Image;
@@ -53,16 +54,17 @@ public:
     Group *GroundEffectGroup;
     Group *DebugIndicatorGroup;
     Group *BulletGroup;
-    Group *TowerGroup;
+    // Group *TowerGroup;
     Group *EnemyGroup;
     Group *EffectGroup;
     Group *UIGroup;
     Group *PlayerGroup;
+    Group *WeaponGroup;
     Engine::Label *UIMoney;
     Engine::Label *UILives;
     Engine::Image *imgTarget;
     Engine::Sprite *dangerIndicator;
-    Turret *preview;
+    // Turret *preview;
     std::vector<std::vector<TileType>> mapState;
     std::vector<std::vector<int>> mapDistance;
     std::list<std::pair<int, float>> enemyWaveData;
@@ -92,6 +94,7 @@ public:
     std::vector<std::vector<int>> CalculateBFSDistance();
     
     int id_counter;
+    int my_id;
 };
 
 #endif   // PLAYSCENE_HPP

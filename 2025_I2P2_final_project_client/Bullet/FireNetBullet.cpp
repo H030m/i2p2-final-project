@@ -9,9 +9,9 @@
 #include "Scene/PlayScene.hpp"
 #include "UI/Animation/DirtyEffect.hpp"
 
-class Turret;
+class Weapon;
 
-FireNetBullet::FireNetBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Turret *parent) : Bullet("play/fire-net.png", 800, 0, position, forwardDirection, rotation - ALLEGRO_PI / 2, parent) {
+FireNetBullet::FireNetBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent) : Bullet("play/fire-net.png", 800, 0, position, forwardDirection, rotation - ALLEGRO_PI / 2, parent) {
     poison = true;
 }
 void FireNetBullet::OnExplode(Enemy *enemy) {

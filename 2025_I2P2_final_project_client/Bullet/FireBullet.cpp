@@ -9,11 +9,12 @@
 #include "Scene/PlayScene.hpp"
 #include "UI/Animation/DirtyEffect.hpp"
 
-class Turret;
+class Weapon;
 
-FireBullet::FireBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Turret *parent) : Bullet("play/bullet-1.png", 1100, 20, position, forwardDirection, rotation - ALLEGRO_PI / 2, parent) {
+FireBullet::FireBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent) : Bullet("play/bullet-1.png", 1100, 20, position, forwardDirection, rotation - ALLEGRO_PI / 2, parent) {
 
 }
+
 
 void FireBullet::OnExplode(Enemy *enemy) {
     std::random_device dev;

@@ -26,4 +26,4 @@ public:
     void Update(float deltaTime) override;
     void Draw() const override;
 };
-#endif   // Weapon_HPP
+#endif   // WEAPON_HPP
