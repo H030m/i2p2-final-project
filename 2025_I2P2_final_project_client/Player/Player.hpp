@@ -15,7 +15,7 @@ public:
     int health;
     float speed;
     int maxHealth;
-
+    Engine::Point nextPosition;
 
     Player(float x, float y);
     Player(float x, float y, int id);
