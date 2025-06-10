@@ -173,9 +173,7 @@ void PlayScene::ReadMap() {
         }
     }
     for (int i = 0; i < MapHeight; ++i) {
-        std::cerr<<"\n";
         for (int j = 0; j < MapWidth; ++j) {
-            std::cerr<<mapState_2[i][j]<<' ';
             int linearIndex = i + j * MapHeight;
             std::string key = std::to_string(linearIndex);
 
@@ -189,6 +187,7 @@ void PlayScene::ReadMap() {
 
             // Get (tileX, tileY) in tile sheet
             auto [tileX, tileY] = getTileCoord(i,j,mapState_2, MapHeight, MapWidth);
+            std::cerr<<"("<<tileX<<", "<<tileY<<") ";
             const int TileWidth = 16;
             const int TileHeight = 16;
 
@@ -206,6 +205,7 @@ void PlayScene::ReadMap() {
 
             TileMapGroup->AddNewObject(spr);
         }
+        std::cerr<<'\n';
     }
         // std::cerr<<"h1\n";
         //     auto [tileX, tileY] = std::make_pair(0,0);
