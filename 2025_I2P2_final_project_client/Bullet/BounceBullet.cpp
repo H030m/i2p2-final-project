@@ -12,8 +12,9 @@
 class Weapon;
 
 BounceBullet::BounceBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent)
-     : Bullet("play/bullet-4.png", 300, 10, position, forwardDirection, rotation, nullptr) {
+     : Bullet("play/bouncebullet.png", 300, 10, position, forwardDirection, rotation, nullptr) {
     bounce_time = 0;
+    Size.x = 64, Size.y = 64;
 }
 
 void BounceBullet::Update(float deltaTime) {
@@ -27,7 +28,7 @@ void BounceBullet::Update(float deltaTime) {
 
     bool bounced = false;
 
-    // ¹w´ú¤U¤@´V¦ì¸m
+    // ï¿½wï¿½ï¿½ï¿½Uï¿½@ï¿½Vï¿½ï¿½m
     Engine::Point nextPos = Position + Velocity * deltaTime;
 
     if (nextPos.x - CollisionRadius < topLeft.x) {

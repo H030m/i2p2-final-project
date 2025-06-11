@@ -82,9 +82,9 @@ void PlayScene::Initialize() {
 
     ReadMap();
 
-    WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
     WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
-    WeaponGroup->AddNewObject(new GunWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new GunWeapon(100, 100));
     WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
@@ -214,17 +214,17 @@ void PlayScene::Draw() const {
 void PlayScene::RenderVisibleTiles() const {
     auto visibleArea = camera->GetVisibleTileArea(BlockSize);
     
-    // ¥u´è¬V¥i¨£ªº¥Ë¤ù
+    // ï¿½uï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½ï¿½ï¿½Ë¤ï¿½
     for (auto obj : TileMapGroup->GetObjects()) {
         Engine::Sprite* sprite = dynamic_cast<Engine::Sprite*>(obj);
         if (!sprite) continue;
         
-        // ÀË¬d¥Ë¤ù¬O§_¦b¥i¨£½d³ò¤º
+        // ï¿½Ë¬dï¿½Ë¤ï¿½ï¿½Oï¿½_ï¿½bï¿½iï¿½ï¿½ï¿½dï¿½ï¿½
         if (camera->IsInView(sprite->Position, BlockSize)) {
-            // ±N¥@¬É®y¼ÐÂà´«¬°¿Ã¹õ®y¼Ð
+            // ï¿½Nï¿½@ï¿½É®yï¿½ï¿½ï¿½à´«ï¿½ï¿½ï¿½Ã¹ï¿½ï¿½yï¿½ï¿½
             Engine::Point screenPos = camera->WorldToScreen(sprite->Position);
             
-            // ¼È®É­×§ïºëÆF¦ì¸m¶i¦æ´è¬V
+            // ï¿½È®É­×§ï¿½ï¿½ï¿½Fï¿½ï¿½mï¿½iï¿½ï¿½ï¿½V
             Engine::Point originalPos = sprite->Position;
             sprite->Position = screenPos;
             sprite->Draw();
@@ -234,7 +234,7 @@ void PlayScene::RenderVisibleTiles() const {
 }
 
 void PlayScene::RenderVisibleObjects() const {
-    // ´è¬V¥i¨£ªº¹CÀ¸ª«¥ó
+    // ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     std::vector<Group*> renderGroups = {
         GroundEffectGroup, DebugIndicatorGroup, EnemyGroup, 
         BulletGroup, EffectGroup, PlayerGroup, WeaponGroup

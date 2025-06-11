@@ -11,8 +11,8 @@
 
 class Weapon;
 
-FireBullet::FireBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent) : Bullet("play/bullet-1.png", 1100, 20, position, forwardDirection, rotation - ALLEGRO_PI / 2, parent) {
-
+FireBullet::FireBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent) : Bullet("play/Bullet_1.png", 1100, 20, position, forwardDirection, rotation + ALLEGRO_PI / 2, parent) {
+    Size.x = 32; Size.y = 32;
 }
 
 void FireBullet::OnExplode(Enemy *enemy) {

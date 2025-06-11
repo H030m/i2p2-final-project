@@ -31,23 +31,24 @@ void Weapon::Update(float deltaTime) {
     al_get_mouse_state(&mouseState);
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
 
-    // 1. ¥ý±N¿Ã¹õ®y¼ÐÁY©ñ¬°¹CÀ¸®y¼Ð¡]³B²z¥þ¿Ã¹õ/©ñ¤jÁY¤p¡^Add commentMore actions
+    // 1. ï¿½ï¿½ï¿½Nï¿½Ã¹ï¿½ï¿½yï¿½ï¿½ï¿½Yï¿½ñ¬°¹Cï¿½ï¿½ï¿½yï¿½Ð¡]ï¿½Bï¿½zï¿½ï¿½ï¿½Ã¹ï¿½/ï¿½ï¿½jï¿½Yï¿½pï¿½^Add commentMore actions
     float screenX = mouseState.x / ((float)al_get_display_width(game.display) / game.screenW);
     float screenY = mouseState.y / ((float)al_get_display_height(game.display) / game.screenH);
 
-    // 2. ¥Î Camera §â¿Ã¹õ®y¼ÐÂà¬°¥@¬É®y¼Ð
+    // 2. ï¿½ï¿½ Camera ï¿½ï¿½Ã¹ï¿½ï¿½yï¿½ï¿½ï¿½à¬°ï¿½@ï¿½É®yï¿½ï¿½
     Engine::Point worldMousePos = getPlayScene()->GetCamera()->ScreenToWorld(Engine::Point(screenX, screenY));
 
-    // 3. ­pºâ»PªZ¾¹ªº¶ZÂ÷¤è¦V¡]¥@¬É®y¼Ð¤U¡^
+    // 3. ï¿½pï¿½ï¿½Pï¿½Zï¿½ï¿½ï¿½ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½Vï¿½]ï¿½@ï¿½É®yï¿½Ð¤Uï¿½^
     float dx = worldMousePos.x - Position.x;
     float dy = worldMousePos.y - Position.y;
 
-    this->Rotation = atan2(dy, dx);
-    this->Rotation = atan2(dy, dx) + ALLEGRO_PI / 2;
+    this->angle = atan2(dy, dx) + ALLEGRO_PI / 2;
+    this->Rotation = atan2(dy, dx) + ALLEGRO_PI + delta;
+    // while (Rotation < 2 * ALLEGRO_PI) Rotation -= 2*ALLEGRO_PI;
+
     if (!aim_front) {
         this->Rotation += ALLEGRO_PI;
     }
-
 
     //create bullet
     if ((mouseState.buttons & 1) && reload <= 0) {

@@ -19,7 +19,7 @@ namespace Engine {
         std::string img_path;
         int id; // <-- Unique id for each Image
         static int id_counter; // <-- Static variable, +1 per construction
-        bool Flip; // <-- flip ???
+        int Flip; // <-- flip ???
         // Rotation angle in radians.
         float Rotation;
         // Pixel in seconds.

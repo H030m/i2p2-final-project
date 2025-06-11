@@ -51,8 +51,8 @@ void Player::Update(float deltaTime) {
 
     if (movingDown || movingUp || movingLeft || movingRight) {
         status = PLAYER_WALK;
-        if (movingLeft && !movingRight) Flip = true;
-        else if (movingRight && !movingLeft) Flip = false;
+        if (movingLeft && !movingRight) Flip = 1;
+        else if (movingRight && !movingLeft) Flip = 0;
     }
     else {
         status = PLAYER_IDLE;
