@@ -22,7 +22,8 @@ add_executable(2025_I2P2_TowerDefense
     Bullet/LaserBullet.cpp Bullet/LaserBullet.hpp
     Bullet/FireNetBullet.cpp Bullet/FireNetBullet.hpp
     Bullet/OrbitBullet.hpp Bullet/OrbitBullet.cpp
-    
+    Bullet/BounceBullet.hpp Bullet/BounceBullet.cpp
+
     Enemy/Enemy.cpp Enemy/Enemy.hpp
     Enemy/SoldierEnemy.cpp Enemy/SoldierEnemy.hpp
     Enemy/TankEnemy.cpp Enemy/TankEnemy.hpp
@@ -80,6 +81,7 @@ add_executable(2025_I2P2_TowerDefense
     Weapon/GunWeapon.hpp Weapon/GunWeapon.cpp
     Weapon/CircleWeapon.hpp Weapon/CircleWeapon.cpp
     Weapon/ShotgunWeapon.hpp Weapon/ShotgunWeapon.cpp
+    Weapon/BounceWeapon.hpp Weapon/BounceWeapon.cpp
     main.cpp
 )
 

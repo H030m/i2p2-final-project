@@ -58,16 +58,40 @@ void DrawMapScene::Update(float deltaTime) {
     // // check new player join & update all players' position
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
-    
-    player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
-    IScene::Update(deltaTime);
+    for (auto [_id, client_info] : sender.input_json.items()) {
+        if (_id == "my_id") continue;
+        int id = std::stoi(_id);
 
+        if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 3 || client_info["player"][2] != -1)
+            continue;
+
+        float x = client_info["player"][0];
+        float y = client_info["player"][1];
+
+        auto it = player_dict.find(id);
+        if (it == player_dict.end()) {
+            Player* newPlayer = new Player(x, y);
+            PlayerGroup->AddNewObject(newPlayer);
+            player_dict[id] = newPlayer;
+        } else {
+            if(id == game.my_id)continue;
+            it->second->Position.x = x;
+            it->second->Position.y = y;
+        }
+        
+    }
+    // update myself
+    if (player_dict.find(game.my_id) != player_dict.end()) {
+        player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
+        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, -1};
+    }
     // preview
     if (preview) {
         preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
         // To keep responding when paused.
         preview->Update(deltaTime);
     }
+    IScene::Update(deltaTime);
 }
 void DrawMapScene::Draw() const {
     IScene::Draw();

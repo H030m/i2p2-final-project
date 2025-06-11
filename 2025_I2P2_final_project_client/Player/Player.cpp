@@ -22,7 +22,7 @@ Player::Player(float x, float y) :
 
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
-    sender.output_json["player"] = {x, y};
+    
 }
 
 
@@ -43,14 +43,11 @@ Player::Player(float x, float y, int id):id(id),
 
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
-    sender.output_json["player"] = {x, y};
 }
 
 void Player::Update(float deltaTime) {
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
-    if(game.my_id == id)
-    sender.output_json["player"] = {Position.x, Position.y};
 }
 
 void Player::UpdateMyPlayer(float deltaTime) {
@@ -87,6 +84,7 @@ void Player::Draw() const {
 }
 // move by input_json
 void Player::OnKeyDown(int keyCode) {
+    std::cerr << "Key Down: " << keyCode << std::endl;
     switch (keyCode) {
         case ALLEGRO_KEY_UP:
         case ALLEGRO_KEY_W:
