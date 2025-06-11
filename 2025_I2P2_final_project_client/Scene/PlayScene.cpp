@@ -39,6 +39,8 @@
 #include "Weapon/ShotgunWeapon.hpp"
 #include "Weapon/CircleWeapon.hpp"
 #include "Weapon/BounceWeapon.hpp"
+#include "Camera/Camera.hpp"
+
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
 const int PlayScene::MapWidth = 20, PlayScene::MapHeight = 13;
@@ -55,8 +57,9 @@ const std::vector<int> PlayScene::code = {
 };
 
 Engine::Point PlayScene::GetClientSize() {
-    return Engine::Point(MapWidth * BlockSize, MapHeight * BlockSize);
+    return Engine::Point(MapWidth * BlockSize,  MapHeight * BlockSize);
 }
+
 void PlayScene::Initialize() {
     mapState.clear();
     keyStrokes.clear();
@@ -76,10 +79,10 @@ void PlayScene::Initialize() {
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(WeaponGroup = new Group());
-    // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
-    // WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
-    // WeaponGroup->AddNewObject(new GunWeapon(100, 100));
-    // WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
+    WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
+    WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
+    WeaponGroup->AddNewObject(new GunWeapon(100, 100));
+    WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(500, 500, game.my_id);
@@ -87,7 +90,12 @@ void PlayScene::Initialize() {
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
         
+        // camera
+        Engine::Point clientSize = GetClientSize();
+        camera = std::make_unique<Camera>(clientSize.x, clientSize.y);
+        camera->SetTarget(newPlayer->Position);
     }
+
     // Should support buttons.
     AddNewControlObject(UIGroup = new Group());
     ReadMap();
@@ -175,11 +183,17 @@ void PlayScene::Update(float deltaTime) {
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
         sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state};
     }
-    
+    camera->SetTarget(player_dict[my_id]->Position);
+    camera->Update(deltaTime);
     IScene::Update(deltaTime);
 }
 void PlayScene::Draw() const {
-    IScene::Draw();
+    // IScene::Draw();
+    RenderVisibleTiles();
+    RenderVisibleObjects();
+
+    UIGroup->Draw();
+
     if (DebugMode) {
         // Draw reverse BFS distance on all reachable blocks.
         for (int i = 0; i < MapHeight; i++) {
@@ -194,6 +208,49 @@ void PlayScene::Draw() const {
         }
     }
 }
+
+void PlayScene::RenderVisibleTiles() const {
+    auto visibleArea = camera->GetVisibleTileArea(BlockSize);
+    
+    // 只渲染可見的瓦片
+    for (auto obj : TileMapGroup->GetObjects()) {
+        Engine::Sprite* sprite = dynamic_cast<Engine::Sprite*>(obj);
+        if (!sprite) continue;
+        
+        // 檢查瓦片是否在可見範圍內
+        if (camera->IsInView(sprite->Position, BlockSize)) {
+            // 將世界座標轉換為螢幕座標
+            Engine::Point screenPos = camera->WorldToScreen(sprite->Position);
+            
+            // 暫時修改精靈位置進行渲染
+            Engine::Point originalPos = sprite->Position;
+            sprite->Position = screenPos;
+            sprite->Draw();
+            sprite->Position = originalPos;
+        }
+    }
+}
+
+void PlayScene::RenderVisibleObjects() const {
+    // 渲染可見的遊戲物件
+    std::vector<Group*> renderGroups = {
+        GroundEffectGroup, DebugIndicatorGroup, EnemyGroup, 
+        BulletGroup, EffectGroup, PlayerGroup, WeaponGroup
+    };
+    
+    for (Group* group : renderGroups) {
+        for (auto obj : group->GetObjects()) {
+            if (camera->IsInView(obj->Position, 64)) { 
+                Engine::Point screenPos = camera->WorldToScreen(obj->Position);
+                Engine::Point originalPos = obj->Position;
+                obj->Position = screenPos;
+                obj->Draw();
+                obj->Position = originalPos;
+            }
+        }
+    }
+}
+
 void PlayScene::OnMouseDown(int button, int mx, int my) {
     IScene::OnMouseDown(button, mx, my);
 }

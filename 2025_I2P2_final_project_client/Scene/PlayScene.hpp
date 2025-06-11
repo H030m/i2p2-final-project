@@ -10,6 +10,8 @@
 #include "Engine/Point.hpp"
 #include <unordered_map>
 #include "Player/Player.hpp"
+#include "Camera/Camera.hpp"
+
 class Weapon;
 namespace Engine {
     class Group;
@@ -26,7 +28,11 @@ private:
         TILE_OCCUPIED,
     };
     ALLEGRO_SAMPLE_ID bgmId;
-    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> deathBGMInstance;
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> deathBGMInstance;\
+
+    std::unique_ptr<Camera> camera;
+    void RenderVisibleTiles() const;
+    void RenderVisibleObjects() const;
 
 protected:
     int lives;
@@ -91,6 +97,8 @@ public:
     bool CheckSpaceValid(int x, int y);
     std::vector<std::vector<int>> CalculateBFSDistance();
     
+    Camera* GetCamera() const { return camera.get(); }
+
     int id_counter;
     int my_id;
 };
