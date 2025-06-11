@@ -76,10 +76,10 @@ void PlayScene::Initialize() {
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(WeaponGroup = new Group());
-    WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
-    WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
-    WeaponGroup->AddNewObject(new GunWeapon(100, 100));
-    WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new GunWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(500, 500, game.my_id);

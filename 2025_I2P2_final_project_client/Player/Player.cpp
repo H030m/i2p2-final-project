@@ -48,6 +48,45 @@ Player::Player(float x, float y, int id):id(id),
 void Player::Update(float deltaTime) {
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
+
+    if (movingDown || movingUp || movingLeft || movingRight) {
+        status = PLAYER_WALK;
+        if (movingLeft && !movingRight) Flip = true;
+        else if (movingRight && !movingLeft) Flip = false;
+    }
+    else {
+        status = PLAYER_IDLE;
+    }
+
+    // animation 
+    SourceW = 32; SourceH = 32;
+    animation_tick += deltaTime;
+
+    switch(status) {
+        case(PLAYER_WALK) :
+            SourceY = 32 * 6;
+            if (animation_tick >= 0.1f) {
+                animation_tick = 0;
+                // add 32
+                SourceX += SourceW;
+            }
+
+            // totally n pitcure (0 -> 32 -> 64 -> ...)
+            if (SourceX >= 256) // 32 * n 
+                SourceX = 0;
+            break;
+
+        case(PLAYER_IDLE) :
+            SourceY = 32 * 1;
+            if (animation_tick >= 0.2f) {
+                animation_tick = 0;
+                SourceX += SourceW;
+            }
+
+            if (SourceX >= 128) 
+                SourceX = 0;
+            break;
+    }
 }
 
 void Player::UpdateMyPlayer(float deltaTime) {

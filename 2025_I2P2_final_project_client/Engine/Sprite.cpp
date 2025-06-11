@@ -15,6 +15,7 @@ namespace Engine {
         // id = id_counter++;
         SourceW = GetBitmapWidth();
         SourceH = GetBitmapHeight();
+        Flip = false;
     }
     void Sprite::Draw() const {
 
@@ -23,7 +24,7 @@ namespace Engine {
             Anchor.x * SourceW, Anchor.y * SourceH,
             Position.x, Position.y,
             Size.x / SourceW, Size.y / SourceH,
-            Rotation, 0
+            Rotation, Flip
         );
 
 
