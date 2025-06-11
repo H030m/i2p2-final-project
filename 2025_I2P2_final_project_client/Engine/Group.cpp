@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <utility>
+#include <iostream>
 
 #include "Group.hpp"
 #include "IControl.hpp"
@@ -72,6 +73,7 @@ namespace Engine {
         for (auto it = controls.begin(); it != controls.end();) {
             auto preIt = it++;
             preIt->second->OnMouseMove(mx, my);
+            
         }
     }
     void Group::OnMouseScroll(int mx, int my, int delta) {

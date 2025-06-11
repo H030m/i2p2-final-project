@@ -20,6 +20,7 @@
 #include "UI/Animation/DirtyEffect.hpp"
 #include "UI/Component/Label.hpp"
 #include "Map/Texture.hpp"
+#include "Map/TextureButton.hpp"
 
 const int DrawMapScene::MapWidth = 30, DrawMapScene::MapHeight = 30;
 const int DrawMapScene::BlockSize = 64;
@@ -34,10 +35,17 @@ void DrawMapScene::Initialize() {
         player_dict[game.my_id] = newPlayer;
     }
 
+    //DrawUI
+    preview = nullptr;
+    imgTarget = new Engine::Image("play/target.png", 0, 0);
+    imgTarget->Visible = false;
     ConstructUI();
+
+    //Map
     nlohmann::json tile = { {"Tile", "G"} };
     MapState.resize(MapHeight, std::vector<nlohmann::json>(MapWidth,tile));
     ReadMap();
+
 }
 
 void DrawMapScene::Terminate() {
@@ -50,39 +58,34 @@ void DrawMapScene::Update(float deltaTime) {
     // // check new player join & update all players' position
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
-    for (auto [_id, client_info] : sender.input_json.items()) {
-        if (_id == "my_id") continue;
-        int id = std::stoi(_id);
-
-        if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 2)
-            continue;
-
-        float x = client_info["player"][0];
-        float y = client_info["player"][1];
-
-        auto it = player_dict.find(id);
-        if (it == player_dict.end()) {
-            Player* newPlayer = new Player(x, y);
-            PlayerGroup->AddNewObject(newPlayer);
-            player_dict[id] = newPlayer;
-        } else {
-            if(id == game.my_id)continue;
-            it->second->Position.x = x;
-            it->second->Position.y = y;
-        }
-        
-    }
+    
     player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
     IScene::Update(deltaTime);
+
+    // preview
+    if (preview) {
+        preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
+        // To keep responding when paused.
+        preview->Update(deltaTime);
+    }
 }
 void DrawMapScene::Draw() const {
     IScene::Draw();
 }
 void DrawMapScene::OnMouseDown(int button, int mx, int my) {
-    IScene::OnMouseMove(mx, my);
+    IScene::OnMouseDown(button, mx, my);
 }
 void DrawMapScene::OnMouseMove(int mx, int my) {
     IScene::OnMouseMove(mx, my);
+    const int x = mx / BlockSize;
+    const int y = my / BlockSize;
+    if (!preview || x < 0 || x >= MapWidth || y < 0 || y >= MapHeight) {
+        imgTarget->Visible = false;
+        return;
+    }
+    imgTarget->Visible = true;
+    imgTarget->Position.x = x * BlockSize;
+    imgTarget->Position.y = y * BlockSize;
 }
 
 void DrawMapScene::OnMouseUp(int button, int mx, int my) {
@@ -137,10 +140,35 @@ void DrawMapScene::ReadMap(){
 
             TileMapGroup->AddNewObject(spr);
         }
-        std::cerr<<'\n';
     }
 }
 
 void DrawMapScene::ConstructUI() {
+    UIGroup->AddNewObject(new Engine::Image("play/sand.png", 1280, 0, 320, 832));
 
+    TextureButton *btn;
+    btn = new TextureButton("play/floor.png", "play/dirt.png",
+                           Engine::Sprite("play/grass/03.png", 1294 + 5, 80 + 5, BlockSize-10, BlockSize-10, 0, 0), 1294, 80);
+    // Reference: Class Member Function Pointer and std::bind.
+    // UIBtnClicked(0);
+    btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 0));
+    UIGroup->AddNewControlObject(btn);
+}
+
+void DrawMapScene::UIBtnClicked(int id){
+    if(preview) {
+        UIGroup->RemoveObject(preview->GetObjectIterator());
+    }
+    if(id == 0) {
+        preview = new Engine::Sprite("play/grass/03.png", 100, 100, BlockSize, BlockSize);
+    }
+
+
+    if(!preview)
+        return;
+
+    preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
+    preview->Tint = al_map_rgba(255, 255, 255, 200);
+    UIGroup->AddNewObject(preview);
+    OnMouseMove(Engine::GameEngine::GetInstance().GetMousePosition().x, Engine::GameEngine::GetInstance().GetMousePosition().y);
 }

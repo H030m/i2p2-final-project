@@ -106,8 +106,6 @@ void recvCompressedJson(socket_t sock, nlohmann::json& outJson) {
     if (ret <= 0) throw std::runtime_error("Connection closed or error (reading length)");
     uint32_t data_len = ntohl(net_len);
     std::string buffer(data_len, 0);
-    std::cerr << "[recv compressed size]: " << net_len << "\n";
-    std::cerr << "[actual received]: " << ret << "\n";
     int received = 0;
 
     while (received < (int)data_len) {

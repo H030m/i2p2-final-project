@@ -193,6 +193,7 @@ namespace Engine {
                         event.mouse.x /= ((float)al_get_display_width(display) / screenW);
                         event.mouse.y /= ((float)al_get_display_height(display) / screenH);
                     #endif
+                    
                     LOG(VERBOSE) << "Mouse button " << event.mouse.button << " down at (" << event.mouse.x << ", " << event.mouse.y << ")";
                     activeScene->OnMouseDown(event.mouse.button, event.mouse.x, event.mouse.y);
 

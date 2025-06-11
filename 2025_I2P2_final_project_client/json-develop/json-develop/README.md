@@ -505,7 +505,7 @@ j.emplace_back(1.78);
 
 // iterate the array
 for (json::iterator it = j.begin(); it != j.end(); ++it) {
-  std::cout << *it << '\n';
+  std::cout << *it << ;
 }
 
 // range-based for

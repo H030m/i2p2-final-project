@@ -1,6 +1,6 @@
 #include <functional>
 #include <memory>
-
+#include <iostream>
 #include "Engine/Collider.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Point.hpp"
@@ -19,6 +19,7 @@ namespace Engine {
         OnClickCallback = onClickCallback;
     }
     void ImageButton::OnMouseDown(int button, int mx, int my) {
+            
         if ((button & 1) && mouseIn && Enabled) {
             if (OnClickCallback)
                 OnClickCallback();

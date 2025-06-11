@@ -11,7 +11,7 @@
 #include "Engine/Point.hpp"
 #include <unordered_map>
 #include "Player/Player.hpp"
-
+#include "Engine/Sprite.hpp"
 class Turret;
 namespace Engine {
     class Group;
@@ -39,6 +39,9 @@ public:
     Group *TileMapGroup;
     Group *UIGroup;
 
+    Engine::Sprite * preview;
+    Engine::Image *imgTarget;
+    
     explicit DrawMapScene() = default;
     void Initialize() override;
     void Terminate() override;
@@ -51,6 +54,7 @@ public:
     void OnKeyUp(int keyCode) override;
     void ReadMap();
     void ConstructUI();
+    void UIBtnClicked(int id);
 };
 
 #endif   // PLAYSCENE_HPP
