@@ -42,8 +42,9 @@ void Weapon::Update(float deltaTime) {
     float dx = worldMousePos.x - Position.x;
     float dy = worldMousePos.y - Position.y;
 
-    this->Rotation = atan2(dy, dx);
-    this->Rotation = atan2(dy, dx) + ALLEGRO_PI / 2;
+    this->angle = atan2(dy, dx) + ALLEGRO_PI / 2;
+    this->Rotation = atan2(dy, dx) + ALLEGRO_PI + delta;
+    // while (Rotation < 2 * ALLEGRO_PI) Rotation -= 2*ALLEGRO_PI;
     if (!aim_front) {
         this->Rotation += ALLEGRO_PI;
     }

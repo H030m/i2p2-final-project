@@ -25,7 +25,6 @@ Player::Player(float x, float y) :
     
 }
 
-
 Player::Player(float x, float y, int id):id(id), 
     speed(250.0f), 
     health(100), 
@@ -45,14 +44,34 @@ Player::Player(float x, float y, int id):id(id),
     GameClient &sender = game.GetSender();
 }
 
+Player::Player(float x, float y, int id, int MapWidth, int MapHeight):id(id), 
+    speed(250.0f), 
+    health(100), 
+    maxHealth(100),
+    movingUp(false), 
+    movingDown(false), 
+    movingLeft(false), 
+    movingRight(false),Engine::Sprite("play/Player/mPlayer_ [human].png", x, y,0,0),
+    MapWidth(MapWidth),MapHeight(MapHeight) {
+    
+    Position = Engine::Point(x, y);
+    Size = Engine::Point(128, 128);
+    
+    SourceH = 32;
+    SourceW = 32;
+
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    GameClient &sender = game.GetSender();
+}
+
 void Player::Update(float deltaTime) {
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
 
     if (movingDown || movingUp || movingLeft || movingRight) {
         status = PLAYER_WALK;
-        if (movingLeft && !movingRight) Flip = true;
-        else if (movingRight && !movingLeft) Flip = false;
+        if (movingLeft && !movingRight) Flip = 1;
+        else if (movingRight && !movingLeft) Flip = 0;
     }
     else {
         status = PLAYER_IDLE;
@@ -109,8 +128,8 @@ void Player::UpdateMyPlayer(float deltaTime) {
     float newY = Position.y + velocity.y * deltaTime;
     
 
-    const int mapWidth = PlayScene::MapWidth * PlayScene::BlockSize;
-    const int mapHeight = PlayScene::MapHeight * PlayScene::BlockSize;
+    const int mapWidth = MapWidth * BlockSize;
+    const int mapHeight = MapHeight * BlockSize;
     
     newX = std::max(0.0f, std::min(newX, (float)(mapWidth)));
     newY = std::max(0.0f, std::min(newY, (float)(mapHeight)));

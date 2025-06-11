@@ -22,6 +22,7 @@
 #include "Map/Texture.hpp"
 #include "Map/TextureButton.hpp"
 #include "UI/Component/ImageButton.hpp"
+#include "Camera/Camera.hpp"
 const int DrawMapScene::MapWidth = 50, DrawMapScene::MapHeight = 50;
 const int DrawMapScene::BlockSize = 64;
 const Engine::Point TileSize(65,65);
@@ -36,11 +37,14 @@ void DrawMapScene::Initialize() {
     AddNewControlObject(UIGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(ObstacleGroup = new Group());
+    AddNewObject(LabelGroup = new Group);
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-        Player* newPlayer = new Player(100, 100, game.my_id);
+        Player* newPlayer = new Player(100, 100, game.my_id, MapWidth, MapHeight);
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
+        camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
+        camera->SetTarget(newPlayer->Position);
     }
 
     //DrawUI
@@ -48,6 +52,7 @@ void DrawMapScene::Initialize() {
     imgTarget = new Engine::Image("play/target.png", 0, 0);
     imgTarget->Size = Engine::Point(64,64);
     imgTarget->Visible = false;
+    imgTarget->fixed = true;
     UIGroup->AddNewObject(imgTarget);
     ConstructUI();
 
@@ -113,10 +118,13 @@ void DrawMapScene::Update(float deltaTime) {
         // To keep responding when paused.
         preview->Update(deltaTime);
     }
+    camera->SetTarget(player_dict[game.my_id]->Position);
+    camera->Update(deltaTime);
     IScene::Update(deltaTime);
 }
 void DrawMapScene::Draw() const {
-    IScene::Draw();
+    RenderVisibleTiles();
+    RenderVisibleObjects();
 }
 void DrawMapScene::OnMouseDown(int button, int mx, int my) {
     if ((button & 1) && !imgTarget->Visible && preview) {
@@ -130,6 +138,7 @@ void DrawMapScene::OnMouseMove(int mx, int my) {
     IScene::OnMouseMove(mx, my);
     const int x = mx / BlockSize;
     const int y = my / BlockSize;
+   
     if (!preview || x < 0 || x >= 20 || y < 0 || y >= 13) {
         imgTarget->Visible = false;
         return;
@@ -141,9 +150,11 @@ void DrawMapScene::OnMouseMove(int mx, int my) {
 
 void DrawMapScene::OnMouseUp(int button, int mx, int my) {
     IScene::OnMouseUp(button, mx, my);
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     if (imgTarget->Visible) {
-        const int x = mx / BlockSize;
-        const int y = my / BlockSize;
+        Engine::Point worldPos = camera->ScreenToWorld(Engine::Point(mx, my));
+int x = worldPos.x / BlockSize;
+int y = worldPos.y / BlockSize;
         nlohmann::json tile = {
             {"Tile", {
                 {"file_name", filename},
@@ -153,12 +164,14 @@ void DrawMapScene::OnMouseUp(int button, int mx, int my) {
                 {"h", tileH}
             }}
         };
+        
         if(preview) {
             //grass
             if(preview->id == 0){
-                tile["Tile"]["x"] = rand()%(Xgap-2) + 2 + Xgap*0;
-                tile["Tile"]["y"] = rand()%(Ygap) + 0 + Ygap*0;
-                MapState[y][x] = tile;
+                MapState[y][x]["Tile"]["x"] = rand()%(Xgap-2) + 2 + Xgap*0;
+                MapState[y][x]["Tile"]["y"] = rand()%(Ygap) + 0 + Ygap*0;
+                MapState[y][x]["Tile"]["w"] = tileW;
+                MapState[y][x]["Tile"]["h"] = tileH;
                 TileMapGroup->RemoveObject(Tile_dict[y + x * MapHeight]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Tile"]["file_name"],
@@ -176,9 +189,10 @@ void DrawMapScene::OnMouseUp(int button, int mx, int my) {
             }
             //sand
             if(preview->id == 1){
-                tile["Tile"]["x"] = rand()%(Xgap-2) + 2 + Xgap*1;
-                tile["Tile"]["y"] = rand()%(Ygap) + 0 + Ygap*0;
-                MapState[y][x] = tile;
+                MapState[y][x]["Tile"]["x"] = rand()%(Xgap-2) + 2 + Xgap*1;
+                MapState[y][x]["Tile"]["y"] = rand()%(Ygap) + 0 + Ygap*0;
+                MapState[y][x]["Tile"]["w"] = tileW;
+                MapState[y][x]["Tile"]["h"] = tileH;
                 TileMapGroup->RemoveObject(Tile_dict[y + x * MapHeight]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Tile"]["file_name"],
@@ -196,9 +210,10 @@ void DrawMapScene::OnMouseUp(int button, int mx, int my) {
             }
             //stone
             if(preview->id == 2){
-                tile["Tile"]["x"] = rand()%(Xgap-2) + 2 + Xgap*1;
-                tile["Tile"]["y"] = rand()%(Ygap) + 0 + Ygap*1;
-                MapState[y][x] = tile;
+                MapState[y][x]["Tile"]["x"] = rand()%(Xgap-2) + 2 + Xgap*1;
+                MapState[y][x]["Tile"]["y"] = rand()%(Ygap) + 0 + Ygap*1;
+                MapState[y][x]["Tile"]["w"] = tileW;
+                MapState[y][x]["Tile"]["h"] = tileH;
                 TileMapGroup->RemoveObject(Tile_dict[y + x * MapHeight]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Tile"]["file_name"],
@@ -312,7 +327,10 @@ void DrawMapScene::ReadMap(){
 }
 
 void DrawMapScene::ConstructUI() {
-    UIGroup->AddNewObject(new Engine::Image("play/sand.png", 1280, 0, 320, 832));
+    Engine::Image * sand = new Engine::Image("play/sand.png", 1280, 0, 320, 832);
+    sand->fixed = true;
+    UIGroup->AddNewObject(sand);
+
     {
         TextureButton *btn;
         //texture 1 grass
@@ -323,6 +341,7 @@ void DrawMapScene::ConstructUI() {
         btn->TileTexture.SourceW = tileW;
         btn->TileTexture.SourceX = (7 + Xgap*0) * tileW;
         btn->TileTexture.SourceY = (0 + Ygap*0) * tileH;
+        btn->fixed = true;
         // Reference: Class Member Function Pointer and std::bind.
         // UIBtnClicked(0);
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 0));
@@ -336,6 +355,7 @@ void DrawMapScene::ConstructUI() {
         btn->TileTexture.SourceW = tileW;
         btn->TileTexture.SourceX = (7 + Xgap*1) * tileW;
         btn->TileTexture.SourceY = (0 + Ygap*0) * tileH;
+        btn->fixed = true;
         // Reference: Class Member Function Pointer and std::bind.
         // UIBtnClicked(0);
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 1));
@@ -349,6 +369,7 @@ void DrawMapScene::ConstructUI() {
         btn->TileTexture.SourceW = tileW;
         btn->TileTexture.SourceX = (7 + Xgap*1) * tileW;
         btn->TileTexture.SourceY = (0 + Ygap*1) * tileH;
+        btn->fixed = true;
         // Reference: Class Member Function Pointer and std::bind.
         // UIBtnClicked(0);
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 2));
@@ -362,6 +383,7 @@ void DrawMapScene::ConstructUI() {
         btn->TileTexture.SourceW = tileW;
         btn->TileTexture.SourceX = (1 + Xgap*1) * tileW;
         btn->TileTexture.SourceY = (0 + Ygap*0) * tileH;
+        btn->fixed = true;
         // Reference: Class Member Function Pointer and std::bind.
         // UIBtnClicked(0);
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 3));
@@ -375,6 +397,7 @@ void DrawMapScene::ConstructUI() {
         btn->TileTexture.SourceW = tileW;
         btn->TileTexture.SourceX = (0 + Xgap*0) * tileW;
         btn->TileTexture.SourceY = (0 + Ygap*0) * tileH;
+        btn->fixed = true;
         // Reference: Class Member Function Pointer and std::bind.
         // UIBtnClicked(0);
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 4));
@@ -383,16 +406,23 @@ void DrawMapScene::ConstructUI() {
     {
         //Save button
         Engine::ImageButton *btn;
+        Engine::Label *lab;
         btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 1294, 750, 100, 50);
+        btn->fixed = true;
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -2));
-        AddNewControlObject(btn);
-        AddNewObject(new Engine::Label("Save", "pirulen.ttf", 24, 1294+50, 750 + 25, 0, 0, 0, 255, 0.5, 0.5));
+        UIGroup->AddNewControlObject(btn);
+        lab = new Engine::Label("Save", "pirulen.ttf", 24, 1294+50, 750 + 25, 0, 0, 0, 255, 0.5, 0.5);
+        lab->fixed = true;
+        UIGroup->AddNewObject(lab);
         
         //leave button
         btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 1294 + 150, 750, 100, 50);
+        btn->fixed = true;
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -3));
-        AddNewControlObject(btn);
-        AddNewObject(new Engine::Label("Exit", "pirulen.ttf", 24, 1294+50 + 150, 750 + 25, 0, 0, 0, 255, 0.5, 0.5));
+        UIGroup->AddNewControlObject(btn);
+        lab = new Engine::Label("Exit", "pirulen.ttf", 24, 1294+50 + 150, 750 + 25, 0, 0, 0, 255, 0.5, 0.5);
+        lab->fixed = true;
+        UIGroup->AddNewObject(lab);
     }
 }
 
@@ -458,11 +488,11 @@ void DrawMapScene::UIBtnClicked(int id){
     }
     if(!preview)
         return;
-
+    preview->fixed = true;
     preview->Position = Engine::GameEngine::GetInstance().GetMousePosition();
     preview->Tint = al_map_rgba(255, 255, 255, 200);
     UIGroup->AddNewObject(preview);
-    OnMouseMove(Engine::GameEngine::GetInstance().GetMousePosition().x, Engine::GameEngine::GetInstance().GetMousePosition().y);
+    
 }
 
 
@@ -482,4 +512,50 @@ void DrawMapScene::SaveMapStateToFile(const std::string& path) {
     std::cerr<<output.dump(4)<<'\n';
     fout.close();
     std::cerr << "MapState saved to " << path << '\n';
+}
+
+void DrawMapScene::RenderVisibleTiles() const {
+    auto visibleArea = camera->GetVisibleTileArea(BlockSize);
+    
+    // 只渲染可見的瓦片
+    for (auto obj : TileMapGroup->GetObjects()) {
+        Engine::Sprite* sprite = dynamic_cast<Engine::Sprite*>(obj);
+        if (!sprite) continue;
+        
+        // 檢查瓦片是否在可見範圍內
+        if (camera->IsInView(sprite->Position, BlockSize)) {
+            // 將世界座標轉換為螢幕座標
+            Engine::Point screenPos = camera->WorldToScreen(sprite->Position);
+            
+            // 暫時修改精靈位置進行渲染
+            Engine::Point originalPos = sprite->Position;
+            sprite->Position = screenPos;
+            sprite->Draw();
+            sprite->Position = originalPos;
+        }
+    }
+}
+
+void DrawMapScene::RenderVisibleObjects() const {
+    std::vector<Group*> renderGroups = {
+         PlayerGroup,ObstacleGroup, UIGroup,LabelGroup
+    };
+    
+    for (Group* group : renderGroups) {
+        for (auto obj : group->GetObjects()) {
+            if(!obj->Visible)continue;
+            if(obj->fixed){
+                obj->Draw();
+                continue;
+            }
+            if (camera->IsInView(obj->Position, 64)) { 
+                Engine::Point screenPos = camera->WorldToScreen(obj->Position);
+                Engine::Point originalPos = obj->Position;
+                obj->Position = screenPos;
+                obj->Draw();
+                obj->Position = originalPos;
+            }
+        }
+    }
+   
 }

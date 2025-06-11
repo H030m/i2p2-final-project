@@ -18,6 +18,9 @@ protected:
     PlayScene *getPlayScene();
     // Reference: Design Patterns - Factory Method.
     virtual void CreateBullet() = 0;
+    float angle;
+    float delta = 0;
+    float animation_tick;
 public:
     bool aim_front = 1;
     bool Enabled = true;

@@ -82,13 +82,13 @@ void PlayScene::Initialize() {
 
     ReadMap();
 
-    WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
     WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
-    WeaponGroup->AddNewObject(new GunWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new GunWeapon(100, 100));
     WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-        Player* newPlayer = new Player(500, 500, game.my_id);
+        Player* newPlayer = new Player(500, 500, game.my_id,MapWidth, MapHeight);
         my_id = game.my_id;
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;

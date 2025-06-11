@@ -16,7 +16,7 @@ typedef enum Player_Status {
 class Player : public Engine::Sprite {
 private:
     bool movingUp, movingDown, movingLeft, movingRight;
-    
+    int MapWidth,BlockSize = 64,MapHeight;
 public:
     int id;
     int health;
@@ -27,6 +27,7 @@ public:
     Player_Status status;
     Player(float x, float y);
     Player(float x, float y, int id);
+    Player(float x, float y, int id, int MapWidth, int MapHeight);
     void Update(float deltaTime) override;
     void UpdateMyPlayer(float deltaTime);
     void Draw() const override;

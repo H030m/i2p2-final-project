@@ -12,8 +12,9 @@
 class Weapon;
 
 BounceBullet::BounceBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent)
-     : Bullet("play/bullet-4.png", 300, 10, position, forwardDirection, rotation, nullptr) {
+     : Bullet("play/bouncebullet.png", 300, 10, position, forwardDirection, rotation, nullptr) {
     bounce_time = 0;
+     Size.x = 64, Size.y = 64;
 }
 
 void BounceBullet::Update(float deltaTime) {

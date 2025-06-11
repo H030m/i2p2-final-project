@@ -6,5 +6,6 @@ class GunWeapon : public Weapon {
 public:
     GunWeapon(float x, float y);
     void CreateBullet() override;
+    void Update(float deltaTime) override; 
 };
 #endif   // GUNWEAPON_HPP

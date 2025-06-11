@@ -33,7 +33,6 @@ void Camera::Update(float deltaTime) {
 
     position.x = std::max(minX, std::min(position.x,maxX));
     position.y = std::max(minY, std::min(position.y,maxY));
-    std::cerr<<"target"<<' '<<targetPosition.x<<' '<<targetPosition.y<<' '<<"position "<<position.x<<' '<<position.y<<" margin "<<margin.x<<' '<<margin.y<<' '<<minX<<' '<<maxX<<' '<<minY<<' '<<maxY<<'\n';
 }
 
 Engine::Point Camera::WorldToScreen(const Engine::Point& worldPos) const {

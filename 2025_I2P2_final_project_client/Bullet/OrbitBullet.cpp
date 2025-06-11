@@ -5,11 +5,12 @@
 #include "UI/Animation/DirtyEffect.hpp"
 
 OrbitBullet::OrbitBullet(float initAngle, float radius, float angularSpeed, Player* centerPlayer)
-    : Bullet("play/bullet-2.png", 0, 0, Engine::Point(0, 0), Engine::Point(0, 0), 0, nullptr),
+    : Bullet("play/orbitbullet.png", 0, 0, Engine::Point(0, 0), Engine::Point(0, 0), 0, nullptr),
       angle(initAngle), radius(radius), angularSpeed(angularSpeed), centerPlayer(centerPlayer) {
     // ªì©l¤Æ¦ì¸m
     Position.x = centerPlayer->Position.x + radius * cos(angle);
     Position.y = centerPlayer->Position.y + radius * sin(angle);
+    Size.x = 48, Size.y = 48;
 }
 
 void OrbitBullet::Update(float deltaTime) {
