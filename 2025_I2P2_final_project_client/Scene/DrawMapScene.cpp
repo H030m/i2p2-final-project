@@ -30,10 +30,12 @@ const int tileY = 0;
 const int tileW = 32, tileH = 32;
 const int Xgap = 8, Ygap = 2;
 std::string filename = "play/grass/grounds.png";
+std::string obstacle_filename = "play/grass/terrain.png";
 void DrawMapScene::Initialize() {
     AddNewObject(TileMapGroup = new Group());
     AddNewControlObject(UIGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
+    AddNewObject(ObstacleGroup = new Group());
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(100, 100, game.my_id);
@@ -212,6 +214,56 @@ void DrawMapScene::OnMouseUp(int button, int mx, int my) {
                 TileMapGroup->AddNewObject(spr);
                 Tile_dict[y + x * MapHeight] = spr;
             }
+            // stone obstacle
+            if(preview->id == 3){
+                
+                MapState[y][x]["Obstacle"]["x"] = rand()%(3) + 0 + Xgap*1;
+                MapState[y][x]["Obstacle"]["y"] = rand()%(3) * Ygap;
+                MapState[y][x]["Obstacle"]["w"] = tile["Tile"]["w"];
+                MapState[y][x]["Obstacle"]["h"] = tile["Tile"]["h"];
+                MapState[y][x]["Obstacle"]["file_name"] = obstacle_filename;
+                MapState[y][x]["Obstacle"]["Penetrable"] = false;
+                if(Obstacle_dict.count(y + x*MapHeight))
+                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                auto* spr = new Engine::Sprite(
+                    MapState[y][x]["Obstacle"]["file_name"],
+                    x * BlockSize, y * BlockSize,       // screen position
+                    0,0,               // draw size
+                    0,0                               // anchor top-left
+                );
+                spr->Size = TileSize;
+                spr->SourceH = (float)MapState[y][x]["Obstacle"]["h"] - 2;
+                spr->SourceW = (float)MapState[y][x]["Obstacle"]["w"] - 2;
+                spr->SourceX = (float)MapState[y][x]["Obstacle"]["w"]  * (float)MapState[y][x]["Obstacle"]["x"] + 1;
+                spr->SourceY = (float)MapState[y][x]["Obstacle"]["h"]  * (float)MapState[y][x]["Obstacle"]["y"] + 1;
+                ObstacleGroup->AddNewObject(spr);
+                Obstacle_dict[y + x * MapHeight] = spr;
+            }
+            // tree obstacle
+            if(preview->id == 4){
+                
+                MapState[y][x]["Obstacle"]["x"] = rand()%(7) + 0 + Xgap*0;
+                MapState[y][x]["Obstacle"]["y"] = rand()%(4) + rand()%2*(2.0/1.5 + 4);
+                MapState[y][x]["Obstacle"]["w"] = tile["Tile"]["w"];
+                MapState[y][x]["Obstacle"]["h"] = (float)tile["Tile"]["h"]*1.5;
+                MapState[y][x]["Obstacle"]["file_name"] = "play/grass/vegetation.png";
+                MapState[y][x]["Obstacle"]["Penetrable"] = false;
+                if(Obstacle_dict.count(y + x*MapHeight))
+                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                auto* spr = new Engine::Sprite(
+                    MapState[y][x]["Obstacle"]["file_name"],
+                    x * BlockSize, y * BlockSize-(32),       // screen position
+                    0,0,               // draw size
+                    0,0                               // anchor top-left
+                );
+                spr->Size = Engine::Point(64,64*1.5);
+                spr->SourceH = (float)MapState[y][x]["Obstacle"]["h"] - 2;
+                spr->SourceW = (float)MapState[y][x]["Obstacle"]["w"] - 2;
+                spr->SourceX = (float)MapState[y][x]["Obstacle"]["w"]  * (float)MapState[y][x]["Obstacle"]["x"] + 1;
+                spr->SourceY = (float)MapState[y][x]["Obstacle"]["h"]  * (float)MapState[y][x]["Obstacle"]["y"] + 1;
+                ObstacleGroup->AddNewObject(spr);
+                Obstacle_dict[y + x * MapHeight] = spr;
+            }
         }
     }
     
@@ -301,6 +353,32 @@ void DrawMapScene::ConstructUI() {
         // UIBtnClicked(0);
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 2));
         UIGroup->AddNewControlObject(btn);
+        
+        // texture 4 stone -> can't penetrate
+        btn = new TextureButton("play/floor.png", "play/dirt.png",
+                            Engine::Sprite("play/grass/terrain.png", 1294 + 5 + 0, 80 + 5 + 100, 0, 0, 0, 0), 1294 + 0, 80 + 100);
+        btn->TileTexture.Size = Engine::Point(54,54);
+        btn->TileTexture.SourceH = tileH;
+        btn->TileTexture.SourceW = tileW;
+        btn->TileTexture.SourceX = (1 + Xgap*1) * tileW;
+        btn->TileTexture.SourceY = (0 + Ygap*0) * tileH;
+        // Reference: Class Member Function Pointer and std::bind.
+        // UIBtnClicked(0);
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 3));
+        UIGroup->AddNewControlObject(btn);
+
+        // texture 5 tree -> can't penetrate
+        btn = new TextureButton("play/floor.png", "play/dirt.png",
+                            Engine::Sprite("play/grass/vegetation.png", 1294 + 5 + 0 + 100, 80 + 5 + 100, 0, 0, 0, 0), 1294 + 0 + 100, 80 + 100);
+        btn->TileTexture.Size = Engine::Point(54,54);
+        btn->TileTexture.SourceH = tileH;
+        btn->TileTexture.SourceW = tileW;
+        btn->TileTexture.SourceX = (0 + Xgap*0) * tileW;
+        btn->TileTexture.SourceY = (0 + Ygap*0) * tileH;
+        // Reference: Class Member Function Pointer and std::bind.
+        // UIBtnClicked(0);
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 4));
+        UIGroup->AddNewControlObject(btn);
     }
     {
         //Save button
@@ -314,7 +392,7 @@ void DrawMapScene::ConstructUI() {
         btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 1294 + 150, 750, 100, 50);
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -3));
         AddNewControlObject(btn);
-        AddNewObject(new Engine::Label("Save", "pirulen.ttf", 24, 1294+50 + 150, 750 + 25, 0, 0, 0, 255, 0.5, 0.5));
+        AddNewObject(new Engine::Label("Exit", "pirulen.ttf", 24, 1294+50 + 150, 750 + 25, 0, 0, 0, 255, 0.5, 0.5));
     }
 }
 
@@ -353,6 +431,24 @@ void DrawMapScene::UIBtnClicked(int id){
         preview->SourceW = tileW;
         preview->SourceX = (7 + Xgap*1) * tileH;
         preview->SourceY = (0 + Ygap*1) * tileW;
+    }
+    if(id == 3){
+        preview = new Engine::Sprite("play/grass/terrain.png", 100, 100, 0, 0, 0.5, 0.5, 0, 0, 0, 255, 255, 255, 50);
+        preview->id = 3;
+        preview->Size = TileSize;
+        preview->SourceH = tileH;
+        preview->SourceW = tileW;
+        preview->SourceX = (1 + Xgap*1) * tileH;
+        preview->SourceY = (0 + Ygap*0) * tileW;
+    }
+    if(id == 4){
+        preview = new Engine::Sprite("play/grass/vegetation.png", 100, 100, 0, 0, 0.5, 0.5, 0, 0, 0, 255, 255, 255, 50);
+        preview->id = 4;
+        preview->Size = TileSize;
+        preview->SourceH = tileH;
+        preview->SourceW = tileW;
+        preview->SourceX = (0 + Xgap*0) * tileH;
+        preview->SourceY = (0 + Ygap*0) * tileW;
     }
     if(id == -2){
         SaveMapStateToFile("Resource/map2.json");

@@ -35,12 +35,13 @@ protected:
 public:
     std::unordered_map<int, Player*> player_dict;
     std::unordered_map<int, Engine::Sprite*> Tile_dict;
+    std::unordered_map<int, Engine::Sprite*> Obstacle_dict;
     std::vector<std::vector<nlohmann::json>>MapState;
     std::vector<std::vector<int>>mapState_2;
     Group *PlayerGroup;
     Group *TileMapGroup;
     Group *UIGroup;
-
+    Group *ObstacleGroup;
     Engine::Sprite * preview;
     Engine::Image *imgTarget;
 
