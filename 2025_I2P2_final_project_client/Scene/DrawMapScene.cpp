@@ -22,7 +22,7 @@
 #include "Map/Texture.hpp"
 #include "Map/TextureButton.hpp"
 #include "UI/Component/ImageButton.hpp"
-const int DrawMapScene::MapWidth = 100, DrawMapScene::MapHeight = 100;
+const int DrawMapScene::MapWidth = 50, DrawMapScene::MapHeight = 50;
 const int DrawMapScene::BlockSize = 64;
 const Engine::Point TileSize(65,65);
 const int tileX = 7; 
@@ -303,11 +303,18 @@ void DrawMapScene::ConstructUI() {
         UIGroup->AddNewControlObject(btn);
     }
     {
+        //Save button
         Engine::ImageButton *btn;
         btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 1294, 750, 100, 50);
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -2));
         AddNewControlObject(btn);
-        AddNewObject(new Engine::Label("Save", "pirulen.ttf", 24, 1294+50, 750 + 20, 0, 0, 0, 255, 0.5, 0.5));
+        AddNewObject(new Engine::Label("Save", "pirulen.ttf", 24, 1294+50, 750 + 25, 0, 0, 0, 255, 0.5, 0.5));
+        
+        //leave button
+        btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 1294 + 150, 750, 100, 50);
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -3));
+        AddNewControlObject(btn);
+        AddNewObject(new Engine::Label("Save", "pirulen.ttf", 24, 1294+50 + 150, 750 + 25, 0, 0, 0, 255, 0.5, 0.5));
     }
 }
 
@@ -350,7 +357,9 @@ void DrawMapScene::UIBtnClicked(int id){
     if(id == -2){
         SaveMapStateToFile("Resource/map2.json");
     }
-
+    if(id == -3){
+        Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    }
     if(!preview)
         return;
 

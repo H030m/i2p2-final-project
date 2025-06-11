@@ -7,7 +7,6 @@ private:
     Engine::Point position;
     Engine::Point viewportSize;
     Engine::Point targetPosition;
-<<<<<<< HEAD
     Engine::Point margin;
     float smoothing;
     
@@ -36,35 +35,6 @@ public:
     bool IsInView(const Engine::Point& worldPos, float objectRadius = 0) const;
     
     // ����i�����a�Ͻd��
-=======
-    float smoothing;
-    
-public:
-    Camera(float viewportWidth, float viewportHeight);
-    
-    // 設置攝像機目標位置（通常是角色位置）
-    void SetTarget(const Engine::Point& target);
-    
-    // 更新攝像機位置（平滑跟隨）
-    void Update(float deltaTime);
-    
-    // 獲取攝像機位置
-    Engine::Point GetPosition() const { return position; }
-    
-    // 獲取視口大小
-    Engine::Point GetViewportSize() const { return viewportSize; }
-    
-    // 世界座標轉換為螢幕座標
-    Engine::Point WorldToScreen(const Engine::Point& worldPos) const;
-    
-    // 螢幕座標轉換為世界座標
-    Engine::Point ScreenToWorld(const Engine::Point& screenPos) const;
-    
-    // 檢查物件是否在攝像機視野內
-    bool IsInView(const Engine::Point& worldPos, float objectRadius = 0) const;
-    
-    // 獲取可見的地圖範圍
->>>>>>> 99b35bcf769e3dedb1dc8ef8dc6a0985c2d7badc
     struct VisibleArea {
         int minX, maxX, minY, maxY;
     };

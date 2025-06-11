@@ -13,10 +13,6 @@
 #include "Scene/PlayScene.hpp"
 #include "Weapon.hpp"
 #include "Camera/Camera.hpp"
-<<<<<<< HEAD
-=======
-
->>>>>>> 99b35bcf769e3dedb1dc8ef8dc6a0985c2d7badc
 PlayScene* Weapon::getPlayScene() {
    return dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetActiveScene());
 }
@@ -35,7 +31,6 @@ void Weapon::Update(float deltaTime) {
     al_get_mouse_state(&mouseState);
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
 
-<<<<<<< HEAD
     // 1. ¥ý±N¿Ã¹õ®y¼ÐÁY©ñ¬°¹CÀ¸®y¼Ð¡]³B²z¥þ¿Ã¹õ/©ñ¤jÁY¤p¡^Add commentMore actions
     float screenX = mouseState.x / ((float)al_get_display_width(game.display) / game.screenW);
     float screenY = mouseState.y / ((float)al_get_display_height(game.display) / game.screenH);
@@ -44,16 +39,6 @@ void Weapon::Update(float deltaTime) {
     Engine::Point worldMousePos = getPlayScene()->GetCamera()->ScreenToWorld(Engine::Point(screenX, screenY));
 
     // 3. ­pºâ»PªZ¾¹ªº¶ZÂ÷¤è¦V¡]¥@¬É®y¼Ð¤U¡^
-=======
-    // 1. å…ˆå°‡èž¢å¹•åº§æ¨™ç¸®æ”¾ç‚ºéŠæˆ²åº§æ¨™ï¼ˆè™•ç†å…¨èž¢å¹•/æ”¾å¤§ç¸®å°ï¼‰
-    float screenX = mouseState.x / ((float)al_get_display_width(game.display) / game.screenW);
-    float screenY = mouseState.y / ((float)al_get_display_height(game.display) / game.screenH);
-
-    // 2. ç”¨ Camera æŠŠèž¢å¹•åº§æ¨™è½‰ç‚ºä¸–ç•Œåº§æ¨™
-    Engine::Point worldMousePos = getPlayScene()->GetCamera()->ScreenToWorld(Engine::Point(screenX, screenY));
-
-    // 3. è¨ˆç®—èˆ‡æ­¦å™¨çš„è·é›¢æ–¹å‘ï¼ˆä¸–ç•Œåº§æ¨™ä¸‹ï¼‰
->>>>>>> 99b35bcf769e3dedb1dc8ef8dc6a0985c2d7badc
     float dx = worldMousePos.x - Position.x;
     float dy = worldMousePos.y - Position.y;
 

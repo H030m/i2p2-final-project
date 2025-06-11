@@ -40,10 +40,6 @@
 #include "Weapon/CircleWeapon.hpp"
 #include "Weapon/BounceWeapon.hpp"
 #include "Camera/Camera.hpp"
-<<<<<<< HEAD
-=======
-
->>>>>>> 99b35bcf769e3dedb1dc8ef8dc6a0985c2d7badc
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
 
@@ -97,15 +93,9 @@ void PlayScene::Initialize() {
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
         
-<<<<<<< HEAD
         // cameraAdd commentMore actions
         
         camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
-=======
-        // camera
-        Engine::Point clientSize = GetClientSize();
-        camera = std::make_unique<Camera>(clientSize.x, clientSize.y);
->>>>>>> 99b35bcf769e3dedb1dc8ef8dc6a0985c2d7badc
         camera->SetTarget(newPlayer->Position);
     }
 
@@ -206,10 +196,6 @@ void PlayScene::Draw() const {
     RenderVisibleObjects();
 
     UIGroup->Draw();
-<<<<<<< HEAD
-=======
-
->>>>>>> 99b35bcf769e3dedb1dc8ef8dc6a0985c2d7badc
     if (DebugMode) {
         // Draw reverse BFS distance on all reachable blocks.
         for (int i = 0; i < MapHeight; i++) {
@@ -228,30 +214,17 @@ void PlayScene::Draw() const {
 void PlayScene::RenderVisibleTiles() const {
     auto visibleArea = camera->GetVisibleTileArea(BlockSize);
     
-<<<<<<< HEAD
     // ¥u´è¬V¥i¨£ªº¥Ë¤ù
-=======
-    // åªæ¸²æŸ“å¯è¦‹çš„ç“¦ç‰‡
->>>>>>> 99b35bcf769e3dedb1dc8ef8dc6a0985c2d7badc
     for (auto obj : TileMapGroup->GetObjects()) {
         Engine::Sprite* sprite = dynamic_cast<Engine::Sprite*>(obj);
         if (!sprite) continue;
         
-<<<<<<< HEAD
         // ÀË¬d¥Ë¤ù¬O§_¦b¥i¨£½d³ò¤º
         if (camera->IsInView(sprite->Position, BlockSize)) {
             // ±N¥@¬É®y¼ÐÂà´«¬°¿Ã¹õ®y¼Ð
             Engine::Point screenPos = camera->WorldToScreen(sprite->Position);
             
             // ¼È®É­×§ïºëÆF¦ì¸m¶i¦æ´è¬V
-=======
-        // æª¢æŸ¥ç“¦ç‰‡æ˜¯å¦åœ¨å¯è¦‹ç¯„åœå…§
-        if (camera->IsInView(sprite->Position, BlockSize)) {
-            // å°‡ä¸–ç•Œåº§æ¨™è½‰æ›ç‚ºèž¢å¹•åº§æ¨™
-            Engine::Point screenPos = camera->WorldToScreen(sprite->Position);
-            
-            // æš«æ™‚ä¿®æ”¹ç²¾éˆä½ç½®é€²è¡Œæ¸²æŸ“
->>>>>>> 99b35bcf769e3dedb1dc8ef8dc6a0985c2d7badc
             Engine::Point originalPos = sprite->Position;
             sprite->Position = screenPos;
             sprite->Draw();
@@ -261,11 +234,7 @@ void PlayScene::RenderVisibleTiles() const {
 }
 
 void PlayScene::RenderVisibleObjects() const {
-<<<<<<< HEAD
     // ´è¬V¥i¨£ªº¹CÀ¸ª«¥ó
-=======
-    // æ¸²æŸ“å¯è¦‹çš„éŠæˆ²ç‰©ä»¶
->>>>>>> 99b35bcf769e3dedb1dc8ef8dc6a0985c2d7badc
     std::vector<Group*> renderGroups = {
         GroundEffectGroup, DebugIndicatorGroup, EnemyGroup, 
         BulletGroup, EffectGroup, PlayerGroup, WeaponGroup
