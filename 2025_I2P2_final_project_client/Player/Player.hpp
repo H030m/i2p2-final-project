@@ -25,7 +25,11 @@ public:
     Engine::Point nextPosition;
     float animation_tick;
     Player_Status status;
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 99b35bcf769e3dedb1dc8ef8dc6a0985c2d7badc
     Player(float x, float y);
     Player(float x, float y, int id);
     void Update(float deltaTime) override;
