@@ -34,14 +34,16 @@ protected:
 
 public:
     std::unordered_map<int, Player*> player_dict;
+    std::unordered_map<int, Engine::Sprite*> Tile_dict;
     std::vector<std::vector<nlohmann::json>>MapState;
+    std::vector<std::vector<int>>mapState_2;
     Group *PlayerGroup;
     Group *TileMapGroup;
     Group *UIGroup;
 
     Engine::Sprite * preview;
     Engine::Image *imgTarget;
-    
+
     explicit DrawMapScene() = default;
     void Initialize() override;
     void Terminate() override;
@@ -55,6 +57,7 @@ public:
     void ReadMap();
     void ConstructUI();
     void UIBtnClicked(int id);
+    void SaveMapStateToFile(const std::string& path);
 };
 
 #endif   // PLAYSCENE_HPP

@@ -5,11 +5,13 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <nlohmann/json.hpp>
 
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
 #include <unordered_map>
 #include "Player/Player.hpp"
+#include "Camera/Camera.hpp"
 class Weapon;
 namespace Engine {
     class Group;
@@ -28,6 +30,9 @@ private:
     ALLEGRO_SAMPLE_ID bgmId;
     std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> deathBGMInstance;
 
+    std::unique_ptr<Camera> camera;
+    void RenderVisibleTiles() const;
+    void RenderVisibleObjects() const;
 protected:
     int lives;
     int money;
@@ -39,11 +44,10 @@ public:
     std::unordered_map<int, Player*> player_dict;
     static bool DebugMode;
     static const std::vector<Engine::Point> directions;
-    static const int MapWidth, MapHeight;
+    static int MapWidth, MapHeight;
     static const int BlockSize;
     static const float DangerTime;
     static const Engine::Point SpawnGridPoint;
-    static const Engine::Point EndGridPoint;
     static const std::vector<int> code;
     int MapId;
     float ticks;
@@ -63,7 +67,7 @@ public:
     Engine::Image *imgTarget;
     Engine::Sprite *dangerIndicator;
     // Turret *preview;
-    std::vector<std::vector<TileType>> mapState;
+    std::vector<std::vector<nlohmann::json>> mapState;
     std::vector<std::vector<int>> mapDistance;
     std::list<std::pair<int, float>> enemyWaveData;
     std::list<int> keyStrokes;
@@ -93,6 +97,7 @@ public:
     
     int id_counter;
     int my_id;
+    Camera* GetCamera() const { return camera.get(); }
 };
 
 #endif   // PLAYSCENE_HPP

@@ -39,14 +39,16 @@
 #include "Weapon/ShotgunWeapon.hpp"
 #include "Weapon/CircleWeapon.hpp"
 #include "Weapon/BounceWeapon.hpp"
+#include "Camera/Camera.hpp"
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
-const int PlayScene::MapWidth = 20, PlayScene::MapHeight = 13;
+
 const int PlayScene::BlockSize = 64;
+const Engine::Point TileSize(65,65);
 const float PlayScene::DangerTime = 7.61;
 const Engine::Point PlayScene::SpawnGridPoint = Engine::Point(-1, 0);
-const Engine::Point PlayScene::EndGridPoint = Engine::Point(MapWidth, MapHeight - 1);
-
+int PlayScene::MapWidth = 20;
+int PlayScene::MapHeight = 13;
 // key sequence
 const std::vector<int> PlayScene::code = {
     ALLEGRO_KEY_UP, ALLEGRO_KEY_UP, ALLEGRO_KEY_DOWN, ALLEGRO_KEY_DOWN,
@@ -76,6 +78,9 @@ void PlayScene::Initialize() {
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(WeaponGroup = new Group());
+
+    ReadMap();
+
     WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
     WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
     WeaponGroup->AddNewObject(new GunWeapon(100, 100));
@@ -87,10 +92,14 @@ void PlayScene::Initialize() {
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
         
+        // cameraAdd commentMore actions
+        
+        camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
+        camera->SetTarget(newPlayer->Position);
     }
     // Should support buttons.
     AddNewControlObject(UIGroup = new Group());
-    ReadMap();
+    
     std::cerr<<"hi\n";
     ReadEnemyWave();
     mapDistance = CalculateBFSDistance();
@@ -175,11 +184,16 @@ void PlayScene::Update(float deltaTime) {
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
         sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state};
     }
-    
+    camera->SetTarget(player_dict[my_id]->Position);
+    camera->Update(deltaTime);
     IScene::Update(deltaTime);
 }
 void PlayScene::Draw() const {
-    IScene::Draw();
+    // IScene::Draw();
+    RenderVisibleTiles();
+    RenderVisibleObjects();
+
+    UIGroup->Draw();
     if (DebugMode) {
         // Draw reverse BFS distance on all reachable blocks.
         for (int i = 0; i < MapHeight; i++) {
@@ -194,6 +208,49 @@ void PlayScene::Draw() const {
         }
     }
 }
+
+void PlayScene::RenderVisibleTiles() const {
+    auto visibleArea = camera->GetVisibleTileArea(BlockSize);
+    
+    // 只渲染可見的瓦片
+    for (auto obj : TileMapGroup->GetObjects()) {
+        Engine::Sprite* sprite = dynamic_cast<Engine::Sprite*>(obj);
+        if (!sprite) continue;
+        
+        // 檢查瓦片是否在可見範圍內
+        if (camera->IsInView(sprite->Position, BlockSize)) {
+            // 將世界座標轉換為螢幕座標
+            Engine::Point screenPos = camera->WorldToScreen(sprite->Position);
+            
+            // 暫時修改精靈位置進行渲染
+            Engine::Point originalPos = sprite->Position;
+            sprite->Position = screenPos;
+            sprite->Draw();
+            sprite->Position = originalPos;
+        }
+    }
+}
+
+void PlayScene::RenderVisibleObjects() const {
+    // 渲染可見的遊戲物件
+    std::vector<Group*> renderGroups = {
+        GroundEffectGroup, DebugIndicatorGroup, EnemyGroup, 
+        BulletGroup, EffectGroup, PlayerGroup, WeaponGroup
+    };
+    
+    for (Group* group : renderGroups) {
+        for (auto obj : group->GetObjects()) {
+            if (camera->IsInView(obj->Position, 64)) { 
+                Engine::Point screenPos = camera->WorldToScreen(obj->Position);
+                Engine::Point originalPos = obj->Position;
+                obj->Position = screenPos;
+                obj->Draw();
+                obj->Position = originalPos;
+            }
+        }
+    }
+}
+
 void PlayScene::OnMouseDown(int button, int mx, int my) {
     IScene::OnMouseDown(button, mx, my);
 }
@@ -233,112 +290,55 @@ void PlayScene::EarnMoney(int money) {
     UIMoney->Text = std::string("$") + std::to_string(this->money);
 }
 void PlayScene::ReadMap() {
-    std::string filename = std::string("Resource/map") + std::to_string(MapId) + ".json";
+    std::cerr<<"hellow!\n";
+    std::string filename = std::string("Resource/map") + std::to_string(MapId) + ".json"; // or ".json"
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Failed to open file.\n";
+        std::cerr << "Failed to open map file: " << filename << '\n';
         return;
     }
 
-    json data;
+    nlohmann::json data;
     file >> data;
-
-    mapState = std::vector<std::vector<TileType>>(MapHeight, std::vector<TileType>(MapWidth,TILE_DIRT));
-    for (int i = 0; i < MapHeight; ++i) {
-        for (int j = 0; j < MapWidth; ++j) {
-            int linearIndex = i + j * MapHeight;
-            std::string key = std::to_string(linearIndex);
-
-            if (!data.contains(key)) {
-                std::cerr << "Missing tile at index " << key << "\n";
-                mapState[i][j] = TILE_DIRT;
-                continue;
-            }
-
-            int texValue = data[key]["texture"];
-            mapState[i][j] = texValue ? TILE_FLOOR : TILE_DIRT;
-        }
+    file.close();
+    std::cerr<<data.dump()<<'\n';
+    if (!data.contains("MapState")) {
+        std::cerr << "Invalid map format: missing MapState\n";
+        return;
     }
-    std::vector<std::vector<int>>mapState_2(MapHeight, std::vector<int>(MapWidth));
-    for (int i = 0; i < MapHeight; ++i) {
-        for (int j = 0; j < MapWidth; ++j) {
-            mapState_2[i][j] = mapState[i][j] == TILE_FLOOR ? 1 : 0;
-        }
+    if (!data.contains("MapWidth") || !data.contains("MapHeight")){
+        std::cerr << "Invalid W and H\n";
     }
+    MapHeight = data["MapHeight"];
+    MapWidth = data["MapWidth"];
+
+    auto& map = data["MapState"];
+    mapState.resize(MapHeight, std::vector<nlohmann::json>(MapWidth));
+
     for (int i = 0; i < MapHeight; ++i) {
         for (int j = 0; j < MapWidth; ++j) {
-            int linearIndex = i + j * MapHeight;
-            std::string key = std::to_string(linearIndex);
+            auto tile = map[i][j]["Tile"];
+            mapState[i][j] = map[i][j];
+            std::string file = tile["file_name"];
+            int sx = tile["x"];
+            int sy = tile["y"];
+            int sw = tile["w"];
+            int sh = tile["h"];
 
-            if (!data.contains(key)) {
-                std::cerr << "Missing tile at index " << key << "\n";
-                continue;
-            }
-
-            int texValue = data[key]["texture"];
-            mapState[i][j] = texValue ? TILE_FLOOR : TILE_DIRT;
-
-            // Get (tileX, tileY) in tile sheet
-            auto [tileX, tileY] = getTileCoord(i,j,mapState_2, MapHeight, MapWidth);
-            
-            const int TileWidth = 16;
-            const int TileHeight = 16;
-
-            // Create sprite and set source region
             auto* spr = new Engine::Sprite(
-                "play/grass/" + std::to_string(tileY) + std::to_string(tileX) + ".png",
-                j * BlockSize, i * BlockSize,       // screen position
-                BlockSize,BlockSize,               // draw size
-                0, 0                                 // anchor top-left
+                file,
+                j * BlockSize, i * BlockSize,
+                0,0,
+                0, 0
             );
-
+            spr->Size = TileSize;
+            spr->SourceX = sw * sx + 1;
+            spr->SourceY = sh * sy + 1;
+            spr->SourceW = sw - 2;
+            spr->SourceH = sh - 2;
             TileMapGroup->AddNewObject(spr);
         }
-        std::cerr<<'\n';
     }
-        // std::cerr<<"h1\n";
-        // {
-        //     auto [tileX, tileY] = std::make_pair(0,0);
-        //     const int TileWidth = 16;
-        //     const int TileHeight = 16;
-
-        //     // Create sprite and set source region
-        //     auto* spr = new Engine::Sprite(
-        //         "play/grass.png",
-        //         1 * BlockSize, 1 * BlockSize,       // screen position
-        //         0, 0,               // draw size
-        //         0, 0                                 // anchor top-left
-        //     );
-        //  std::cerr<<"h3\n";
-        //     // spr->SourceX = 10;
-        //     // spr->SourceY = 0;
-        //     // spr->SourceW = 16;
-        //     // spr->SourceH = 16;
-
-        //     TileMapGroup->AddNewObject(spr);
-        //  std::cerr<<"h5\n";
-        // }
-        //  {
-        //     auto [tileX, tileY] = std::make_pair(2,0);
-        //     const int TileWidth = 16;
-        //     const int TileHeight = 16;
-
-        //     // Create sprite and set source region
-        //     auto* spr = new Engine::Sprite(
-        //         "play/grass.png",
-        //        3 * BlockSize, 1 * BlockSize,       // screen position
-        //         BlockSize, BlockSize,               // draw size
-        //         0, 0                                 // anchor top-left
-        //     );
-        //  std::cerr<<"h3\n";
-        //     spr->SourceX = 16;
-        //     spr->SourceY = 0;
-        //     spr->SourceW = TileWidth;
-        //     spr->SourceH = TileHeight;
-
-        //     TileMapGroup->AddNewObject(spr);
-        //  std::cerr<<"h5\n";
-        // }
 }
 void PlayScene::ReadEnemyWave() {
     std::string filename = std::string("Resource/enemy") + std::to_string(MapId) + ".txt";
@@ -361,58 +361,11 @@ void PlayScene::UIBtnClicked(int id) {
 }
 
 bool PlayScene::CheckSpaceValid(int x, int y) {
-    // if (x < 0 || x >= MapWidth || y < 0 || y >= MapHeight)
-    //     return false;
-    // auto map00 = mapState[y][x];
-    // mapState[y][x] = TILE_OCCUPIED;
-    // std::vector<std::vector<int>> map = CalculateBFSDistance();
-    // mapState[y][x] = map00;
-    // if (map[0][0] == -1)
-    //     return false;
-    // for (auto &it : EnemyGroup->GetObjects()) {
-    //     Engine::Point pnt;
-    //     pnt.x = floor(it->Position.x / BlockSize);
-    //     pnt.y = floor(it->Position.y / BlockSize);
-    //     if (pnt.x < 0) pnt.x = 0;
-    //     if (pnt.x >= MapWidth) pnt.x = MapWidth - 1;
-    //     if (pnt.y < 0) pnt.y = 0;
-    //     if (pnt.y >= MapHeight) pnt.y = MapHeight - 1;
-    //     if (map[pnt.y][pnt.x] == -1)
-    //         return false;
-    // }
-    // // All enemy have path to exit.
-    // mapState[y][x] = TILE_OCCUPIED;
-    // mapDistance = map;
-    // for (auto &it : EnemyGroup->GetObjects())
-    //     dynamic_cast<Enemy *>(it)->UpdatePath(mapDistance);
     return true;
 }
 std::vector<std::vector<int>> PlayScene::CalculateBFSDistance() {
     // // Reverse BFS to find path.
     std::vector<std::vector<int>> map(MapHeight, std::vector<int>(std::vector<int>(MapWidth, -1)));
-    // std::queue<Engine::Point> que;
-    // // Push end point.
-    // // BFS from end point.
-    // if (mapState[MapHeight - 1][MapWidth - 1] != TILE_DIRT)
-    //     return map;
-    // que.push(Engine::Point(MapWidth - 1, MapHeight - 1));
-    // map[MapHeight - 1][MapWidth - 1] = 0;
-    // while (!que.empty()) {
-    //     Engine::Point p = que.front();
-    //     que.pop();
-    //     // TODO PROJECT-1 (1/1): Implement a BFS starting from the most right-bottom block in the map.
-    //     //               For each step you should assign the corresponding distance to the most right-bottom block.
-    //     //               mapState[y][x] is TILE_DIRT if it is empty.
-    //     int x[4] = {0,0,1,-1}, y[4] = {1,-1,0,0};
-    //     for(int i = 0; i < 4; i++){
-    //         int nx = x[i] + p.x, ny = y[i] + p.y;
-    //         if (nx < 0 || nx >= MapWidth || ny < 0 || ny >= MapHeight)
-    //             continue;
-    //         if(mapState[ny][nx] == TILE_DIRT && map[ny][nx] == -1){
-    //             map[ny][nx] = map[p.y][p.x] + 1;
-    //             que.push(Engine::Point(nx, ny));
-    //         }
-    //     }
-    // }
     return map;
 }
+

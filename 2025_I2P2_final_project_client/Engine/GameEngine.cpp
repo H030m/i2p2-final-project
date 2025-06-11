@@ -23,6 +23,9 @@
 #include <allegro5/allegro.h>
 
 #include <Connect/Client.hpp>
+#include <cstdlib>  // for rand()
+#include <ctime>    // for time()
+
 
 std::string keycode_to_name(int code) {
     static const std::map<int, std::string> reverseKeyMap = [] {
@@ -76,6 +79,7 @@ Engine::GameEngine::GameEngine():sender(){
 namespace Engine {
 
     void GameEngine::initAllegro5() {
+        srand(time(nullptr)); 
         if (!al_init()) throw Allegro5Exception("failed to initialize allegro");
 
         // Initialize add-ons.

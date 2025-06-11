@@ -6,6 +6,13 @@
 #include "Engine/Sprite.hpp"
 #include "Engine/Point.hpp"
 
+typedef enum Player_Status {
+    PLAYER_IDLE,
+    PLAYER_WALK,
+    PLAYER_ATTACK,
+    PLAYER_DEAD
+} Player_Status;
+
 class Player : public Engine::Sprite {
 private:
     bool movingUp, movingDown, movingLeft, movingRight;
@@ -16,7 +23,9 @@ public:
     float speed;
     int maxHealth;
     Engine::Point nextPosition;
-
+    float animation_tick;
+    Player_Status status;
+    
     Player(float x, float y);
     Player(float x, float y, int id);
     void Update(float deltaTime) override;

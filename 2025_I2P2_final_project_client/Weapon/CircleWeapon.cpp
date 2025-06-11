@@ -19,10 +19,10 @@ CircleWeapon::CircleWeapon(float x, float y)
 void CircleWeapon::CreateBullet() {
     // Change bullet position to the front of the gun barrel.
     Player* player = getPlayScene()->player_dict[getPlayScene()->my_id];
-    getPlayScene()->BulletGroup->AddNewObject(new OrbitBullet(0, 100, 1, player));
-    getPlayScene()->BulletGroup->AddNewObject(new OrbitBullet(ALLEGRO_PI * 0.5, 100, 1, player));
-    getPlayScene()->BulletGroup->AddNewObject(new OrbitBullet(ALLEGRO_PI, 100, 1, player));
-    getPlayScene()->BulletGroup->AddNewObject(new OrbitBullet(ALLEGRO_PI * 1.5, 100, 1, player));
+    getPlayScene()->BulletGroup->AddNewObject(new OrbitBullet(0, 100, 4, player));
+    getPlayScene()->BulletGroup->AddNewObject(new OrbitBullet(ALLEGRO_PI * 0.5, 100, 4, player));
+    getPlayScene()->BulletGroup->AddNewObject(new OrbitBullet(ALLEGRO_PI, 100, 4, player));
+    getPlayScene()->BulletGroup->AddNewObject(new OrbitBullet(ALLEGRO_PI * 1.5, 100, 4, player));
     // AudioHelper::PlayAudio("gun.wav");
 }
 

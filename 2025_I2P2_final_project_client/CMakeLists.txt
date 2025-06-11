@@ -82,6 +82,9 @@ add_executable(2025_I2P2_TowerDefense
     Weapon/CircleWeapon.hpp Weapon/CircleWeapon.cpp
     Weapon/ShotgunWeapon.hpp Weapon/ShotgunWeapon.cpp
     Weapon/BounceWeapon.hpp Weapon/BounceWeapon.cpp
+
+    Camera/Camera.hpp Camera/Camera.cpp
+    
     main.cpp
 )
 
