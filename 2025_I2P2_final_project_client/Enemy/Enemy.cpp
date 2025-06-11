@@ -36,7 +36,14 @@ Enemy::Enemy(std::string img, float x, float y, float radius, float speed, float
     reachEndTime = 0;
 }
 void Enemy::Hit(float damage) {
-    
+    hp -= damage;
+    if (hp <= 0) {
+        for (auto &it : lockedBullets)
+            it->Target = nullptr;
+        getPlayScene()->EarnMoney(money);
+        getPlayScene()->EnemyGroup->RemoveObject(objectIterator);
+        AudioHelper::PlayAudio("explosion.wav");
+    }
 }
 void Enemy::UpdatePath(const std::vector<std::vector<int>> &mapDistance) {
     int x = static_cast<int>(floor(Position.x / PlayScene::BlockSize));

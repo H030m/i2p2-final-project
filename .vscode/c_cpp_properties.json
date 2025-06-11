@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "macOS",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/Users/ryan/Allegro/I2P-I-2024_FinalProject/vcpkg/packages/allegro5_arm64-osx/include"
+            ],
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

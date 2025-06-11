@@ -1,0 +1,1 @@
+cmake .. -D CMAKE_BUILD_TYPE=Release -D CMAKE_CXX_FLAGS=-std=c++17 -D CMAKE_EXE_LINKER_FLAGS_RELEASE="-framework CoreAudio"
