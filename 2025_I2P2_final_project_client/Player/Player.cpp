@@ -12,7 +12,7 @@ Player::Player(float x, float y) :
     movingUp(false), 
     movingDown(false), 
     movingLeft(false), 
-    movingRight(false),Engine::Sprite("play/Player/mPlayer_ [human].png", x, y,0,0) {
+    movingRight(false),Engine::Sprite("play/Player/mPlayer_ [human].png", x, y, 0, 0) {
     
     Position = Engine::Point(x, y);
     Size = Engine::Point(128, 128);
@@ -48,15 +48,6 @@ Player::Player(float x, float y, int id):id(id),
 void Player::Update(float deltaTime) {
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
-
-    if (movingDown || movingUp || movingLeft || movingRight) {
-        status = PLAYER_WALK;
-        if (movingLeft && !movingRight) Flip = 1;
-        else if (movingRight && !movingLeft) Flip = 0;
-    }
-    else {
-        status = PLAYER_IDLE;
-    }
 
     // animation 
     SourceW = 32; SourceH = 32;
@@ -116,6 +107,17 @@ void Player::UpdateMyPlayer(float deltaTime) {
     newY = std::max(0.0f, std::min(newY, (float)(mapHeight)));
     
     Position.x = newX, Position.y = newY;
+
+    // define player_status
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    if ((movingDown || movingUp || movingLeft || movingRight) && id == game.my_id) {
+        status = PLAYER_WALK;
+        if (movingLeft && !movingRight) Flip = 1;
+        else if (movingRight && !movingLeft) Flip = 0;
+    }
+    else {
+        status = PLAYER_IDLE;
+    }
 }
 
 void Player::Draw() const {

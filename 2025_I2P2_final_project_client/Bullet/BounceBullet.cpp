@@ -18,7 +18,7 @@ BounceBullet::BounceBullet(Engine::Point position, Engine::Point forwardDirectio
 }
 
 void BounceBullet::Update(float deltaTime) {
-    if (bounce_time >= 3) {
+    if (bounce_time >= 4) {
         Bullet::Update(deltaTime);
         return;
     }

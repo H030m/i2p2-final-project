@@ -1,5 +1,8 @@
 #include <algorithm>
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include <cmath>
 #include <fstream>
 #include <functional>
@@ -83,9 +86,9 @@ void PlayScene::Initialize() {
     ReadMap();
 
     // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
-    WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
     // WeaponGroup->AddNewObject(new GunWeapon(100, 100));
-    WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(500, 500, game.my_id);
@@ -144,16 +147,19 @@ void PlayScene::Update(float deltaTime) {
 
         float x = client_info["player"][0];
         float y = client_info["player"][1];
+        Player_Status status = client_info["player"][3];
 
         auto it = player_dict.find(id);
         if (it == player_dict.end()) {
             Player* newPlayer = new Player(x, y, id);
             PlayerGroup->AddNewObject(newPlayer);
             player_dict[id] = newPlayer;
+            newPlayer->status = status;
         } else {
             if(id == game.my_id) continue;
             it->second->Position.x = x;
             it->second->Position.y = y;
+            it->second->status = status;
         }
     }
     
@@ -184,7 +190,8 @@ void PlayScene::Update(float deltaTime) {
     // update myself
     if (player_dict.find(game.my_id) != player_dict.end()) {
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
-        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state};
+        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state, player_dict[game.my_id]->status};
+        sender.output_json["weapon"] = {};
     }
     camera->SetTarget(player_dict[my_id]->Position);
     camera->Update(deltaTime);
