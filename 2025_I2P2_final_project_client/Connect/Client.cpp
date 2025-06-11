@@ -74,20 +74,17 @@ void GameClient::recvOnce() {
             }
         }
         input_json = latest;
-        std::cerr << "recv " << input_json.dump() << '\n';
+        // std::cerr << "recv " << input_json.dump() << '\n';
     } catch (const std::exception& e) {
         std::cerr << "[recvOnce] error: " << e.what() << '\n';
     }
 }
 
 void GameClient::sendOnce() {
-    output_json["asdfasdf"].push_back(1);
-    output_json["asdfasdf"].push_back(1);
-    output_json["asdfasdf"].push_back(1);
 
     std::string data = output_json.dump() + "\n";
     send(sock, data.c_str(), data.size(), 0);
-    std::cerr << "send " << output_json.dump() << '\n';
+    // std::cerr << "send " << output_json.dump() << '\n';
 }
 
 GameClient::~GameClient() {

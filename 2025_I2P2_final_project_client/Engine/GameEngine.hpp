@@ -40,8 +40,6 @@ namespace Engine {
     /// </summary>
     class GameEngine final {
     private:
-        // Allegro5 settings, frames per second, screen width, screen height, maximum simultaneous audio samples.
-        int fps{}, screenW{}, screenH{}, reserveSamples{};
         // Determines whether to free memory between scenes.
         bool freeMemoryOnSceneChanged{};
         // Max delta time for update multiplier. If delta time exceeds this threshold, lag occurs.
@@ -51,8 +49,6 @@ namespace Engine {
         std::unordered_map<std::string, IScene *> scenes;
         // The active scene that occupies the game's update, draw and various events.
         IScene *activeScene{};
-        // Allegro5 display for window creation.
-        ALLEGRO_DISPLAY *display{};
         // Allegro5 event queue.
         ALLEGRO_EVENT_QUEUE *event_queue{};
         // Allegro5 timer to inject update & draw event into the event queue.
@@ -183,6 +179,10 @@ namespace Engine {
         GameClient sender;
         GameClient& GetSender();
         int my_id;
+        // Allegro5 display for window creation.
+        ALLEGRO_DISPLAY *display{};
+        // Allegro5 settings, frames per second, screen width, screen height, maximum simultaneous audio samples.
+        int fps{}, screenW{}, screenH{}, reserveSamples{};
     };
 }
 #endif   // GAMEENGINE_HPP

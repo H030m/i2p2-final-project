@@ -10,7 +10,6 @@
 #include "Engine/Point.hpp"
 #include <unordered_map>
 #include "Player/Player.hpp"
-// class Turret;
 class Weapon;
 namespace Engine {
     class Group;
@@ -54,7 +53,6 @@ public:
     Group *GroundEffectGroup;
     Group *DebugIndicatorGroup;
     Group *BulletGroup;
-    // Group *TowerGroup;
     Group *EnemyGroup;
     Group *EffectGroup;
     Group *UIGroup;

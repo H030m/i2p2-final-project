@@ -16,7 +16,7 @@ ShotgunWeapon::ShotgunWeapon(float x, float y)
     // Anchor.y += 8.0f / GetBitmapHeight();
 }
 void ShotgunWeapon::CreateBullet() {
-    const float spread = ALLEGRO_PI / 18; // Â±10 åº¦ (radians)
+    const float spread = ALLEGRO_PI / 18; // ¡Ó10 «× (radians)
     const float speed = 10;
     float baseAngle = Rotation - ALLEGRO_PI / 2;
 

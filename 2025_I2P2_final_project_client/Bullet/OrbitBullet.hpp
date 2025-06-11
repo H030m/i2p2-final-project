@@ -18,5 +18,4 @@ public:
     void Update(float deltaTime) override;
     void Draw() const override;
 };
-
 #endif //ORBITBULLET_HPP

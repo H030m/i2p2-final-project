@@ -25,6 +25,7 @@ void CircleWeapon::CreateBullet() {
     getPlayScene()->BulletGroup->AddNewObject(new OrbitBullet(ALLEGRO_PI * 1.5, 100, 1, player));
     // AudioHelper::PlayAudio("gun.wav");
 }
+
 void CircleWeapon::Update(float Deltatime) {
     if (!created) {
         this->CreateBullet();

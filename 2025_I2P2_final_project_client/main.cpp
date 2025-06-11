@@ -11,7 +11,7 @@
 #include "Scene/SettingsScene.hpp"
 #include "Scene/ScoreboardScene.hpp"
 #include "Scene/SubmitScene.hpp"
-
+#include "Scene/DrawMapScene.hpp"
 //Json
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -40,7 +40,7 @@ using json = nlohmann::json;
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
 	Engine::GameEngine& game = Engine::GameEngine::GetInstance();
-	
+	game.AddNewScene("DrawMapScene", new DrawMapScene());
 	game.AddNewScene("stage-select", new StageSelectScene());
 	game.AddNewScene("play", new PlayScene());
 	game.AddNewScene("lose", new LoseScene());

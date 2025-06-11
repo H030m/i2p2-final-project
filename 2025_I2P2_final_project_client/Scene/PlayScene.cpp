@@ -9,7 +9,6 @@
 #include <vector>
 #include <iostream>
 #include <set>
-
 #include "Enemy/Enemy.hpp"
 #include "Enemy/SoldierEnemy.hpp"
 //TODO HACKATHON-3
@@ -34,10 +33,12 @@
 #include "WinScene.hpp"
 #include "Map/Texture.hpp"
 #include "Player/Player.hpp"
+
 #include "Weapon/Weapon.hpp"
 #include "Weapon/GunWeapon.hpp"
 #include "Weapon/ShotgunWeapon.hpp"
 #include "Weapon/CircleWeapon.hpp"
+#include "Weapon/BounceWeapon.hpp"
 
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
@@ -70,14 +71,16 @@ void PlayScene::Initialize() {
     AddNewObject(TileMapGroup = new Group());
     AddNewObject(GroundEffectGroup = new Group());
     AddNewObject(DebugIndicatorGroup = new Group());
-    // AddNewObject(TowerGroup = new Group());
+    
     AddNewObject(EnemyGroup = new Group());
     AddNewObject(BulletGroup = new Group());
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(WeaponGroup = new Group());
-    WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
+    WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
     WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
+    WeaponGroup->AddNewObject(new GunWeapon(100, 100));
+    WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(500, 500, game.my_id);
@@ -111,19 +114,22 @@ void PlayScene::Terminate() {
 }
 
 void PlayScene::Update(float deltaTime) {
+    
+    // update client's W, A, S, DAdd commentMore actions
+    // PlayerGroup->Update(deltaTime);
+
+    // // check new player join & update all players' position
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
-    
-    // record active player
+
+    // record active playerAdd commentMore actions
     std::set<int> activePlayerIds;
     activePlayerIds.insert(game.my_id);
     
-    // itrate through all players
     for (auto [_id, client_info] : sender.input_json.items()) {
         if (_id == "my_id") continue;
         int id = std::stoi(_id);
-        
-        // player marked active
+
         activePlayerIds.insert(id);
 
         if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 2)
@@ -138,13 +144,13 @@ void PlayScene::Update(float deltaTime) {
             PlayerGroup->AddNewObject(newPlayer);
             player_dict[id] = newPlayer;
         } else {
-            if(id == game.my_id) continue;
+            if(id == game.my_id)continue;
             it->second->Position.x = x;
             it->second->Position.y = y;
         }
+        
     }
-    
-    // delete not active player
+    // delete not active playerAdd commentMore actions
     for (auto it = player_dict.begin(); it != player_dict.end(); ) {
         int playerId = it->first;
 
@@ -293,49 +299,6 @@ void PlayScene::ReadMap() {
         }
         std::cerr<<'\n';
     }
-        // std::cerr<<"h1\n";
-        // {
-        //     auto [tileX, tileY] = std::make_pair(0,0);
-        //     const int TileWidth = 16;
-        //     const int TileHeight = 16;
-
-        //     // Create sprite and set source region
-        //     auto* spr = new Engine::Sprite(
-        //         "play/grass.png",
-        //         1 * BlockSize, 1 * BlockSize,       // screen position
-        //         0, 0,               // draw size
-        //         0, 0                                 // anchor top-left
-        //     );
-        //  std::cerr<<"h3\n";
-        //     // spr->SourceX = 10;
-        //     // spr->SourceY = 0;
-        //     // spr->SourceW = 16;
-        //     // spr->SourceH = 16;
-
-        //     TileMapGroup->AddNewObject(spr);
-        //  std::cerr<<"h5\n";
-        // }
-        //  {
-        //     auto [tileX, tileY] = std::make_pair(2,0);
-        //     const int TileWidth = 16;
-        //     const int TileHeight = 16;
-
-        //     // Create sprite and set source region
-        //     auto* spr = new Engine::Sprite(
-        //         "play/grass.png",
-        //        3 * BlockSize, 1 * BlockSize,       // screen position
-        //         BlockSize, BlockSize,               // draw size
-        //         0, 0                                 // anchor top-left
-        //     );
-        //  std::cerr<<"h3\n";
-        //     spr->SourceX = 16;
-        //     spr->SourceY = 0;
-        //     spr->SourceW = TileWidth;
-        //     spr->SourceH = TileHeight;
-
-        //     TileMapGroup->AddNewObject(spr);
-        //  std::cerr<<"h5\n";
-        // }
 }
 void PlayScene::ReadEnemyWave() {
     std::string filename = std::string("Resource/enemy") + std::to_string(MapId) + ".txt";

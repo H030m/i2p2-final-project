@@ -15,7 +15,6 @@ FireBullet::FireBullet(Engine::Point position, Engine::Point forwardDirection, f
 
 }
 
-
 void FireBullet::OnExplode(Enemy *enemy) {
     std::random_device dev;
     std::mt19937 rng(dev());

@@ -2,7 +2,6 @@
 #define FIREBULLET_HPP
 #include "Bullet.hpp"
 #include "Weapon/Weapon.hpp"
-
 class Enemy;
 class Weapon;
 namespace Engine {
