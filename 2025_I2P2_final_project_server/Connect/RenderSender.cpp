@@ -64,7 +64,7 @@ void RenderSender::start() {
 
     while (true) {
         auto start_time = steady_clock::now();
-
+        if(clients.size() == 0)storedMapState.reset();
         // 1. recv from all client
         {
             std::lock_guard<std::mutex> lock(clientMutex);
@@ -128,7 +128,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
 
         if(ctx->lastInput.contains("map")){
             std::cerr<<"get map"<< ' '<<clients.size()<<'\n';
-            if(clients.size() == 1){
+            if(clients.size() == 1 || !storedMapState.has_value()){
                 storedMapState = ctx->lastInput;
             } 
             ctx->sendMap = true;

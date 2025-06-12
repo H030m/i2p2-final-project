@@ -281,6 +281,37 @@ int y = worldPos.y / BlockSize;
                 ObstacleGroup->AddNewObject(spr);
                 Obstacle_dict[y + x * MapHeight] = spr;
             }
+            // eraser
+            if(preview->id == 5){
+                
+                MapState[y][x].erase("Obstacle");
+                if(Obstacle_dict.count(y + x*MapHeight)){
+                    ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                    Obstacle_dict.erase(y + x*MapHeight);
+                }
+            }
+            if(preview->id == 10){
+                MapState[y][x]["Obstacle"]["x"] = 0;
+                MapState[y][x]["Obstacle"]["y"] = 0;
+                MapState[y][x]["Obstacle"]["file_name"] = "play/logo-nthu.png";
+                MapState[y][x]["Obstacle"]["Penetrable"] = true;
+                MapState[y][x]["Obstacle"]["SizeX"] = 64;
+                MapState[y][x]["Obstacle"]["SizeY"] = 64;
+                MapState[y][x]["SpawnPoint"] = 0;//spawn monster 0
+                if(Obstacle_dict.count(y + x*MapHeight))
+                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                auto* spr = new Engine::Sprite(
+                    MapState[y][x]["Obstacle"]["file_name"],
+                    x * BlockSize, y * BlockSize,       // screen position
+                    0,0,               // draw size
+                    0,0                               // anchor top-left
+                );
+                spr->Size = Engine::Point(64,64);
+                MapState[y][x]["Obstacle"]["w"] = spr->GetBitmapWidth();
+                MapState[y][x]["Obstacle"]["h"] = spr->GetBitmapHeight();
+                ObstacleGroup->AddNewObject(spr);
+                Obstacle_dict[y + x * MapHeight] = spr;
+            }
         }
     }
     
@@ -404,7 +435,29 @@ void DrawMapScene::ConstructUI() {
         // UIBtnClicked(0);
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 4));
         UIGroup->AddNewControlObject(btn);
+
+        // texture 6 eraser
+        btn = new TextureButton("play/floor.png", "play/dirt.png",
+                            Engine::Sprite("play/eraser.png", 1294 + 5 + 0 + 200, 80 + 5 + 100, 0, 0, 0, 0), 1294 + 0 + 200, 80 + 100);
+        btn->TileTexture.Size = Engine::Point(54,54);
+        btn->fixed = true;
+        // Reference: Class Member Function Pointer and std::bind.
+        // UIBtnClicked(0);
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 5));
+        UIGroup->AddNewControlObject(btn);
     }
+
+    {
+        TextureButton *btn;
+        // spawnpoint 0
+        btn = new TextureButton("play/floor.png", "play/dirt.png",
+                            Engine::Sprite("play/logo-nthu.png", 1294 + 5 + 0 + 0, 80 + 5 + 300, 0, 0, 0, 0), 1294 + 0 + 0, 80 + 300);
+        btn->TileTexture.Size = Engine::Point(54,54);
+        btn->fixed = true;
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 10));
+        UIGroup->AddNewControlObject(btn);
+    }
+
     {
         //Save button
         Engine::ImageButton *btn;
@@ -482,6 +535,18 @@ void DrawMapScene::UIBtnClicked(int id){
         preview->SourceX = (0 + Xgap*0) * tileH;
         preview->SourceY = (0 + Ygap*0) * tileW;
     }
+    if(id == 5){
+        std::cerr<<"id 5\n";
+        preview = new Engine::Sprite("play/eraser.png", 100, 100, 0, 0, 0.5, 0.5, 0, 0, 0, 255, 255, 255, 50);
+        preview->id = 5;
+        preview->Size = TileSize;
+    }
+    if(id == 10){
+        std::cerr<<"id 10\n";
+        preview = new Engine::Sprite("play/logo-nthu.png", 100, 100, 0, 0, 0.5, 0.5, 0, 0, 0, 255, 255, 255, 50);
+        preview->id = 10;
+        preview->Size = TileSize;
+    }
     if(id == -2){
         SaveMapStateToFile("Resource/map2.json");
     }
@@ -503,7 +568,7 @@ void DrawMapScene::SaveMapStateToFile(const std::string& path) {
 
     output["MapWidth"] = MapWidth;
     output["MapHeight"] = MapHeight;
-    output["MapState"] = MapState; // 直接儲存整個 2D json 陣列
+    output["MapState"] = MapState; 
 
     std::ofstream fout(path);
     if (!fout.is_open()) {
@@ -519,17 +584,17 @@ void DrawMapScene::SaveMapStateToFile(const std::string& path) {
 void DrawMapScene::RenderVisibleTiles() const {
     auto visibleArea = camera->GetVisibleTileArea(BlockSize);
     
-    // 只渲染可見的瓦片
+   
     for (auto obj : TileMapGroup->GetObjects()) {
         Engine::Sprite* sprite = dynamic_cast<Engine::Sprite*>(obj);
         if (!sprite) continue;
         
-        // 檢查瓦片是否在可見範圍內
+       
         if (camera->IsInView(sprite->Position, BlockSize)) {
-            // 將世界座標轉換為螢幕座標
+            
             Engine::Point screenPos = camera->WorldToScreen(sprite->Position);
             
-            // 暫時修改精靈位置進行渲染
+
             Engine::Point originalPos = sprite->Position;
             sprite->Position = screenPos;
             sprite->Draw();
