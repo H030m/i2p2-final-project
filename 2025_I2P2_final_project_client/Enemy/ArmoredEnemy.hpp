@@ -6,7 +6,7 @@ class ArmoredEnemy : public Enemy {
 protected:
     float armor;
 public:
-    ArmoredEnemy(std::string img, float x, float y, float radius, float speed, float hp, int money, float armor);
+    ArmoredEnemy(float x, float y);
     void Hit(float damage) override;
 };
 #endif

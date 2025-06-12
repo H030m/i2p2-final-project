@@ -137,6 +137,11 @@ void PlayScene::Initialize() {
     Engine::Resources::GetInstance().GetBitmap("lose/benjamin-happy.png");
     // Start BGM.
     bgmId = AudioHelper::PlayBGM("play.ogg");
+
+    // DEBUG add one enemy
+    ArmoredEnemy* e = new ArmoredEnemy(200, 200);
+    // e->UpdatePath(mapDistance);
+    EnemyGroup->AddNewObject(e);
 }
 void PlayScene::Terminate() {
     AudioHelper::StopBGM(bgmId);

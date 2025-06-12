@@ -30,6 +30,8 @@ add_executable(2025_I2P2_TowerDefense
     Enemy/PlaneEnemy.cpp Enemy/PlaneEnemy.hpp
     Enemy/BossEnemy.cpp Enemy/BossEnemy.hpp
     Enemy/ArmoredEnemy.cpp Enemy/ArmoredEnemy.hpp
+    
+    Enemy/ArmoredEnemy.cpp Enemy/ArmoredEnemy.hpp
     Engine/Allegro5Exception.cpp Engine/Allegro5Exception.hpp
     Engine/AudioHelper.cpp Engine/AudioHelper.hpp
     Engine/Collider.cpp Engine/Collider.hpp
