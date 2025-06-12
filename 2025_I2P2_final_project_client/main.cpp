@@ -12,6 +12,7 @@
 #include "Scene/ScoreboardScene.hpp"
 #include "Scene/SubmitScene.hpp"
 #include "Scene/DrawMapScene.hpp"
+#include "Scene/LoadingScene.hpp"
 //Json
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -37,6 +38,7 @@ using json = nlohmann::json;
 #include<Scene/RemotePlayScene.hpp>
 #include "UI/Component/Label.hpp"     
 #include "Engine/GameEngine.hpp"
+
 int main(int argc, char **argv) {
 	Engine::LOG::SetConfig(true);
 	Engine::GameEngine& game = Engine::GameEngine::GetInstance();
@@ -49,6 +51,7 @@ int main(int argc, char **argv) {
 	game.AddNewScene("scoreboard-scene", new ScoreboardScene());
 	game.AddNewScene("submit-scene", new SubmitScene());
 	game.AddNewScene("start", new StartScene());
+	game.AddNewScene("loading", new LoadingScene());
 	game.Start("start", 60, 1600, 832);
 	
 	return 0;

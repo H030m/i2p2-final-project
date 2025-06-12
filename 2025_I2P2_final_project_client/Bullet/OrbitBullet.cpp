@@ -11,6 +11,7 @@ OrbitBullet::OrbitBullet(float initAngle, float radius, float angularSpeed, Play
     Position.x = centerPlayer->Position.x + radius * cos(angle);
     Position.y = centerPlayer->Position.y + radius * sin(angle);
     Size.x = 48, Size.y = 48;
+    CollisionRadius = 4;
 }
 
 void OrbitBullet::Update(float deltaTime) {

@@ -19,7 +19,9 @@
 #include <mutex>
 #include <nlohmann/json.hpp>
 #include <thread>
+#include <list>
 #include <zlib.h>
+#include <optional>
 #define TARGET_FPS 60
 #define NUM 5
 
@@ -27,10 +29,12 @@ struct ClientContext {
         SOCKET socket;
         bool active = true;
         nlohmann::json lastInput;
+        nlohmann::json addition_output;
         std::thread recvThread;
         std::thread sendThread;
         int id;
         int x, y;
+        bool sendMap = false;
         ClientContext(){
             x = 0, y = 0;
         }
@@ -47,15 +51,17 @@ public:
     void recvOnce(std::shared_ptr<ClientContext> ctx);
     void sendOnce(std::shared_ptr<ClientContext> ctx);
     void cleanupInactiveClients();
+    int getActiveClientCount() const;
     void AddToFrame(const nlohmann::json& object) {
         std::lock_guard<std::mutex> lock(clientMutex);
         frame[object["type"]].push_back(object);
     }
-    std::vector<std::shared_ptr<ClientContext>>& getClients() { return clients; }
+    std::list<std::shared_ptr<ClientContext>>& getClients() { return clients; }
     nlohmann::json frame;
-    std::vector<std::shared_ptr<ClientContext>> clients;
+    std::list<std::shared_ptr<ClientContext>> clients;
     std::mutex clientMutex;
     int nextClientId = 1; 
+    std::optional<nlohmann::json> storedMapState;
 private:
 
     SOCKET serverSock;

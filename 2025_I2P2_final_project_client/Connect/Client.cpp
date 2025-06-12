@@ -53,7 +53,7 @@ bool GameClient::connectToServer(const std::string& host, int port) {
     return true;
 }
 
-char temp[3000000];
+char temp[8000000];
 void GameClient::recvOnce() {
     bool enable_compression = true;
     try {

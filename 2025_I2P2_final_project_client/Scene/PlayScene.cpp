@@ -1,5 +1,8 @@
 #include <algorithm>
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include <cmath>
 #include <fstream>
 #include <functional>
@@ -16,6 +19,7 @@
 #include "Enemy/PlaneEnemy.hpp"
 #include "Enemy/TankEnemy.hpp"
 #include "Enemy/BossEnemy.hpp"
+#include "Enemy/ArmoredEnemy.hpp"
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Group.hpp"
@@ -71,6 +75,7 @@ void PlayScene::Initialize() {
     time(&StartTime); 
     // Add groups from bottom to top.
     AddNewObject(TileMapGroup = new Group());
+    AddNewObject(ObstacleGroup = new Group());
     AddNewObject(GroundEffectGroup = new Group());
     AddNewObject(DebugIndicatorGroup = new Group());
     // AddNewObject(TowerGroup = new Group());
@@ -79,13 +84,14 @@ void PlayScene::Initialize() {
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(WeaponGroup = new Group());
+    
 
     ReadMap();
-
+    EnemyGroup->AddNewObject(new ArmoredEnemy("play/enemy-1.png", 200, 200, 10, 5, 50, 100, 50));
     // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
-    WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
-    // WeaponGroup->AddNewObject(new GunWeapon(100, 100));
-    WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
+    WeaponGroup->AddNewObject(new GunWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(500, 500, game.my_id,MapWidth, MapHeight);
@@ -150,10 +156,12 @@ void PlayScene::Update(float deltaTime) {
             Player* newPlayer = new Player(x, y, id);
             PlayerGroup->AddNewObject(newPlayer);
             player_dict[id] = newPlayer;
+            newPlayer->status = client_info["status"];
         } else {
             if(id == game.my_id) continue;
             it->second->Position.x = x;
             it->second->Position.y = y;
+            it->second->status = client_info["status"];
         }
     }
     
@@ -184,7 +192,8 @@ void PlayScene::Update(float deltaTime) {
     // update myself
     if (player_dict.find(game.my_id) != player_dict.end()) {
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
-        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state};
+        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state, player_dict[game.my_id]->status};
+        sender.output_json["weapon"] = {};
     }
     camera->SetTarget(player_dict[my_id]->Position);
     camera->Update(deltaTime);
@@ -237,7 +246,7 @@ void PlayScene::RenderVisibleObjects() const {
     // 渲染可見的遊戲物件
     std::vector<Group*> renderGroups = {
         GroundEffectGroup, DebugIndicatorGroup, EnemyGroup, 
-        BulletGroup, EffectGroup, PlayerGroup, WeaponGroup
+        BulletGroup, EffectGroup, PlayerGroup, WeaponGroup, ObstacleGroup
     };
     
     for (Group* group : renderGroups) {
@@ -303,7 +312,6 @@ void PlayScene::ReadMap() {
     nlohmann::json data;
     file >> data;
     file.close();
-    std::cerr<<data.dump()<<'\n';
     if (!data.contains("MapState")) {
         std::cerr << "Invalid map format: missing MapState\n";
         return;
@@ -316,31 +324,63 @@ void PlayScene::ReadMap() {
 
     auto& map = data["MapState"];
     mapState.resize(MapHeight, std::vector<nlohmann::json>(MapWidth));
-
+    
+    //Obstacle
     for (int i = 0; i < MapHeight; ++i) {
-        for (int j = 0; j < MapWidth; ++j) {
-            auto tile = map[i][j]["Tile"];
-            mapState[i][j] = map[i][j];
-            std::string file = tile["file_name"];
-            int sx = tile["x"];
-            int sy = tile["y"];
-            int sw = tile["w"];
-            int sh = tile["h"];
+    for (int j = 0; j < MapWidth; ++j) {
+        auto tile = map[i][j]["Tile"];
+        mapState[i][j] = map[i][j];
+        std::string file = tile["file_name"];
+        int sx = tile["x"];
+        int sy = tile["y"];
+        int sw = tile["w"];
+        int sh = tile["h"];
 
-            auto* spr = new Engine::Sprite(
-                file,
-                j * BlockSize, i * BlockSize,
-                0,0,
-                0, 0
-            );
-            spr->Size = TileSize;
-            spr->SourceX = sw * sx + 1;
-            spr->SourceY = sh * sy + 1;
-            spr->SourceW = sw - 2;
-            spr->SourceH = sh - 2;
-            TileMapGroup->AddNewObject(spr);
+        auto* spr = new Engine::Sprite(
+            file,
+            j * BlockSize, i * BlockSize,
+            0, 0,
+            0, 0
+        );
+        spr->Size = TileSize;
+        spr->SourceX = sw * sx + 1;
+        spr->SourceY = sh * sy + 1;
+        spr->SourceW = sw - 2;
+        spr->SourceH = sh - 2;
+        TileMapGroup->AddNewObject(spr);
+
+        // === 新增障礙物繪製 ===
+        if (map[i][j].contains("Obstacle")) {
+            auto& obs = map[i][j]["Obstacle"];
+            if (obs.contains("file_name")) {
+                std::string obs_file = obs["file_name"];
+                float ox = obs["x"];
+                float oy = obs["y"];
+                float ow = obs["w"];
+                float oh = obs["h"];
+
+                auto* obs_spr = new Engine::Sprite(
+                    obs_file,
+                    j * BlockSize, i * BlockSize,
+                    0, 0,
+                    0, 0
+                );
+                obs_spr->Size = TileSize;
+                obs_spr->SourceX = ow * ox + 1;
+                obs_spr->SourceY = oh * oy + 1;
+                obs_spr->SourceW = ow - 2;
+                obs_spr->SourceH = oh - 2;
+                if(obs.contains("SizeX") && obs.contains("SizeY")){
+                    std::cerr<<"hello tree "<<i<<' '<<j<<'\n';
+                    obs_spr->Size.x = obs["SizeX"];
+                    obs_spr->Size.y = obs["SizeY"];
+                    obs_spr->Position.y -= 32;
+                }
+                ObstacleGroup->AddNewObject(obs_spr);
+            }
         }
     }
+}
 }
 void PlayScene::ReadEnemyWave() {
     std::string filename = std::string("Resource/enemy") + std::to_string(MapId) + ".txt";
@@ -371,3 +411,33 @@ std::vector<std::vector<int>> PlayScene::CalculateBFSDistance() {
     return map;
 }
 
+bool PlayScene::isWalkable(int x, int y, int radius) {
+    // Convert pixel-based position and radius into tile coordinate range
+    int left = std::max(0, (x - radius) / BlockSize);
+    int right = std::min(MapWidth - 1, (x + radius) / BlockSize);
+    int top = std::max(0, (y - radius) / BlockSize);
+    int bottom = std::min(MapHeight - 1, (y + radius) / BlockSize);
+
+    // Iterate through the square area of tiles that might intersect with the circular area
+    for (int j = top; j <= bottom; ++j) {
+        for (int i = left; i <= right; ++i) {
+            // Calculate the center of the current tile
+            int tileCenterX = i * BlockSize + BlockSize / 2;
+            int tileCenterY = j * BlockSize + BlockSize / 2;
+
+            // Check if the tile is within the circle using distance squared
+            int dx = tileCenterX - x;
+            int dy = tileCenterY - y;
+            if (dx * dx + dy * dy <= radius * radius) {
+                // Check if the tile contains a non-penetrable obstacle
+                if (mapState[j][i].contains("Obstacle") &&
+                    mapState[j][i]["Obstacle"].contains("Penetrable") &&
+                    mapState[j][i]["Obstacle"]["Penetrable"] == false) {
+                    return false; // Found a blocking tile
+                }
+            }
+        }
+    }
+
+    return true; // No blocking tiles found
+}

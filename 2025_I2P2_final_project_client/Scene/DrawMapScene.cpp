@@ -79,7 +79,7 @@ void DrawMapScene::Terminate() {
     IScene::Terminate();
 }
 void DrawMapScene::Update(float deltaTime) {
-    // update client's W, A, S, DAdd commentMore actions
+    // update client's W, A, S, D
     // PlayerGroup->Update(deltaTime);
 
     // // check new player join & update all players' position
@@ -263,6 +263,8 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Obstacle"]["h"] = (float)tile["Tile"]["h"]*1.5;
                 MapState[y][x]["Obstacle"]["file_name"] = "play/grass/vegetation.png";
                 MapState[y][x]["Obstacle"]["Penetrable"] = false;
+                MapState[y][x]["Obstacle"]["SizeX"] = 64;
+                MapState[y][x]["Obstacle"]["SizeY"] = 96;
                 if(Obstacle_dict.count(y + x*MapHeight))
                 ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(

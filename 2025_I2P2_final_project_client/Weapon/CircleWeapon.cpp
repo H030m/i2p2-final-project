@@ -34,5 +34,5 @@ void CircleWeapon::Update(float Deltatime) {
 }
 
 void CircleWeapon::Draw() const {
-    //don't drawAdd commentMore actions
+    //don't draw
 }

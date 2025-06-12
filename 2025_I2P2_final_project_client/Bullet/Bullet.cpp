@@ -21,10 +21,32 @@ Bullet::Bullet(std::string img, float speed, float damage, Engine::Point positio
 }
 void Bullet::Update(float deltaTime) {
     Sprite::Update(deltaTime);
-    PlayScene *scene = getPlayScene();
-    // Can be improved by Spatial Hash, Quad Tree, ...
-    // However simply loop through all enemies is enough for this program.
-    // Check if out of boundary.
-    if (!Engine::Collider::IsRectOverlap(Position - Size / 2, Position + Size / 2, Engine::Point(0, 0), PlayScene::GetClientSize()))
-        getPlayScene()->BulletGroup->RemoveObject(objectIterator);
+    PlayScene* scene = getPlayScene();
+
+    // Compute new position
+    Engine::Point nextPos = Position + Velocity * deltaTime;
+
+    // Line stepping resolution
+    const float step = 4.0f; // step size in pixels
+    Engine::Point dir = (nextPos - Position).Normalize();
+    float totalDist = (nextPos - Position).Magnitude();
+    int steps = std::ceil(totalDist / step);
+
+    for (int i = 1; i <= steps; ++i) {
+        Engine::Point checkPos = Position + dir * (step * i);
+        if (!scene->isWalkable(checkPos.x, checkPos.y, CollisionRadius)) {
+            scene->BulletGroup->RemoveObject(objectIterator);
+            std::cerr << "Bullet hit wall mid-path, removed.\n";
+            return;
+        }
+    }
+
+    // Update bullet position
+    Position = nextPos;
+
+    // Check out-of-bounds after movement
+    if (!Engine::Collider::IsRectOverlap(Position - Size / 2, Position + Size / 2, Engine::Point(0, 0), PlayScene::GetClientSize())) {
+        scene->BulletGroup->RemoveObject(objectIterator);
+        return;
+    }
 }

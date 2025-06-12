@@ -63,10 +63,12 @@ public:
     Group *UIGroup;
     Group *PlayerGroup;
     Group *WeaponGroup;
+    Group *ObstacleGroup;
     Engine::Label *UIMoney;
     Engine::Label *UILives;
     Engine::Image *imgTarget;
     Engine::Sprite *dangerIndicator;
+    
     // Turret *preview;
     std::vector<std::vector<nlohmann::json>> mapState;
     std::vector<std::vector<int>> mapDistance;
@@ -94,6 +96,9 @@ public:
     void ConstructUI();
     void UIBtnClicked(int id);
     bool CheckSpaceValid(int x, int y);
+
+    //Given the coordinates, return whether it can be moved
+    bool isWalkable(int x, int y, int radius);
     std::vector<std::vector<int>> CalculateBFSDistance();
     
 

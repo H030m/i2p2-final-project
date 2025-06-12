@@ -12,7 +12,7 @@ Player::Player(float x, float y) :
     movingUp(false), 
     movingDown(false), 
     movingLeft(false), 
-    movingRight(false),Engine::Sprite("play/Player/mPlayer_ [human].png", x, y,0,0) {
+    movingRight(false),Engine::Sprite("play/Player/mPlayer_ [human].png", x, y, 0, 0) {
     
     Position = Engine::Point(x, y);
     Size = Engine::Point(128, 128);
@@ -62,20 +62,14 @@ Player::Player(float x, float y, int id, int MapWidth, int MapHeight):id(id),
 
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
+    CollisionRadius = 55;
 }
 
 void Player::Update(float deltaTime) {
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
 
-    if (movingDown || movingUp || movingLeft || movingRight) {
-        status = PLAYER_WALK;
-        if (movingLeft && !movingRight) Flip = 1;
-        else if (movingRight && !movingLeft) Flip = 0;
-    }
-    else {
-        status = PLAYER_IDLE;
-    }
+    
 
     // animation 
     SourceW = 32; SourceH = 32;
@@ -109,32 +103,77 @@ void Player::Update(float deltaTime) {
 }
 
 void Player::UpdateMyPlayer(float deltaTime) {
+    //Status
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    if ((movingDown || movingUp || movingLeft || movingRight) && id == game.my_id) {
+        status = PLAYER_WALK;
+        if (movingLeft && !movingRight) Flip = 1;
+        else if (movingRight && !movingLeft) Flip = 0;
+    }
+    else {
+        status = PLAYER_IDLE;
+    }
     
+    //next position
     Engine::Point velocity(0, 0);
-    
     if (movingUp) velocity.y -= speed;
     if (movingDown) velocity.y += speed;
     if (movingLeft) velocity.x -= speed;
     if (movingRight) velocity.x += speed;
-    
 
     if (velocity.x != 0 && velocity.y != 0) {
-        velocity.x *= 0.707f; // sqrt(2)/2
+        velocity.x *= 0.707f;
         velocity.y *= 0.707f;
     }
-    
 
     float newX = Position.x + velocity.x * deltaTime;
     float newY = Position.y + velocity.y * deltaTime;
-    
 
     const int mapWidth = MapWidth * BlockSize;
     const int mapHeight = MapHeight * BlockSize;
-    
     newX = std::max(0.0f, std::min(newX, (float)(mapWidth)));
     newY = std::max(0.0f, std::min(newY, (float)(mapHeight)));
-    
-    Position.x = newX, Position.y = newY;
+
+ 
+    int errorX = 0, errorY = 16;
+    if (game.CurrentScene == "play") {
+        PlayScene* scene = dynamic_cast<PlayScene*>(game.GetActiveScene());
+
+        if (scene) {
+            if (!spawned) {
+                if (!scene->isWalkable(Position.x + errorX, Position.y  + errorY , CollisionRadius)) {
+                    // Try to find nearest walkable point (only once)
+                    const int maxSearchRadius = 5;
+                    bool found = false;
+                    for (int r = 1; r <= maxSearchRadius && !found; ++r) {
+                        for (int dx = -r; dx <= r && !found; ++dx) {
+                            for (int dy = -r; dy <= r && !found; ++dy) {
+                                if (abs(dx) != r && abs(dy) != r) continue;
+                                int tx = Position.x + dx * BlockSize;
+                                int ty = Position.y + dy * BlockSize;
+                                if (tx < 0 || ty < 0 || tx >= mapWidth || ty >= mapHeight) continue;
+                                if (scene->isWalkable(tx + errorX, ty + errorY, CollisionRadius)) {
+                                    Position.x = tx;
+                                    Position.y = ty;
+                                    found = true;
+                                    std::cerr << "[Spawn Fix] Player moved to walkable tile.\n";
+                                }
+                            }
+                        }
+                    }
+                    if (!found) std::cerr << "[Spawn Fix] No nearby walkable tile found.\n";
+                }
+                spawned = true;
+            }
+
+            // normal movement blocked
+            if (!scene->isWalkable(newX + errorX, newY + errorY, CollisionRadius))
+                return;
+        }
+    }
+
+    Position.x = newX;
+    Position.y = newY;
 }
 
 void Player::Draw() const {

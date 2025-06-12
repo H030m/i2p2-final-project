@@ -323,6 +323,7 @@ namespace Engine {
             delete pair.second;
     }
     void GameEngine::changeScene(const std::string &name) {
+        CurrentScene = name;
         if (scenes.count(name) == 0)
             throw std::invalid_argument("Cannot change to a unknown scene.");
         // Terminate the old scene.

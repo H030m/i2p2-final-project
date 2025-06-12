@@ -17,6 +17,7 @@ class Player : public Engine::Sprite {
 private:
     bool movingUp, movingDown, movingLeft, movingRight;
     int MapWidth,BlockSize = 64,MapHeight;
+    bool spawned = false;
 public:
     int id;
     int health;

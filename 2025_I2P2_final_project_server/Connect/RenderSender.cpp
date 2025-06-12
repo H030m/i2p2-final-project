@@ -85,6 +85,9 @@ void RenderSender::start() {
             for (auto& ctx : clients) {
                 if (ctx->active){
                     frame["my_id"] = ctx->id;
+                    if(ctx->sendMap)frame["map"] = storedMapState;
+                    else frame.erase("map");
+                    ctx->sendMap = false;
                     sendOnce(ctx);
                 }
                     
@@ -121,7 +124,15 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
                 std::cerr << "Invalid JSON chunk from client.\n";
             }
         }
-        std::cerr<<"recv: "<<ctx->lastInput<<'\n';
+        // std::cerr<<"recv: "<<ctx->lastInput<<'\n';
+
+        if(ctx->lastInput.contains("map")){
+            std::cerr<<"get map"<< ' '<<clients.size()<<'\n';
+            if(clients.size() == 1){
+                storedMapState = ctx->lastInput;
+            } 
+            ctx->sendMap = true;
+        }
     } else if (len == 0) {
         // client Close the connection normally
         ctx->active = false;
@@ -139,7 +150,8 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
 }
 void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
     if (!ctx->active) return;
-    std::cerr<<"framesize "<<frame.dump()<<'\n';
+    // if(frame.contains("map"))
+    // std::cerr<<"frame  "<<frame.dump()<<'\n';
     std::string raw = frame.dump(); // ­ì©l JSON ¦r¦ê
     // std::cerr << "[send raw size]: " << raw.size() << " bytes\n";
     // std::cerr << "[send raw content]: " << raw << "\n";

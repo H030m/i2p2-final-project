@@ -31,7 +31,7 @@ void Weapon::Update(float deltaTime) {
     al_get_mouse_state(&mouseState);
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
 
-    // 1. 先將螢幕座標縮放為遊戲座標（處理全螢幕/放大縮小）Add commentMore actions
+    // 1. 先將螢幕座標縮放為遊戲座標（處理全螢幕/放大縮小）
     float screenX = mouseState.x / ((float)al_get_display_width(game.display) / game.screenW);
     float screenY = mouseState.y / ((float)al_get_display_height(game.display) / game.screenH);
 

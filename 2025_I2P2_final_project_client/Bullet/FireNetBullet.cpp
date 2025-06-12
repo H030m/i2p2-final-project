@@ -13,6 +13,7 @@ class Weapon;
 
 FireNetBullet::FireNetBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent) : Bullet("play/fire-net.png", 800, 0, position, forwardDirection, rotation - ALLEGRO_PI / 2, parent) {
     poison = true;
+    CollisionRadius = 4;
 }
 void FireNetBullet::OnExplode(Enemy *enemy) {
     std::random_device dev;
