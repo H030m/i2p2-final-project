@@ -10,10 +10,12 @@
 #include "Weapon.hpp"
 #include "Scene/PlayScene.hpp"
 
-CircleWeapon::CircleWeapon(float x, float y)
+CircleWeapon::CircleWeapon(float x, float y, int _owner_id)
     : Weapon("play/turret-1.png", x, y, 200, 0.1) {
     // Move center downward, since we the turret head is slightly biased upward.
     // Anchor.y += 8.0f / GetBitmapHeight();
+    owner_id =  _owner_id;
+    type = 3;
     created = false;
 }
 void CircleWeapon::CreateBullet() {

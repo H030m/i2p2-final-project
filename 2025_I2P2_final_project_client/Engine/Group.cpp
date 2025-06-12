@@ -136,4 +136,13 @@ namespace Engine {
             list.push_back(it.second);
         return list;
     }
+
+    void Group::RemoveObject(IObject* obj) {
+        for (auto it = objects.begin(); it != objects.end(); ++it) {
+            if (it->second == obj) {
+                RemoveObject(it);
+                break;
+            }
+        }
+    }
 }

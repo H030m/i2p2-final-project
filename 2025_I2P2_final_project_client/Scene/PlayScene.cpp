@@ -88,10 +88,6 @@ void PlayScene::Initialize() {
 
     ReadMap();
     EnemyGroup->AddNewObject(new ArmoredEnemy("play/enemy-1.png", 200, 200, 10, 5, 50, 100, 50));
-    // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
-    // WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
-    WeaponGroup->AddNewObject(new GunWeapon(100, 100));
-    // WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(500, 500, game.my_id,MapWidth, MapHeight);
@@ -99,6 +95,19 @@ void PlayScene::Initialize() {
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
         
+        // weapon
+        // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
+        // WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
+        // WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
+        Weapon* k = new ShotgunWeapon(0, 0, my_id);
+        WeaponGroup->AddNewObject(k);
+        newPlayer->Weapon_hold.push_back(k);
+        newPlayer->Weapon_owned.push_back(k);
+        k = new CircleWeapon(0, 0, my_id);
+        WeaponGroup->AddNewObject(k);
+        newPlayer->Weapon_hold.push_back(k);
+        newPlayer->Weapon_owned.push_back(k);
+
         // cameraAdd commentMore actions
         
         camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
@@ -139,6 +148,7 @@ void PlayScene::Update(float deltaTime) {
     
     // itrate through all players
     for (auto [_id, client_info] : sender.input_json.items()) {
+        bool isNewPlayer = false;
         if (_id == "my_id") continue;
         int id = std::stoi(_id);
         
@@ -153,6 +163,7 @@ void PlayScene::Update(float deltaTime) {
 
         auto it = player_dict.find(id);
         if (it == player_dict.end()) {
+            isNewPlayer = true;
             Player* newPlayer = new Player(x, y, id);
             PlayerGroup->AddNewObject(newPlayer);
             player_dict[id] = newPlayer;
@@ -162,6 +173,42 @@ void PlayScene::Update(float deltaTime) {
             it->second->Position.x = x;
             it->second->Position.y = y;
             it->second->status = client_info["status"];
+        }
+
+        
+        if (client_info.contains("weapon") && client_info["weapon"].is_array()) {
+            std::vector<int> weapons;
+            for (auto& weapon : client_info["weapon"]) {
+                if (weapon.is_number_integer()) {
+                    weapons.push_back(weapon.get<int>());
+                }
+            }
+
+            if (!isNewPlayer) {
+                for (Weapon* w : player_dict[id]->Weapon_hold) {
+                    WeaponGroup->RemoveObject(w);  // å¾ž group ç§»é™¤
+                    delete w;                      // é‡‹æ”¾è¨˜æ†¶é«”
+                }   
+                player_dict[id]->Weapon_hold.clear();
+            }
+            
+            Weapon* ww;
+            for (auto weapontype : weapons) {
+                switch(weapontype) {
+                    case(1) : 
+                        WeaponGroup->AddNewObject(ww = new GunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                        break;
+                    case(2) : 
+                        WeaponGroup->AddNewObject(ww = new ShotgunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                        break;
+                    case(3) : 
+                        WeaponGroup->AddNewObject(ww = new CircleWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                        break;
+                    case(4) : 
+                        WeaponGroup->AddNewObject(ww = new BounceWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                        break;
+                }
+            }
         }
     }
     
@@ -192,8 +239,12 @@ void PlayScene::Update(float deltaTime) {
     // update myself
     if (player_dict.find(game.my_id) != player_dict.end()) {
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
-        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state, player_dict[game.my_id]->status};
-        sender.output_json["weapon"] = {};
+        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state, 
+                                        player_dict[game.my_id]->status};
+                                    
+        for (auto n: player_dict[game.my_id]->Weapon_hold) {
+            sender.output_json["weapon"].push_back(n->type);
+        }
     }
     camera->SetTarget(player_dict[my_id]->Position);
     camera->Update(deltaTime);
@@ -223,17 +274,17 @@ void PlayScene::Draw() const {
 void PlayScene::RenderVisibleTiles() const {
     auto visibleArea = camera->GetVisibleTileArea(BlockSize);
     
-    // ¥u´è¬V¥i¨£ªº¥Ë¤ù
+    // ï¿½uï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½ï¿½ï¿½Ë¤ï¿½
     for (auto obj : TileMapGroup->GetObjects()) {
         Engine::Sprite* sprite = dynamic_cast<Engine::Sprite*>(obj);
         if (!sprite) continue;
         
-        // ÀË¬d¥Ë¤ù¬O§_¦b¥i¨£½d³ò¤º
+        // ï¿½Ë¬dï¿½Ë¤ï¿½ï¿½Oï¿½_ï¿½bï¿½iï¿½ï¿½ï¿½dï¿½ï¿½
         if (camera->IsInView(sprite->Position, BlockSize)) {
-            // ±N¥@¬É®y¼ÐÂà´«¬°¿Ã¹õ®y¼Ð
+            // ï¿½Nï¿½@ï¿½É®yï¿½ï¿½ï¿½à´«ï¿½ï¿½ï¿½Ã¹ï¿½ï¿½yï¿½ï¿½
             Engine::Point screenPos = camera->WorldToScreen(sprite->Position);
             
-            // ¼È®É­×§ïºëÆF¦ì¸m¶i¦æ´è¬V
+            // ï¿½È®É­×§ï¿½ï¿½ï¿½Fï¿½ï¿½mï¿½iï¿½ï¿½ï¿½V
             Engine::Point originalPos = sprite->Position;
             sprite->Position = screenPos;
             sprite->Draw();
@@ -243,7 +294,7 @@ void PlayScene::RenderVisibleTiles() const {
 }
 
 void PlayScene::RenderVisibleObjects() const {
-    // ´è¬V¥i¨£ªº¹CÀ¸ª«¥ó
+    // ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     std::vector<Group*> renderGroups = {
         GroundEffectGroup, DebugIndicatorGroup, EnemyGroup, 
         BulletGroup, EffectGroup, PlayerGroup, WeaponGroup, ObstacleGroup
@@ -349,7 +400,7 @@ void PlayScene::ReadMap() {
         spr->SourceH = sh - 2;
         TileMapGroup->AddNewObject(spr);
 
-        // === ·s¼W»ÙÃªª«Ã¸»s ===
+        // === ï¿½sï¿½Wï¿½ï¿½Ãªï¿½ï¿½Ã¸ï¿½s ===
         if (map[i][j].contains("Obstacle")) {
             auto& obs = map[i][j]["Obstacle"];
             if (obs.contains("file_name")) {

@@ -10,11 +10,13 @@
 #include "Weapon.hpp"
 #include "Scene/PlayScene.hpp"
 
-GunWeapon::GunWeapon(float x, float y)
+GunWeapon::GunWeapon(float x, float y, int _owner_id)
     : Weapon("play/AK47_Sheet.png", x, y, 200, 0.1) {
     // Move center downward, since we the turret head is slightly biased upward.
     // Anchor.y += 8.0f / GetBitmapHeight();
+    owner_id = _owner_id;
     Anchor.x += 15.0f / GetBitmapHeight();
+    type = 1;
     
     SourceW = 135, SourceH = 51, SourceY = 0, SourceX = 0;
     Size.x = 135, Size.y = 51, Flip = 2;

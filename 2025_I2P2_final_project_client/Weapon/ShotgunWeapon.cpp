@@ -10,12 +10,14 @@
 #include "Weapon.hpp"
 #include "Scene/PlayScene.hpp"
 
-ShotgunWeapon::ShotgunWeapon(float x, float y)
+ShotgunWeapon::ShotgunWeapon(float x, float y, int _owner_id)
     : Weapon("play/Shotgun1-sheet.png", x, y, 200, 0.7) {
     // Move center downward, since we the turret head is slightly biased upward.
     // Anchor.y += 8.0f / GetBitmapHeight();
+    owner_id =  _owner_id;
     Anchor.x -= 25.0f / GetBitmapHeight();
     Size.x = 128, Size.y = 56;
+    type = 2;
     SourceW = 62, SourceH = 28, SourceY = 0, SourceX = 0;
     delta = ALLEGRO_PI;
 }

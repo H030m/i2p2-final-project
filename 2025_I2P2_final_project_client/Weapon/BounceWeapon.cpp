@@ -10,11 +10,13 @@
 #include "Weapon.hpp"
 #include "Scene/PlayScene.hpp"
 
-BounceWeapon::BounceWeapon(float x, float y)
+BounceWeapon::BounceWeapon(float x, float y, int _owner_id)
     : Weapon("play/rpg.png", x, y, 200, 0.5) {
     // Move center downward, since we the turret head is slightly biased upward.
     // Anchor.y += 8.0f / GetBitmapHeight();
-     Size.x = 78, Size.y = 32;
+    owner_id =  _owner_id;
+    type = 4;
+    Size.x = 78, Size.y = 32;
 }
 void BounceWeapon::CreateBullet() {
     Engine::Point diff = Engine::Point(cos(angle - ALLEGRO_PI / 2), sin(angle - ALLEGRO_PI / 2));

@@ -13,6 +13,7 @@
 #include "Player/Player.hpp"
 #include "Camera/Camera.hpp"
 class Weapon;
+
 namespace Engine {
     class Group;
     class Image;
@@ -43,6 +44,7 @@ protected:
 
 public:
     std::unordered_map<int, Player*> player_dict;
+    std::unordered_map<int, std::vector<Weapon*>> weapon_dict;
     static bool DebugMode;
     static const std::vector<Engine::Point> directions;
     static int MapWidth, MapHeight;
