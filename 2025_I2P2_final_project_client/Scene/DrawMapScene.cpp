@@ -32,6 +32,9 @@ const int tileW = 32, tileH = 32;
 const int Xgap = 8, Ygap = 2;
 std::string filename = "play/grass/grounds.png";
 std::string obstacle_filename = "play/grass/terrain.png";
+static bool isNumber(const std::string& s) {
+    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
 void DrawMapScene::Initialize() {
     AddNewObject(TileMapGroup = new Group());
     AddNewControlObject(UIGroup = new Group());
@@ -86,7 +89,7 @@ void DrawMapScene::Update(float deltaTime) {
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
     for (auto [_id, client_info] : sender.input_json.items()) {
-        if (_id == "my_id") continue;
+        if (!isNumber(_id)) continue;
         int id = std::stoi(_id);
         if(id < 0)continue;//enemy
         if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 3 || client_info["player"][2] != -1)
