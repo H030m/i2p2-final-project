@@ -304,6 +304,7 @@ void PlayScene::Update(float deltaTime) {
         
         name_label->Position.y = 96*count;
         health_label->Position.y = 96*count + 50;
+        name_label->Text = "player_" + std::to_string(curid);
         health_label->Text = "Health : " + std::to_string(player_dict[curid]->health);
         count++;
     }
