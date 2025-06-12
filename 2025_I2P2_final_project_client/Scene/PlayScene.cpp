@@ -87,11 +87,12 @@ void PlayScene::Initialize() {
     
 
     ReadMap();
-    EnemyGroup->AddNewObject(new ArmoredEnemy("play/enemy-1.png", 200, 200, 10, 5, 50, 100, 50));
+    // EnemyGroup->AddNewObject(new ArmoredEnemy("play/enemy-1.png", 200, 200, 10, 5, 50, 100, 50));
     // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
     // WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
-    WeaponGroup->AddNewObject(new GunWeapon(100, 100));
+    // WeaponGroup->AddNewObject(new GunWeapon(100, 100));
     // WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
+
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(500, 500, game.my_id,MapWidth, MapHeight);
@@ -99,10 +100,20 @@ void PlayScene::Initialize() {
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
         
-        // cameraAdd commentMore actions
+        // camera
         
         camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
         camera->SetTarget(newPlayer->Position);
+
+         //Weapon
+        Weapon* k = new ShotgunWeapon(0, 0, my_id);
+        WeaponGroup->AddNewObject(k);
+        newPlayer->Weapon_hold.push_back(k);
+        newPlayer->Weapon_owned.push_back(k);
+        k = new CircleWeapon(0, 0, my_id);
+        WeaponGroup->AddNewObject(k);
+        newPlayer->Weapon_hold.push_back(k);
+        newPlayer->Weapon_owned.push_back(k);
     }
 
     // Should support buttons.
@@ -139,6 +150,7 @@ void PlayScene::Update(float deltaTime) {
     
     // itrate through all players
     for (auto [_id, client_info] : sender.input_json.items()) {
+        bool isNewPlayer = false;
         if (_id == "my_id") continue;
         int id = std::stoi(_id);
         
@@ -152,7 +164,9 @@ void PlayScene::Update(float deltaTime) {
         float y = client_info["player"][1];
 
         auto it = player_dict.find(id);
+        
         if (it == player_dict.end()) {
+            isNewPlayer = true;
             Player* newPlayer = new Player(x, y, id);
             PlayerGroup->AddNewObject(newPlayer);
             player_dict[id] = newPlayer;
@@ -162,6 +176,40 @@ void PlayScene::Update(float deltaTime) {
             it->second->Position.x = x;
             it->second->Position.y = y;
             it->second->status = client_info["status"];
+        }
+        if (client_info.contains("weapon") && client_info["weapon"].is_array()) {
+            std::vector<int> weapons;
+            for (auto& weapon : client_info["weapon"]) {
+                if (weapon.is_number_integer()) {
+                    weapons.push_back(weapon.get<int>());
+                }
+            }
+
+            if (!isNewPlayer) {
+                for (Weapon* w : player_dict[id]->Weapon_hold) {
+                    WeaponGroup->RemoveObject(w);  // 從 group 移除
+                    delete w;                      // 釋放記憶體
+                }   
+                player_dict[id]->Weapon_hold.clear();
+            }
+            
+            Weapon* ww;
+            for (auto weapontype : weapons) {
+                switch(weapontype) {
+                    case(1) : 
+                        WeaponGroup->AddNewObject(ww = new GunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                        break;
+                    case(2) : 
+                        WeaponGroup->AddNewObject(ww = new ShotgunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                        break;
+                    case(3) : 
+                        WeaponGroup->AddNewObject(ww = new CircleWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                        break;
+                    case(4) : 
+                        WeaponGroup->AddNewObject(ww = new BounceWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                        break;
+                }
+            }
         }
     }
     
@@ -192,8 +240,12 @@ void PlayScene::Update(float deltaTime) {
     // update myself
     if (player_dict.find(game.my_id) != player_dict.end()) {
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
-        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state, player_dict[game.my_id]->status};
-        sender.output_json["weapon"] = {};
+        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state, 
+                                        player_dict[game.my_id]->status};
+                                    
+        for (auto n: player_dict[game.my_id]->Weapon_hold) {
+            sender.output_json["weapon"].push_back(n->type);
+        }
     }
     camera->SetTarget(player_dict[my_id]->Position);
     camera->Update(deltaTime);
@@ -371,11 +423,11 @@ void PlayScene::ReadMap() {
                 obs_spr->SourceW = ow - 2;
                 obs_spr->SourceH = oh - 2;
                 if(obs.contains("SizeX") && obs.contains("SizeY")){
-                    std::cerr<<"hello tree "<<i<<' '<<j<<'\n';
                     obs_spr->Size.x = obs["SizeX"];
                     obs_spr->Size.y = obs["SizeY"];
-                    obs_spr->Position.y -= 32;
                 }
+                if(obs["Obstacle"].contains("OffsetX")) obs_spr->Position.x += (int)obs["Obstacle"]["OffsetX"];
+                if(obs["Obstacle"].contains("OffsetY")) obs_spr->Position.x += (int)obs["Obstacle"]["OffsetY"];
                 ObstacleGroup->AddNewObject(obs_spr);
             }
         }

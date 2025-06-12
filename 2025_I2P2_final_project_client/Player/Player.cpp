@@ -4,7 +4,10 @@
 #include "Engine/Resources.hpp"
 #include "Scene/PlayScene.hpp"
 #include <algorithm>
+#include "Weapon/Weapon.hpp"
+#include <vector>
 
+class Weapon;
 Player::Player(float x, float y) : 
     speed(250.0f), 
     health(100), 

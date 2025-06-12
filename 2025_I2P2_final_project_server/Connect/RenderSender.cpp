@@ -1,7 +1,9 @@
 // RenderSender.cpp
 #include "RenderSender.hpp"
+#include "Enemy/Enemy.hpp"
 #include <iostream>
 #include <chrono>
+using namespace std::chrono;
 std::string compress_string(const std::string& str);
 std::string decompress_string(const std::string& str, uLong estimated_size = 10 * 1024 * 1024);
 void sendCompressedJson(SOCKET sock, const nlohmann::json& j);
@@ -35,8 +37,10 @@ RenderSender::~RenderSender() {
 
 
 void RenderSender::start() {
+    
     // accept
     std::thread([this]() {
+        
         std::cout << "Client accept thread started.\n";
         while (true) {
             SOCKET clientSock = accept(serverSock, nullptr, nullptr);
@@ -61,10 +65,20 @@ void RenderSender::start() {
    
     using namespace std::chrono;
     const auto interval = milliseconds(1000 / TARGET_FPS);
-
+    auto last_time = steady_clock::now();
+    float deltaTime;
+    auto now = steady_clock::now();
+    deltaTime = duration_cast<duration<float>>(now - last_time).count();
+    last_time = now;
     while (true) {
+        auto now = steady_clock::now();
+        deltaTime = duration_cast<duration<float>>(now - last_time).count();
+        last_time = now;
         auto start_time = steady_clock::now();
-        if(clients.size() == 0)storedMapState.reset();
+        if(clients.size() == 0){
+            storedMapState.reset();
+            // std::cerr<<"Clear Map!"<<'\n';
+        }
         // 1. recv from all client
         {
             std::lock_guard<std::mutex> lock(clientMutex);
@@ -80,19 +94,40 @@ void RenderSender::start() {
                     frame[std::to_string(ctx->id)] = ctx->lastInput;
                 }
             }
-
+            //update enemy
+            for (auto& enemy : enemies) {
+                // std::cerr<<"hello enemy "<<enemy.id<<' '<<"alive? "<<enemy.alive<<'\n';
+                if (enemy.alive) {
+                    
+                    UpdateEnemyInstance(enemy, deltaTime, *this);
+                    nlohmann::json obj;
+                    obj["type"] = "enemy";
+                    obj["id"] = enemy.id;
+                    obj["enemyType"] = enemy.type;
+                    obj["x"] = enemy.x;
+                    obj["y"] = enemy.y;
+                    obj["rotation"] = enemy.rotation;
+                    AddToFrame(obj);
+                }
+            }
             // 3. send to all clients
             for (auto& ctx : clients) {
                 if (ctx->active){
                     frame["my_id"] = ctx->id;
-                    if(ctx->sendMap)frame["map"] = storedMapState;
-                    else frame.erase("map");
+                    if(ctx->sendMap){ 
+                        std::cerr<<"send Map to "<<ctx->id<<'\n';
+                        frame["map"] = storedMapState;
+                    }else{
+                        frame.erase("map");
+                    } 
                     ctx->sendMap = false;
                     sendOnce(ctx);
+                    
                 }
                     
             }
-
+            
+            
             cleanupInactiveClients();
         }
 
@@ -127,10 +162,46 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
         // std::cerr<<"recv: "<<ctx->lastInput<<'\n';
 
         if(ctx->lastInput.contains("map")){
-            std::cerr<<"get map"<< ' '<<clients.size()<<'\n';
             if(clients.size() == 1 || !storedMapState.has_value()){
                 storedMapState = ctx->lastInput;
-            } 
+
+                        // 重建 EnemyInstance 清單
+                enemies.clear(); // 清空原本的怪物清單
+
+                const auto& map = storedMapState.value()["map"]["MapState"];
+                int h = map.size();
+                
+                int w = map[0].size();
+                int idCounter = 0;
+                std::cerr<<"h "<<h<<" w "<< w<<'\n';
+                for (int y = 0; y < h; ++y) {
+                    for (int x = 0; x < w; ++x) {
+                        const auto& cell = map[y][x];
+                        if (!cell.contains("SpawnPoint")) continue;
+                    
+                        // 讀取 type，若沒指定則設為 0
+                        int type = 0;
+                        if (cell.contains("Type") && cell["Type"].is_number_integer())
+                            type = cell["Type"];
+                    
+                        EnemyInstance enemy;
+                        enemy.id = idCounter++;
+                        enemy.type = type;
+                        enemy.x = x * blockSize + blockSize / 2;
+                        enemy.y = y * blockSize + blockSize / 2;
+                        enemy.spawnX = enemy.x;
+                        enemy.spawnY = enemy.y;
+                        enemy.alive = true;
+                        enemy.cooldownTimer = 0;
+                        // enemy.path = ... ← 可加上自動導向起點的 path
+                        enemies.push_back(enemy);
+                        std::cerr<<"enemy id: "<<enemy.id<<' '<<enemy.x<<' '<<enemy.y<<'\n';
+                    }
+                }
+                std::cerr << "Spawned " << enemies.size() << " enemies.\n";
+            }
+
+            
             ctx->sendMap = true;
         }
     } else if (len == 0) {
@@ -151,7 +222,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
 void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
     if (!ctx->active) return;
     // if(frame.contains("map"))
-    // std::cerr<<"frame  "<<frame.dump()<<'\n';
+    std::cerr<<"frame  "<<frame.dump()<<'\n';
     std::string raw = frame.dump(); // 原始 JSON 字串
     // std::cerr << "[send raw size]: " << raw.size() << " bytes\n";
     // std::cerr << "[send raw content]: " << raw << "\n";
@@ -233,3 +304,4 @@ void sendCompressedJson(SOCKET sock, const nlohmann::json& j) {
     send(sock, (char*)&len, sizeof(len), 0);
     send(sock, compressed.data(), compressed.size(), 0);
 }
+

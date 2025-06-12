@@ -23,7 +23,7 @@
 #include "Map/TextureButton.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "Camera/Camera.hpp"
-const int DrawMapScene::MapWidth = 50, DrawMapScene::MapHeight = 50;
+const int DrawMapScene::MapWidth = 10, DrawMapScene::MapHeight = 10;
 const int DrawMapScene::BlockSize = 64;
 const Engine::Point TileSize(65,65);
 const int tileX = 7; 
@@ -265,6 +265,8 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Obstacle"]["Penetrable"] = false;
                 MapState[y][x]["Obstacle"]["SizeX"] = 64;
                 MapState[y][x]["Obstacle"]["SizeY"] = 96;
+                MapState[y][x]["Obstacle"]["OffsetX"] = 0;
+                MapState[y][x]["Obstacle"]["OffsetY"] = -32;
                 if(Obstacle_dict.count(y + x*MapHeight))
                 ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
@@ -297,7 +299,9 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Obstacle"]["Penetrable"] = true;
                 MapState[y][x]["Obstacle"]["SizeX"] = 64;
                 MapState[y][x]["Obstacle"]["SizeY"] = 64;
-                MapState[y][x]["SpawnPoint"] = 0;//spawn monster 0
+                MapState[y][x]["SpawnPoint"] = 0;//spawn Enemy 0
+                MapState[y][x]["SpawnCoolDown"] = 5; // if there is no enemy created by this tile, it will create a new enemy after X second
+                
                 if(Obstacle_dict.count(y + x*MapHeight))
                 ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(

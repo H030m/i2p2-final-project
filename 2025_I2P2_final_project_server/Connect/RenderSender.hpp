@@ -19,30 +19,30 @@
 #include <mutex>
 #include <nlohmann/json.hpp>
 #include <thread>
-#include <list>
-#include <zlib.h>
 #include <optional>
+#include <zlib.h>
+#include "Enemy/Enemy.hpp"
 #define TARGET_FPS 60
 #define NUM 5
-
+constexpr int blockSize = 64;
 struct ClientContext {
         SOCKET socket;
         bool active = true;
         nlohmann::json lastInput;
-        nlohmann::json addition_output;
         std::thread recvThread;
         std::thread sendThread;
         int id;
         int x, y;
-        bool sendMap = false;
         ClientContext(){
             x = 0, y = 0;
         }
         //camera position
+        bool sendMap = false;
 };
 
 class RenderSender {
 public:
+    static constexpr int TILE_SIZE = 64;
     RenderSender(int port);
     RenderSender() = default;
     ~RenderSender();
@@ -51,17 +51,19 @@ public:
     void recvOnce(std::shared_ptr<ClientContext> ctx);
     void sendOnce(std::shared_ptr<ClientContext> ctx);
     void cleanupInactiveClients();
-    int getActiveClientCount() const;
     void AddToFrame(const nlohmann::json& object) {
         std::lock_guard<std::mutex> lock(clientMutex);
         frame[object["type"]].push_back(object);
     }
-    std::list<std::shared_ptr<ClientContext>>& getClients() { return clients; }
+    friend void UpdateEnemyInstance(EnemyInstance& enemy, float deltaTime, RenderSender& sender);
+    std::vector<EnemyInstance> enemies;
+    std::vector<std::shared_ptr<ClientContext>>& getClients() { return clients; }
     nlohmann::json frame;
-    std::list<std::shared_ptr<ClientContext>> clients;
+    std::vector<std::shared_ptr<ClientContext>> clients;
+    std::optional<nlohmann::json> storedMapState;
     std::mutex clientMutex;
     int nextClientId = 1; 
-    std::optional<nlohmann::json> storedMapState;
+    
 private:
 
     SOCKET serverSock;

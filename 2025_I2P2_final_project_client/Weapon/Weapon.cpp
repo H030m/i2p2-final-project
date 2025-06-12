@@ -22,11 +22,12 @@ Weapon::Weapon(std::string imgWeapon, float x, float y, float radius, float cool
 }
 
 void Weapon::Update(float deltaTime) {
-    Player* player = getPlayScene()->player_dict[getPlayScene()->my_id];
+    Player* player = getPlayScene()->player_dict[owner_id];
     Position.x  = player->Position.x;
     Position.y = player->Position.y + 20;
     Sprite::Update(deltaTime);
 
+    if (owner_id != getPlayScene()->my_id) return;
     ALLEGRO_MOUSE_STATE mouseState;
     al_get_mouse_state(&mouseState);
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();

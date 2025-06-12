@@ -10,7 +10,7 @@
 #include "Weapon.hpp"
 #include "Scene/PlayScene.hpp"
 
-ShotgunWeapon::ShotgunWeapon(float x, float y)
+ShotgunWeapon::ShotgunWeapon(float x, float y, int _owner_id)
     : Weapon("play/Shotgun1-sheet.png", x, y, 200, 0.7) {
     // Move center downward, since we the turret head is slightly biased upward.
     // Anchor.y += 8.0f / GetBitmapHeight();
@@ -18,6 +18,8 @@ ShotgunWeapon::ShotgunWeapon(float x, float y)
     Size.x = 128, Size.y = 56;
     SourceW = 62, SourceH = 28, SourceY = 0, SourceX = 0;
     delta = ALLEGRO_PI;
+    owner_id =  _owner_id;
+    type = 2;
 }
 void ShotgunWeapon::CreateBullet() {
     const float spread = ALLEGRO_PI / 18; 

@@ -40,7 +40,7 @@ void LoadingScene::Update(float deltaTime) {
     }
     // Wait until map is received back from server
     if (client.input_json.contains("map")) {
-        std::cerr<<"getMap!\n";
+        
         const nlohmann::json& receivedMap = client.input_json["map"];
         std::ofstream fout("Resource/map1.json");
         if (fout.is_open()) {

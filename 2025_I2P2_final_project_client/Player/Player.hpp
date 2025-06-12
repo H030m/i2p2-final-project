@@ -5,7 +5,10 @@
 #include "Engine/IObject.hpp"
 #include "Engine/Sprite.hpp"
 #include "Engine/Point.hpp"
+#include "Weapon/Weapon.hpp"
+#include <vector>
 
+class Weapon;
 typedef enum Player_Status {
     PLAYER_IDLE,
     PLAYER_WALK,
@@ -26,6 +29,8 @@ public:
     Engine::Point nextPosition;
     float animation_tick;
     Player_Status status;
+    std::vector<Weapon*> Weapon_hold;
+    std::vector<Weapon*> Weapon_owned;
     Player(float x, float y);
     Player(float x, float y, int id);
     Player(float x, float y, int id, int MapWidth, int MapHeight);

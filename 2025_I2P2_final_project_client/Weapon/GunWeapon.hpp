@@ -4,7 +4,7 @@
 
 class GunWeapon : public Weapon {
 public:
-    GunWeapon(float x, float y);
+    GunWeapon(float x, float y, int _owner_id);
     void CreateBullet() override;
     void Update(float deltaTime) override; 
 };
