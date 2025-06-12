@@ -45,7 +45,7 @@ void LoadingScene::Update(float deltaTime) {
         std::ofstream fout("Resource/map1.json");
         if (fout.is_open()) {
             fout << receivedMap["map"].dump(4); // Indented output
-            
+            std::cerr<<"hello Map "<<receivedMap["map"].dump()<<'\n';
             fout.close();
         } else {
             std::cerr << "Failed to write to Resource/map1.json\n";

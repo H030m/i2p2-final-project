@@ -101,7 +101,7 @@ void RenderSender::start() {
                     
                     UpdateEnemyInstance(enemy, deltaTime, *this);
                     nlohmann::json obj;
-                    obj["type"] = "enemy";
+                    obj["type"] = "-1";
                     obj["id"] = enemy.id;
                     obj["enemyType"] = enemy.type;
                     obj["x"] = enemy.x;

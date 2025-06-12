@@ -22,6 +22,7 @@ struct Point {
 class RenderSender; // forward declare
 
 struct EnemyInstance {
+    int enemy_id;
     int id;
     int type;
     int spawnX, spawnY;

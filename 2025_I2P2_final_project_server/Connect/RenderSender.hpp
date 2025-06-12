@@ -32,6 +32,7 @@ struct ClientContext {
         std::thread recvThread;
         std::thread sendThread;
         int id;
+        int enemy_id;
         int x, y;
         ClientContext(){
             x = 0, y = 0;

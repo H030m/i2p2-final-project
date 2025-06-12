@@ -88,7 +88,7 @@ void DrawMapScene::Update(float deltaTime) {
     for (auto [_id, client_info] : sender.input_json.items()) {
         if (_id == "my_id") continue;
         int id = std::stoi(_id);
-
+        if(id < 0)continue;//enemy
         if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 3 || client_info["player"][2] != -1)
             continue;
 

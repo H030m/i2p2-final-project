@@ -44,6 +44,9 @@
 #include "Weapon/CircleWeapon.hpp"
 #include "Weapon/BounceWeapon.hpp"
 #include "Camera/Camera.hpp"
+
+
+
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
 
@@ -153,7 +156,7 @@ void PlayScene::Update(float deltaTime) {
         bool isNewPlayer = false;
         if (_id == "my_id") continue;
         int id = std::stoi(_id);
-        
+        if(id < 0)continue;//enemy
         // player marked active
         activePlayerIds.insert(id);
 
@@ -177,40 +180,40 @@ void PlayScene::Update(float deltaTime) {
             it->second->Position.y = y;
             it->second->status = client_info["status"];
         }
-        if (client_info.contains("weapon") && client_info["weapon"].is_array()) {
-            std::vector<int> weapons;
-            for (auto& weapon : client_info["weapon"]) {
-                if (weapon.is_number_integer()) {
-                    weapons.push_back(weapon.get<int>());
-                }
-            }
+        // if (client_info.contains("weapon") && client_info["weapon"].is_array()) {
+        //     std::vector<int> weapons;
+        //     for (auto& weapon : client_info["weapon"]) {
+        //         if (weapon.is_number_integer()) {
+        //             weapons.push_back(weapon.get<int>());
+        //         }
+        //     }
 
-            if (!isNewPlayer) {
-                for (Weapon* w : player_dict[id]->Weapon_hold) {
-                    WeaponGroup->RemoveObject(w);  // 從 group 移除
-                    delete w;                      // 釋放記憶體
-                }   
-                player_dict[id]->Weapon_hold.clear();
-            }
+        //     if (!isNewPlayer) {
+        //         for (Weapon* w : player_dict[id]->Weapon_hold) {
+        //             WeaponGroup->RemoveObject(w);  // 從 group 移除
+        //             delete w;                      // 釋放記憶體
+        //         }   
+        //         player_dict[id]->Weapon_hold.clear();
+        //     }
             
-            Weapon* ww;
-            for (auto weapontype : weapons) {
-                switch(weapontype) {
-                    case(1) : 
-                        WeaponGroup->AddNewObject(ww = new GunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
-                        break;
-                    case(2) : 
-                        WeaponGroup->AddNewObject(ww = new ShotgunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
-                        break;
-                    case(3) : 
-                        WeaponGroup->AddNewObject(ww = new CircleWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
-                        break;
-                    case(4) : 
-                        WeaponGroup->AddNewObject(ww = new BounceWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
-                        break;
-                }
-            }
-        }
+        //     Weapon* ww;
+        //     for (auto weapontype : weapons) {
+        //         switch(weapontype) {
+        //             case(1) : 
+        //                 WeaponGroup->AddNewObject(ww = new GunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+        //                 break;
+        //             case(2) : 
+        //                 WeaponGroup->AddNewObject(ww = new ShotgunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+        //                 break;
+        //             case(3) : 
+        //                 WeaponGroup->AddNewObject(ww = new CircleWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+        //                 break;
+        //             case(4) : 
+        //                 WeaponGroup->AddNewObject(ww = new BounceWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+        //                 break;
+        //         }
+        //     }
+        // }
     }
     
     // delete not active player
