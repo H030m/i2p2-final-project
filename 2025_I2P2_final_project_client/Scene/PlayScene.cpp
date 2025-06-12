@@ -270,6 +270,15 @@ void PlayScene::Update(float deltaTime) {
             it->second->Weapon_hold.clear();
             delete it->second;
 
+            if (player_UI.count(playerId)) {
+                for (auto* label : player_UI[playerId]) {
+                    if (UIGroup) {
+                        UIGroup->RemoveObject(label->GetObjectIterator());
+                    }
+                }
+                player_UI.erase(playerId);
+            }
+
             it = player_dict.erase(it);
         } else {
             ++it;
@@ -303,6 +312,7 @@ void PlayScene::Update(float deltaTime) {
         }
         
         name_label->Position.y = 96*count;
+        name_label->Text = "Player_" + std::to_string(curid);
         health_label->Position.y = 96*count + 50;
         health_label->Text = "Health : " + std::to_string(player_dict[curid]->health);
         count++;
@@ -380,17 +390,17 @@ void PlayScene::Draw() const {
 void PlayScene::RenderVisibleTiles() const {
     auto visibleArea = camera->GetVisibleTileArea(BlockSize);
     
-    // ¥u´è¬V¥i¨£ªº¥Ë¤ù
+    // ï¿½uï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½ï¿½ï¿½Ë¤ï¿½
     for (auto obj : TileMapGroup->GetObjects()) {
         Engine::Sprite* sprite = dynamic_cast<Engine::Sprite*>(obj);
         if (!sprite) continue;
         
-        // ÀË¬d¥Ë¤ù¬O§_¦b¥i¨£½d³ò¤º
+        // ï¿½Ë¬dï¿½Ë¤ï¿½ï¿½Oï¿½_ï¿½bï¿½iï¿½ï¿½ï¿½dï¿½ï¿½
         if (camera->IsInView(sprite->Position, BlockSize)) {
-            // ±N¥@¬É®y¼ÐÂà´«¬°¿Ã¹õ®y¼Ð
+            // ï¿½Nï¿½@ï¿½É®yï¿½ï¿½ï¿½à´«ï¿½ï¿½ï¿½Ã¹ï¿½ï¿½yï¿½ï¿½
             Engine::Point screenPos = camera->WorldToScreen(sprite->Position);
             
-            // ¼È®É­×§ïºëÆF¦ì¸m¶i¦æ´è¬V
+            // ï¿½È®É­×§ï¿½ï¿½ï¿½Fï¿½ï¿½mï¿½iï¿½ï¿½ï¿½V
             Engine::Point originalPos = sprite->Position;
             sprite->Position = screenPos;
             sprite->Draw();
@@ -400,7 +410,7 @@ void PlayScene::RenderVisibleTiles() const {
 }
 
 void PlayScene::RenderVisibleObjects() const {
-    // ´è¬V¥i¨£ªº¹CÀ¸ª«¥ó
+    // ï¿½ï¿½Vï¿½iï¿½ï¿½ï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     std::vector<Group*> renderGroups = {
         GroundEffectGroup, DebugIndicatorGroup, ObstacleGroup, EnemyGroup, 
         BulletGroup, EffectGroup, PlayerGroup, WeaponGroup
@@ -507,7 +517,7 @@ void PlayScene::ReadMap() {
         spr->SourceH = sh - 2;
         TileMapGroup->AddNewObject(spr);
 
-        // === ·s¼W»ÙÃªª«Ã¸»s ===
+        // === ï¿½sï¿½Wï¿½ï¿½Ãªï¿½ï¿½Ã¸ï¿½s ===
         if (map[i][j].contains("Obstacle")) {
             auto& obs = map[i][j]["Obstacle"];
             if (obs.contains("file_name")) {
