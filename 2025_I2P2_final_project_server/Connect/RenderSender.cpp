@@ -1,6 +1,10 @@
 // RenderSender.cpp
 #include "RenderSender.hpp"
 #include "Enemy/Enemy.hpp"
+#include "Enemy/ArmoredEnemy.hpp"
+#include "Enemy/StealthEnemy.hpp"
+#include "Enemy/Move.hpp"
+#include "Engine/Point.hpp"
 #include <iostream>
 #include <chrono>
 using namespace std::chrono;
@@ -95,21 +99,27 @@ void RenderSender::start() {
                 }
             }
             //update enemy
+            
             for (auto& enemy : enemies) {
-                // std::cerr<<"hello enemy "<<enemy.id<<' '<<"alive? "<<enemy.alive<<'\n';
-                if (enemy.alive) {
+                if (enemy->alive) {
+                    UpdateEnemyInstance(*enemy, deltaTime, *this);
+                    // Get the enemy's serialized data
+                    nlohmann::json enemyData;
+                    switch (enemy->type) {
+                        case 0: // Basic enemy
+                            enemyData = enemy->Serialize();
+                            break;
+                        case 1: // Armored enemy
+                            enemyData = enemy->Serialize();
+                            break;
+                        case 2: // Stealth enemy
+                            enemyData = enemy->Serialize();
+                            break;
+                    }
+                    std::cerr<<"hello enemy "<<enemyData.dump()<<'\n';
+                    // Add to frame
+                    AddToFrame(enemyData);
                     
-                    UpdateEnemyInstance(enemy, deltaTime, *this);
-                    nlohmann::json obj;
-                    obj["type"] = "-1";
-                    obj["id"] = enemy.id;
-                    obj["enemyType"] = enemy.type;
-                    obj["x"] = enemy.x;
-                    obj["y"] = enemy.y;
-                    obj["rotation"] = enemy.rotation;
-                    obj["alive"] = true;
-                    obj["damage"] = enemy.damage;
-                    AddToFrame(obj);
                 }
             }
             // 3. send to all clients
@@ -167,8 +177,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
             if(clients.size() == 1 || !storedMapState.has_value()){
                 storedMapState = ctx->lastInput;
 
-                        // 重建 EnemyInstance 清單
-                enemies.clear(); // 清空原本的怪物清單
+                enemies.clear();
 
                 const auto& map = storedMapState.value()["map"]["MapState"];
                 int h = map.size();
@@ -181,23 +190,32 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
                         const auto& cell = map[y][x];
                         if (!cell.contains("SpawnPoint")) continue;
                     
-                        // 讀取 type，若沒指定則設為 0
-                        int type = 0;
-                        if (cell.contains("Type") && cell["Type"].is_number_integer())
-                            type = cell["Type"];
+                        // 
+                        int type = cell["SpawnPoint"];
+
+                        Enemy* enemy;
+                        int curid = idCounter++;
+                        Engine::Point curpos((float)x * blockSize + blockSize / 2, (float)y * blockSize + blockSize / 2);
+
+                        switch (type) {
+                            case 1:
+                                enemy = new ArmoredEnemy(curid, curpos, curpos);
+                                enemies.push_back(enemy);
+                                std::cerr << "enemy id: " << enemy->id << ' ' << enemy->position.x << ' ' << enemy->position.y << '\n';
+                                break;
+                            case 2:
+                                enemy = new StealthEnemy(curid, curpos, curpos);
+                                enemies.push_back(enemy);
+                                std::cerr << "enemy id: " << enemy->id << ' ' << enemy->position.x << ' ' << enemy->position.y << '\n';
+                                break;
+                            default:
+                                // enemy = new Enemy();
+                                break;
+                        }
                     
-                        EnemyInstance enemy;
-                        enemy.id = idCounter++;
-                        enemy.type = type;
-                        enemy.x = x * blockSize + blockSize / 2;
-                        enemy.y = y * blockSize + blockSize / 2;
-                        enemy.spawnX = enemy.x;
-                        enemy.spawnY = enemy.y;
-                        enemy.alive = true;
-                        enemy.cooldownTimer = 0;
-                        // enemy.path = ... ← 可加上自動導向起點的 path
-                        enemies.push_back(enemy);
-                        std::cerr<<"enemy id: "<<enemy.id<<' '<<enemy.x<<' '<<enemy.y<<'\n';
+                        //
+                        
+                        // std::cerr << "enemy id: " << enemy->id << ' ' << enemy->position.x << ' ' << enemy->position.y << '\n';
                     }
                 }
                 std::cerr << "Spawned " << enemies.size() << " enemies.\n";
@@ -224,8 +242,8 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
 void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
     if (!ctx->active) return;
     // if(frame.contains("map"))
-    std::cerr<<"frame  "<<frame.dump()<<'\n';
-    std::string raw = frame.dump(); // 原始 JSON 字串
+    // std::cerr<<"frame  "<<frame.dump()<<'\n';
+    std::string raw = frame.dump(); // 嚙踝蕭l JSON 嚙緝嚙踝蕭
     // std::cerr << "[send raw size]: " << raw.size() << " bytes\n";
     // std::cerr << "[send raw content]: " << raw << "\n";
 

@@ -427,7 +427,7 @@ void PlayScene::RenderVisibleTiles() const {
 }
 
 void PlayScene::RenderVisibleObjects() const {
-    // ��V�i�����C������
+   
     std::vector<Group*> renderGroups = {
         GroundEffectGroup, DebugIndicatorGroup, ObstacleGroup, EnemyGroup, 
         BulletGroup, EffectGroup, PlayerGroup, WeaponGroup

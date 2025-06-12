@@ -22,6 +22,17 @@ add_executable(2025_I2P2_TowerDefense
     Enemy/Enemy.cpp
     Enemy/Enemy.hpp
     main.cpp
+    Enemy/Move.cpp
+    Enemy/Move.hpp
+    Enemy/ArmoredEnemy.cpp
+    Enemy/ArmoredEnemy.hpp
+    Enemy/StealthEnemy.cpp
+    Enemy/StealthEnemy.hpp
+
+    Engine/Point.hpp
+    Engine/Point.cpp
+    Engine/Sprite.cpp
+    Engine/Sprite.hpp
 )
 
 # zlib

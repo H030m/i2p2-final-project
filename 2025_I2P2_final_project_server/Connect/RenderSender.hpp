@@ -56,8 +56,8 @@ public:
         std::lock_guard<std::mutex> lock(clientMutex);
         frame[object["type"]].push_back(object);
     }
-    friend void UpdateEnemyInstance(EnemyInstance& enemy, float deltaTime, RenderSender& sender);
-    std::vector<EnemyInstance> enemies;
+    friend void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender);
+    std::vector<Enemy*> enemies;
     std::vector<std::shared_ptr<ClientContext>>& getClients() { return clients; }
     nlohmann::json frame;
     std::vector<std::shared_ptr<ClientContext>> clients;
