@@ -9,7 +9,7 @@
 #include "CircleWeapon.hpp"
 #include "Weapon.hpp"
 #include "Scene/PlayScene.hpp"
-
+#include "Engine/GameEngine.hpp"
 CircleWeapon::CircleWeapon(float x, float y, int _owner_id)
     : Weapon("play/turret-1.png", x, y, 200, 0.1) {
     // Move center downward, since we the turret head is slightly biased upward.
@@ -29,7 +29,9 @@ void CircleWeapon::CreateBullet() {
 }
 
 void CircleWeapon::Update(float Deltatime) {
-    if (!created) {
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+
+    if (!created && game.my_id == owner_id) {
         this->CreateBullet();
         created = true;
     } 

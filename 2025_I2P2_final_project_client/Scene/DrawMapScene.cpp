@@ -23,7 +23,7 @@
 #include "Map/TextureButton.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "Camera/Camera.hpp"
-const int DrawMapScene::MapWidth = 10, DrawMapScene::MapHeight = 10;
+const int DrawMapScene::MapWidth = 50, DrawMapScene::MapHeight = 50;
 const int DrawMapScene::BlockSize = 64;
 const Engine::Point TileSize(65,65);
 const int tileX = 7; 

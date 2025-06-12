@@ -183,40 +183,43 @@ void PlayScene::Update(float deltaTime) {
             it->second->Position.y = y;
             it->second->status = client_info["player"][3];
         }
-        if (client_info.contains("weapon") && client_info["weapon"].is_array()) {
-            std::vector<int> weapons;
-            for (auto& weapon : client_info["weapon"]) {
-                if (weapon.is_number_integer()) {
-                    weapons.push_back(weapon.get<int>());
+        //weapon
+        if(id != game.my_id){
+            if (client_info.contains("weapon") && client_info["weapon"].is_array()) {
+                std::vector<int> weapons;
+                for (auto& weapon : client_info["weapon"]) {
+                    if (weapon.is_number_integer()) {
+                        weapons.push_back(weapon.get<int>());
+                    }
                 }
-            }
 
-            if (!isNewPlayer) {
-                for (Weapon* w : player_dict[id]->Weapon_hold) {
-                    WeaponGroup->RemoveObject(w);  // 從 group 移除
-                    delete w;                      // 釋放記憶體
-                }   
-                player_dict[id]->Weapon_hold.clear();
-            }
-            
-            Weapon* ww;
-            for (auto weapontype : weapons) {
-                switch(weapontype) {
-                    case(1) : 
-                        WeaponGroup->AddNewObject(ww = new GunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
-                        break;
-                    case(2) : 
-                        WeaponGroup->AddNewObject(ww = new ShotgunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
-                        break;
-                    case(3) : 
-                        WeaponGroup->AddNewObject(ww = new CircleWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
-                        break;
-                    case(4) : 
-                        WeaponGroup->AddNewObject(ww = new BounceWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
-                        break;
+                if (!isNewPlayer) {
+                    for (Weapon* w : player_dict[id]->Weapon_hold) {
+                        WeaponGroup->RemoveObject(w->GetObjectIterator()); 
+                    }   
+                    player_dict[id]->Weapon_hold.clear();
+                }
+                
+                Weapon* ww;
+                for (auto weapontype : weapons) {
+                    switch(weapontype) {
+                        case(1) : 
+                            WeaponGroup->AddNewObject(ww = new GunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                            break;
+                        case(2) : 
+                            WeaponGroup->AddNewObject(ww = new ShotgunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                            break;
+                        case(3) : 
+                            WeaponGroup->AddNewObject(ww = new CircleWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                            break;
+                        case(4) : 
+                            WeaponGroup->AddNewObject(ww = new BounceWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                            break;
+                    }
                 }
             }
         }
+        
     }
     
     // delete not active player
@@ -230,6 +233,7 @@ void PlayScene::Update(float deltaTime) {
 
         if (activePlayerIds.find(playerId) == activePlayerIds.end()) {
             std::cout << "[Remove] removing player id: " << playerId << std::endl;
+
             auto objs = PlayerGroup->GetObjects();
             for(auto obj: objs) {
                 if(obj == it->second){
@@ -237,6 +241,15 @@ void PlayScene::Update(float deltaTime) {
                     PlayerGroup->RemoveObject(obj->GetObjectIterator());
                 }
             }
+
+            if (WeaponGroup) {
+                for (Weapon* w : it->second->Weapon_hold) {
+                    WeaponGroup->RemoveObject(w->GetObjectIterator());
+                }
+            }
+            it->second->Weapon_hold.clear();
+            delete it->second;
+
             it = player_dict.erase(it);
         } else {
             ++it;
