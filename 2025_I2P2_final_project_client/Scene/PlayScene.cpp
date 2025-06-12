@@ -19,6 +19,7 @@
 #include "Enemy/PlaneEnemy.hpp"
 #include "Enemy/TankEnemy.hpp"
 #include "Enemy/BossEnemy.hpp"
+#include "Enemy/ArmoredEnemy.hpp"
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Group.hpp"
@@ -43,6 +44,11 @@
 #include "Weapon/CircleWeapon.hpp"
 #include "Weapon/BounceWeapon.hpp"
 #include "Camera/Camera.hpp"
+
+static bool isNumber(const std::string& s) {
+    return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
+
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
 
@@ -74,6 +80,7 @@ void PlayScene::Initialize() {
     time(&StartTime); 
     // Add groups from bottom to top.
     AddNewObject(TileMapGroup = new Group());
+    AddNewObject(ObstacleGroup = new Group());
     AddNewObject(GroundEffectGroup = new Group());
     AddNewObject(DebugIndicatorGroup = new Group());
     // AddNewObject(TowerGroup = new Group());
@@ -82,37 +89,60 @@ void PlayScene::Initialize() {
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(WeaponGroup = new Group());
+    AddNewControlObject(UIGroup = new Group());
+    // std::cerr << "UIGroup size: " << UIGroup->GetObjects().size() << std::endl;
 
     ReadMap();
-
+    // EnemyGroup->AddNewObject(new ArmoredEnemy("play/enemy-1.png", 200, 200, 10, 5, 50, 100, 50));
     // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
     // WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
     // WeaponGroup->AddNewObject(new GunWeapon(100, 100));
     // WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
+
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-        Player* newPlayer = new Player(500, 500, game.my_id);
+        Player* newPlayer = new Player(500, 500, game.my_id,MapWidth, MapHeight);
         my_id = game.my_id;
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
+        Engine::Label* label;
+        player_UI[game.my_id].push_back(label = new Engine::Label("YOUUU", "pirulen.ttf", 48, 0, 0, 255, 255, 255, 255, 0, 0));
+        label->fixed = true;
+        UIGroup->AddNewObject(label);
+        player_UI[game.my_id].push_back(label = new Engine::Label("hello", "pirulen.ttf", 24, 0, 50, 255, 255, 255, 255, 0, 0));
+        label->fixed = true;
+        UIGroup->AddNewObject(label);
+        // std::cerr << "UIGroup size: " << UIGroup->GetObjects().size() << std::endl;
+
         
-        // cameraAdd commentMore actions
+        // camera
         
         camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
         camera->SetTarget(newPlayer->Position);
+
+         //Weapon
+        Weapon* k = new ShotgunWeapon(0, 0, my_id);
+        WeaponGroup->AddNewObject(k);
+        newPlayer->Weapon_hold.push_back(k);
+        newPlayer->Weapon_owned.push_back(k);
+        k = new CircleWeapon(0, 0, my_id);
+        WeaponGroup->AddNewObject(k);
+        newPlayer->Weapon_hold.push_back(k);
+        newPlayer->Weapon_owned.push_back(k);
     }
 
     // Should support buttons.
-    AddNewControlObject(UIGroup = new Group());
+    // AddNewControlObject(UIGroup = new Group());
     
     std::cerr<<"hi\n";
     ReadEnemyWave();
     mapDistance = CalculateBFSDistance();
     ConstructUI();
-    imgTarget = new Engine::Image("play/target.png", 0, 0);
-    imgTarget->Visible = false;
-    // preview = nullptr;
-    UIGroup->AddNewObject(imgTarget);
+    std::cerr << "UIGroup size: " << UIGroup->GetObjects().size() << std::endl;
+    // imgTarget = new Engine::Image("play/target.png", 0, 0);
+    // imgTarget->Visible = false;
+    // // preview = nullptr;
+    // UIGroup->AddNewObject(imgTarget);
     // Preload Lose Scene
     deathBGMInstance = Engine::Resources::GetInstance().GetSampleInstance("astronomia.ogg");
     Engine::Resources::GetInstance().GetBitmap("lose/benjamin-happy.png");
@@ -127,6 +157,7 @@ void PlayScene::Terminate() {
 }
 
 void PlayScene::Update(float deltaTime) {
+  
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
     
@@ -136,31 +167,80 @@ void PlayScene::Update(float deltaTime) {
     
     // itrate through all players
     for (auto [_id, client_info] : sender.input_json.items()) {
-        if (_id == "my_id") continue;
+        bool isNewPlayer = false;
+        if (!isNumber(_id)) continue;
         int id = std::stoi(_id);
         
         // player marked active
         activePlayerIds.insert(id);
 
-        if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 3 || client_info["player"][2] != state)
+        if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 4 || client_info["player"][2] != state)
             continue;
 
         float x = client_info["player"][0];
         float y = client_info["player"][1];
-        Player_Status status = client_info["player"][3];
 
         auto it = player_dict.find(id);
+        
         if (it == player_dict.end()) {
+            isNewPlayer = true;
             Player* newPlayer = new Player(x, y, id);
             PlayerGroup->AddNewObject(newPlayer);
             player_dict[id] = newPlayer;
-            newPlayer->status = status;
+            newPlayer->status = client_info["player"][3];
+            newPlayer->health = client_info["player"][4];
+
+            player_UI[id].push_back(new Engine::Label("", "pirulen.ttf", 48, 0, 50, 0, 0, 0, 255, 0, 0));
+            player_UI[id].push_back(new Engine::Label("", "pirulen.ttf", 24, 0, 50, 0, 0, 0, 255, 0, 0));
+            player_UI[id][0]->fixed = true; player_UI[id][1]->fixed = true;
+            UIGroup->AddNewObject(player_UI[id][0]);
+            UIGroup->AddNewObject(player_UI[id][1]);
         } else {
             if(id == game.my_id) continue;
             it->second->Position.x = x;
             it->second->Position.y = y;
-            it->second->status = status;
+            it->second->status = client_info["player"][3];
+            it->second->health = client_info["player"][4];
+
+            // player_UI[id][0]->Text = "Health : " + std::to_string(player_dict[id]->health);
         }
+        //weapon
+        if(id != game.my_id){
+            if (client_info.contains("weapon") && client_info["weapon"].is_array()) {
+                std::vector<int> weapons;
+                for (auto& weapon : client_info["weapon"]) {
+                    if (weapon.is_number_integer()) {
+                        weapons.push_back(weapon.get<int>());
+                    }
+                }
+
+                if (!isNewPlayer) {
+                    for (Weapon* w : player_dict[id]->Weapon_hold) {
+                        WeaponGroup->RemoveObject(w->GetObjectIterator()); 
+                    }   
+                    player_dict[id]->Weapon_hold.clear();
+                }
+                
+                Weapon* ww;
+                for (auto weapontype : weapons) {
+                    switch(weapontype) {
+                        case(1) : 
+                            WeaponGroup->AddNewObject(ww = new GunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                            break;
+                        case(2) : 
+                            WeaponGroup->AddNewObject(ww = new ShotgunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                            break;
+                        case(3) : 
+                            WeaponGroup->AddNewObject(ww = new CircleWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                            break;
+                        case(4) : 
+                            WeaponGroup->AddNewObject(ww = new BounceWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                            break;
+                    }
+                }
+            }
+        }
+        
     }
     
     // delete not active player
@@ -174,6 +254,7 @@ void PlayScene::Update(float deltaTime) {
 
         if (activePlayerIds.find(playerId) == activePlayerIds.end()) {
             std::cout << "[Remove] removing player id: " << playerId << std::endl;
+
             auto objs = PlayerGroup->GetObjects();
             for(auto obj: objs) {
                 if(obj == it->second){
@@ -181,6 +262,25 @@ void PlayScene::Update(float deltaTime) {
                     PlayerGroup->RemoveObject(obj->GetObjectIterator());
                 }
             }
+
+            if (WeaponGroup) {
+                for (Weapon* w : it->second->Weapon_hold) {
+                    WeaponGroup->RemoveObject(w->GetObjectIterator());
+                }
+            }
+            it->second->Weapon_hold.clear();
+            delete it->second;
+
+            auto& ui_vec = player_UI[playerId];
+            for (auto* label : ui_vec) {
+                if (label) {
+                    label->GetObjectIterator()->first = false;
+                    UIGroup->RemoveObject(label->GetObjectIterator());
+                    delete label;
+                }
+            }
+            player_UI.erase(playerId);
+
             it = player_dict.erase(it);
         } else {
             ++it;
@@ -190,9 +290,37 @@ void PlayScene::Update(float deltaTime) {
     // update myself
     if (player_dict.find(game.my_id) != player_dict.end()) {
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
-        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state, player_dict[game.my_id]->status};
-        sender.output_json["weapon"] = {};
+
+        // player_UI[game.my_id][0]->Text = "Health" + std::to_string(player_dict[game.my_id]->health);
+
+        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state, 
+                                        player_dict[game.my_id]->status, player_dict[game.my_id]->health};
+                                    
+        for (auto n: player_dict[game.my_id]->Weapon_hold) {
+            sender.output_json["weapon"].push_back(n->type);
+        }
     }
+
+    // update UI
+    int count = 1;
+    for (auto &labels: player_UI) {
+        int curid = labels.first;
+        Engine::Label* name_label = labels.second[0];
+        Engine::Label* health_label = labels.second[1];
+
+        if (curid == my_id) {
+            name_label->Position.y = 0;
+            health_label->Position.y = 50;
+            health_label->Text = "Health : " + std::to_string(player_dict[curid]->health);
+            continue;
+        }
+        
+        name_label->Position.y = 96*count;
+        health_label->Position.y = 96*count + 50;
+        health_label->Text = "Health : " + std::to_string(player_dict[curid]->health);
+        count++;
+    }
+
     camera->SetTarget(player_dict[my_id]->Position);
     camera->Update(deltaTime);
     IScene::Update(deltaTime);
@@ -201,8 +329,9 @@ void PlayScene::Draw() const {
     // IScene::Draw();
     RenderVisibleTiles();
     RenderVisibleObjects();
-
     UIGroup->Draw();
+    
+    
     if (DebugMode) {
         // Draw reverse BFS distance on all reachable blocks.
         for (int i = 0; i < MapHeight; i++) {
@@ -244,7 +373,7 @@ void PlayScene::RenderVisibleObjects() const {
     // ��V�i�����C������
     std::vector<Group*> renderGroups = {
         GroundEffectGroup, DebugIndicatorGroup, EnemyGroup, 
-        BulletGroup, EffectGroup, PlayerGroup, WeaponGroup
+        BulletGroup, EffectGroup, PlayerGroup, WeaponGroup, ObstacleGroup
     };
     
     for (Group* group : renderGroups) {
@@ -299,6 +428,7 @@ void PlayScene::EarnMoney(int money) {
     UIMoney->Text = std::string("$") + std::to_string(this->money);
 }
 void PlayScene::ReadMap() {
+
     std::cerr<<"hellow!\n";
     std::string filename = std::string("Resource/map") + std::to_string(MapId) + ".json"; // or ".json"
     std::ifstream file(filename);
@@ -310,7 +440,6 @@ void PlayScene::ReadMap() {
     nlohmann::json data;
     file >> data;
     file.close();
-    std::cerr<<data.dump()<<'\n';
     if (!data.contains("MapState")) {
         std::cerr << "Invalid map format: missing MapState\n";
         return;
@@ -324,30 +453,62 @@ void PlayScene::ReadMap() {
     auto& map = data["MapState"];
     mapState.resize(MapHeight, std::vector<nlohmann::json>(MapWidth));
 
+    //Obstacle
     for (int i = 0; i < MapHeight; ++i) {
-        for (int j = 0; j < MapWidth; ++j) {
-            auto tile = map[i][j]["Tile"];
-            mapState[i][j] = map[i][j];
-            std::string file = tile["file_name"];
-            int sx = tile["x"];
-            int sy = tile["y"];
-            int sw = tile["w"];
-            int sh = tile["h"];
+    for (int j = 0; j < MapWidth; ++j) {
+        auto tile = map[i][j]["Tile"];
+        mapState[i][j] = map[i][j];
+        std::string file = tile["file_name"];
+        int sx = tile["x"];
+        int sy = tile["y"];
+        int sw = tile["w"];
+        int sh = tile["h"];
 
-            auto* spr = new Engine::Sprite(
-                file,
-                j * BlockSize, i * BlockSize,
-                0,0,
-                0, 0
-            );
-            spr->Size = TileSize;
-            spr->SourceX = sw * sx + 1;
-            spr->SourceY = sh * sy + 1;
-            spr->SourceW = sw - 2;
-            spr->SourceH = sh - 2;
-            TileMapGroup->AddNewObject(spr);
+        auto* spr = new Engine::Sprite(
+            file,
+            j * BlockSize, i * BlockSize,
+            0, 0,
+            0, 0
+        );
+        spr->Size = TileSize;
+        spr->SourceX = sw * sx + 1;
+        spr->SourceY = sh * sy + 1;
+        spr->SourceW = sw - 2;
+        spr->SourceH = sh - 2;
+        TileMapGroup->AddNewObject(spr);
+
+        // === �s�W��ê��ø�s ===
+        if (map[i][j].contains("Obstacle")) {
+            auto& obs = map[i][j]["Obstacle"];
+            if (obs.contains("file_name")) {
+                std::string obs_file = obs["file_name"];
+                float ox = obs["x"];
+                float oy = obs["y"];
+                float ow = obs["w"];
+                float oh = obs["h"];
+
+                auto* obs_spr = new Engine::Sprite(
+                    obs_file,
+                    j * BlockSize, i * BlockSize,
+                    0, 0,
+                    0, 0
+                );
+                obs_spr->Size = TileSize;
+                obs_spr->SourceX = ow * ox + 1;
+                obs_spr->SourceY = oh * oy + 1;
+                obs_spr->SourceW = ow - 2;
+                obs_spr->SourceH = oh - 2;
+                if(obs.contains("SizeX") && obs.contains("SizeY")){
+                    obs_spr->Size.x = obs["SizeX"];
+                    obs_spr->Size.y = obs["SizeY"];
+                }
+                if(obs["Obstacle"].contains("OffsetX")) obs_spr->Position.x += (int)obs["Obstacle"]["OffsetX"];
+                if(obs["Obstacle"].contains("OffsetY")) obs_spr->Position.x += (int)obs["Obstacle"]["OffsetY"];
+                ObstacleGroup->AddNewObject(obs_spr);
+            }
         }
     }
+}
 }
 void PlayScene::ReadEnemyWave() {
     std::string filename = std::string("Resource/enemy") + std::to_string(MapId) + ".txt";
@@ -362,7 +523,13 @@ void PlayScene::ReadEnemyWave() {
     fin.close();
 }
 void PlayScene::ConstructUI() {
-   
+    // Engine::Image* img;
+    // Engine::Label* lable;
+
+    // // myself
+    // lable = new Engine::Label("player1", "pirulen.ttf", 48, 0, 0, 255, 255, 255, 255, 0, 0);
+    // lable->fixed = true;
+    // UIGroup->AddNewObject(lable);
 }
 
 void PlayScene::UIBtnClicked(int id) {
@@ -378,3 +545,33 @@ std::vector<std::vector<int>> PlayScene::CalculateBFSDistance() {
     return map;
 }
 
+bool PlayScene::isWalkable(int x, int y, int radius) {
+    // Convert pixel-based position and radius into tile coordinate range
+    int left = std::max(0, (x - radius) / BlockSize);
+    int right = std::min(MapWidth - 1, (x + radius) / BlockSize);
+    int top = std::max(0, (y - radius) / BlockSize);
+    int bottom = std::min(MapHeight - 1, (y + radius) / BlockSize);
+
+    // Iterate through the square area of tiles that might intersect with the circular area
+    for (int j = top; j <= bottom; ++j) {
+        for (int i = left; i <= right; ++i) {
+            // Calculate the center of the current tile
+            int tileCenterX = i * BlockSize + BlockSize / 2;
+            int tileCenterY = j * BlockSize + BlockSize / 2;
+
+            // Check if the tile is within the circle using distance squared
+            int dx = tileCenterX - x;
+            int dy = tileCenterY - y;
+            if (dx * dx + dy * dy <= radius * radius) {
+                // Check if the tile contains a non-penetrable obstacle
+                if (mapState[j][i].contains("Obstacle") &&
+                    mapState[j][i]["Obstacle"].contains("Penetrable") &&
+                    mapState[j][i]["Obstacle"]["Penetrable"] == false) {
+                    return false; // Found a blocking tile
+                }
+            }
+        }
+    }
+
+    return true; // No blocking tiles found
+}

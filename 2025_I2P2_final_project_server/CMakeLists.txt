@@ -17,7 +17,10 @@ add_executable(2025_I2P2_TowerDefense
     #Connecting
     Connect/RenderSender.hpp
     Connect/RenderSender.cpp
-
+    
+    #Enemy
+    Enemy/Enemy.cpp
+    Enemy/Enemy.hpp
     main.cpp
 )
 

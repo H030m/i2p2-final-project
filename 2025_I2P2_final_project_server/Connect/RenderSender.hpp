@@ -19,10 +19,12 @@
 #include <mutex>
 #include <nlohmann/json.hpp>
 #include <thread>
+#include <optional>
 #include <zlib.h>
+#include "Enemy/Enemy.hpp"
 #define TARGET_FPS 60
 #define NUM 5
-
+constexpr int blockSize = 64;
 struct ClientContext {
         SOCKET socket;
         bool active = true;
@@ -30,15 +32,18 @@ struct ClientContext {
         std::thread recvThread;
         std::thread sendThread;
         int id;
+        int enemy_id;
         int x, y;
         ClientContext(){
             x = 0, y = 0;
         }
         //camera position
+        bool sendMap = false;
 };
 
 class RenderSender {
 public:
+    static constexpr int TILE_SIZE = 64;
     RenderSender(int port);
     RenderSender() = default;
     ~RenderSender();
@@ -51,11 +56,15 @@ public:
         std::lock_guard<std::mutex> lock(clientMutex);
         frame[object["type"]].push_back(object);
     }
+    friend void UpdateEnemyInstance(EnemyInstance& enemy, float deltaTime, RenderSender& sender);
+    std::vector<EnemyInstance> enemies;
     std::vector<std::shared_ptr<ClientContext>>& getClients() { return clients; }
     nlohmann::json frame;
     std::vector<std::shared_ptr<ClientContext>> clients;
+    std::optional<nlohmann::json> storedMapState;
     std::mutex clientMutex;
     int nextClientId = 1; 
+    
 private:
 
     SOCKET serverSock;

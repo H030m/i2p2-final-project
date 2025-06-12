@@ -100,7 +100,7 @@ namespace Engine {
         if (!al_install_mouse()) throw Allegro5Exception("failed to install mouse");
 
         // Setup game display.
-        #define FULL_SCREEN
+        // #define FULL_SCREEN
 
         #ifdef FULL_SCREEN
                 al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
@@ -323,6 +323,7 @@ namespace Engine {
             delete pair.second;
     }
     void GameEngine::changeScene(const std::string &name) {
+        CurrentScene = name;
         if (scenes.count(name) == 0)
             throw std::invalid_argument("Cannot change to a unknown scene.");
         // Terminate the old scene.

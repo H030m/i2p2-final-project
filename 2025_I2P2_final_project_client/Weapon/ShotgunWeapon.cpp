@@ -10,19 +10,21 @@
 #include "Weapon.hpp"
 #include "Scene/PlayScene.hpp"
 
-ShotgunWeapon::ShotgunWeapon(float x, float y)
+ShotgunWeapon::ShotgunWeapon(float x, float y, int _owner_id)
     : Weapon("play/Shotgun1-sheet.png", x, y, 200, 0.7) {
     // Move center downward, since we the turret head is slightly biased upward.
+    // Anchor.y += 8.0f / GetBitmapHeight();
     Anchor.x -= 25.0f / GetBitmapHeight();
     Size.x = 128, Size.y = 56;
     SourceW = 62, SourceH = 28, SourceY = 0, SourceX = 0;
     delta = ALLEGRO_PI;
+    owner_id =  _owner_id;
+    type = 2;
 }
 void ShotgunWeapon::CreateBullet() {
-    const float spread = ALLEGRO_PI / 18; // ��10 �� (radians)
+    const float spread = ALLEGRO_PI / 18; 
     const float speed = 10;
     float baseAngle = angle - ALLEGRO_PI / 2;
-
     for (int i = -3; i <= 3; ++i) {
         float angle = baseAngle + i * spread;
         Engine::Point diff = Engine::Point(cos(angle), sin(angle)) * speed;
@@ -34,7 +36,6 @@ void ShotgunWeapon::CreateBullet() {
 
     AudioHelper::PlayAudio("gun.wav");
 }
-
 void ShotgunWeapon::Update(float deltaTime) {
     // shotgun animation 
     animation_tick += deltaTime;

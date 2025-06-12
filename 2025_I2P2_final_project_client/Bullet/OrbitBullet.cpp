@@ -7,23 +7,24 @@
 OrbitBullet::OrbitBullet(float initAngle, float radius, float angularSpeed, Player* centerPlayer)
     : Bullet("play/orbitbullet.png", 0, 0, Engine::Point(0, 0), Engine::Point(0, 0), 0, nullptr),
       angle(initAngle), radius(radius), angularSpeed(angularSpeed), centerPlayer(centerPlayer) {
-    // ï¿½ï¿½lï¿½Æ¦ï¿½m
+    // ªì©l¤Æ¦ì¸m
     Position.x = centerPlayer->Position.x + radius * cos(angle);
     Position.y = centerPlayer->Position.y + radius * sin(angle);
     Size.x = 48, Size.y = 48;
+    CollisionRadius = 4;
 }
 
 void OrbitBullet::Update(float deltaTime) {
-    // ï¿½ï¿½sï¿½ï¿½ï¿½ï¿½
+    // §ó·s¨¤«×
     angle += angularSpeed * deltaTime;
 
-    // ï¿½Ú¾ï¿½ player ï¿½ï¿½mï¿½ï¿½ï¿½sï¿½]ï¿½wï¿½ï¿½m
+    // ®Ú¾Ú player ¦ì¸m­«·s³]©w¦ì¸m
     Position.x = centerPlayer->Position.x + radius * cos(angle);
     Position.y = centerPlayer->Position.y + radius * sin(angle);
 
     Rotation = angle;
 
-    // ï¿½ï¿½ï¿½Ý­n Bullet ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ¿ï¿½Aï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½s Bullet::Update
+    // ¤£»Ý­n Bullet ªº²¾°ÊÅÞ¿è¡A¦]¦¹¤£©I¥s Bullet::Update
     Sprite::Update(deltaTime);
 }
 

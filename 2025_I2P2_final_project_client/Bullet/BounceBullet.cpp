@@ -3,6 +3,7 @@
 #include <string>
 
 #include "Enemy/Enemy.hpp"
+#include "Engine/GameEngine.hpp"
 #include "Engine/Group.hpp"
 #include "Engine/Point.hpp"
 #include "BounceBullet.hpp"
@@ -14,23 +15,44 @@ class Weapon;
 BounceBullet::BounceBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent)
      : Bullet("play/bouncebullet.png", 300, 10, position, forwardDirection, rotation, nullptr) {
     bounce_time = 0;
-    Size.x = 64, Size.y = 64;
+     Size.x = 64, Size.y = 64;
+     CollisionRadius = 32;
 }
 
 void BounceBullet::Update(float deltaTime) {
-    if (bounce_time >= 4) {
+    if (bounce_time >= 3) {
         Bullet::Update(deltaTime);
         return;
     }
 
     Engine::Point topLeft = Engine::Point(0, 0);
     Engine::Point bottomRight = PlayScene::GetClientSize();
-
     bool bounced = false;
 
-    // �w���U�@�V��m
+    // Predict next position.
     Engine::Point nextPos = Position + Velocity * deltaTime;
 
+    // Check if the current scene is PlayScene.
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    if (game.CurrentScene == "play") {
+        PlayScene* scene = dynamic_cast<PlayScene*>(game.GetActiveScene());
+        if (scene) {
+            // Check horizontal obstacle collision.
+            if (!scene->isWalkable(nextPos.x, Position.y, 32)) {
+                Velocity.x *= -1;
+                nextPos.x = Position.x; // Prevent penetration
+                bounced = true;
+            }
+            // Check vertical obstacle collision.
+            if (!scene->isWalkable(Position.x, nextPos.y, 32)) {
+                Velocity.y *= -1;
+                nextPos.y = Position.y;
+                bounced = true;
+            }
+        }
+    }
+
+    // Check left/right boundary collision.
     if (nextPos.x - CollisionRadius < topLeft.x) {
         Velocity.x *= -1;
         nextPos.x = topLeft.x + CollisionRadius;
@@ -41,6 +63,7 @@ void BounceBullet::Update(float deltaTime) {
         bounced = true;
     }
 
+    // Check top/bottom boundary collision.
     if (nextPos.y - CollisionRadius < topLeft.y) {
         Velocity.y *= -1;
         nextPos.y = topLeft.y + CollisionRadius;

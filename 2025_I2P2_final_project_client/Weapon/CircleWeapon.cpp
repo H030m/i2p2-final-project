@@ -9,12 +9,14 @@
 #include "CircleWeapon.hpp"
 #include "Weapon.hpp"
 #include "Scene/PlayScene.hpp"
-
-CircleWeapon::CircleWeapon(float x, float y)
+#include "Engine/GameEngine.hpp"
+CircleWeapon::CircleWeapon(float x, float y, int _owner_id)
     : Weapon("play/turret-1.png", x, y, 200, 0.1) {
     // Move center downward, since we the turret head is slightly biased upward.
     // Anchor.y += 8.0f / GetBitmapHeight();
     created = false;
+    owner_id =  _owner_id;
+    type = 3;
 }
 void CircleWeapon::CreateBullet() {
     // Change bullet position to the front of the gun barrel.
@@ -27,12 +29,14 @@ void CircleWeapon::CreateBullet() {
 }
 
 void CircleWeapon::Update(float Deltatime) {
-    if (!created) {
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+
+    if (!created && game.my_id == owner_id) {
         this->CreateBullet();
         created = true;
     } 
 }
 
 void CircleWeapon::Draw() const {
-    //don't drawAdd commentMore actions
+    //don't draw
 }

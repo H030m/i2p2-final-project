@@ -36,7 +36,14 @@ Enemy::Enemy(std::string img, float x, float y, float radius, float speed, float
     reachEndTime = 0;
 }
 void Enemy::Hit(float damage) {
-    
+    hp -= damage;
+    if (hp <= 0) {
+        for (auto &it : lockedBullets)
+            it->Target = nullptr;
+        getPlayScene()->EarnMoney(money);
+        getPlayScene()->EnemyGroup->RemoveObject(objectIterator);
+        AudioHelper::PlayAudio("explosion.wav");
+    }
 }
 void Enemy::UpdatePath(const std::vector<std::vector<int>> &mapDistance) {
     int x = static_cast<int>(floor(Position.x / PlayScene::BlockSize));
@@ -69,55 +76,11 @@ void Enemy::UpdatePath(const std::vector<std::vector<int>> &mapDistance) {
         path[num] = pos;
         num--;
     }
-    // path[0] = PlayScene::EndGridPoint;
 
 }
 
 void Enemy::Update(float deltaTime) {
-    // Pre-calculate the velocity.
 
-    float remainSpeed = speed * deltaTime;
-    while (remainSpeed != 0) {
-        if (path.empty()) {
-            // Reach end point.
-            Hit(hp);
-            getPlayScene()->Hit();
-            reachEndTime = 0;
-            return;
-        }
-        Engine::Point target = path.back() * PlayScene::BlockSize + Engine::Point(PlayScene::BlockSize / 2, PlayScene::BlockSize / 2);
-        Engine::Point vec = target - Position;
-        // Add up the distances:
-        // 1. to path.back()
-        // 2. path.back() to border
-        // 3. All intermediate block size
-        // 4. to end point
-        reachEndTime = (vec.Magnitude() + (path.size() - 1) * PlayScene::BlockSize - remainSpeed) / speed;
-        Engine::Point normalized = vec.Normalize();
-        if (remainSpeed - vec.Magnitude() > 0) {
-            Position = target;
-            path.pop_back();
-            remainSpeed -= vec.Magnitude();
-        } else {
-            Velocity = normalized * remainSpeed / deltaTime;
-            remainSpeed = 0;
-        }
-    }
-    Rotation = atan2(Velocity.y, Velocity.x);
-    Sprite::Update(deltaTime);
-
-    // poison -> give money
-    poison_cooldown -= deltaTime;
-    
-    while(poison && poison_cooldown <= 0){
-        getPlayScene()->EarnMoney(money/5);
-        poison_cooldown += 4;
-        Tint = al_map_rgba(200 + rand()%50, 100, 100, 200  + rand()%50);
-        Hit(hp/1000);
-    }
-    if(!poison){
-        Tint = al_map_rgba(255, 255, 255, 255);
-    }
 }
 void Enemy::Draw() const {
     Sprite::Draw();

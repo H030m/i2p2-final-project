@@ -4,13 +4,13 @@
 
 class Camera {
 private:
-    Engine::Point position;
     Engine::Point viewportSize;
     Engine::Point targetPosition;
     Engine::Point margin;
     float smoothing;
     
 public:
+    Engine::Point position;
     Camera(float viewportWidth, float viewportHeight, Engine::Point margin);
     
     // 設置攝像機目標位置（通常是角色位置）

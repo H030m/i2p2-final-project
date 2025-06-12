@@ -179,6 +179,7 @@ namespace Engine {
         GameClient sender;
         GameClient& GetSender();
         int my_id;
+        std::string CurrentScene;
         // Allegro5 display for window creation.
         ALLEGRO_DISPLAY *display{};
         // Allegro5 settings, frames per second, screen width, screen height, maximum simultaneous audio samples.

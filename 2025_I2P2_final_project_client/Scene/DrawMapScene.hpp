@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include "Player/Player.hpp"
 #include "Engine/Sprite.hpp"
+#include "Camera/Camera.hpp"
 class Turret;
 namespace Engine {
     class Group;
@@ -29,18 +30,23 @@ private:
     };
     static const int MapWidth, MapHeight;
     static const int BlockSize;
+    std::unique_ptr<Camera> camera;
+    void RenderVisibleTiles() const;
+    void RenderVisibleObjects() const;
 protected:
 
 
 public:
     std::unordered_map<int, Player*> player_dict;
     std::unordered_map<int, Engine::Sprite*> Tile_dict;
+    std::unordered_map<int, Engine::Sprite*> Obstacle_dict;
     std::vector<std::vector<nlohmann::json>>MapState;
     std::vector<std::vector<int>>mapState_2;
     Group *PlayerGroup;
     Group *TileMapGroup;
     Group *UIGroup;
-
+    Group *ObstacleGroup;
+    Group *LabelGroup;
     Engine::Sprite * preview;
     Engine::Image *imgTarget;
 
@@ -58,6 +64,8 @@ public:
     void ConstructUI();
     void UIBtnClicked(int id);
     void SaveMapStateToFile(const std::string& path);
+
+    Camera* GetCamera() const { return camera.get(); }
 };
 
 #endif   // PLAYSCENE_HPP

@@ -29,7 +29,7 @@ add_executable(2025_I2P2_TowerDefense
     Enemy/TankEnemy.cpp Enemy/TankEnemy.hpp
     Enemy/PlaneEnemy.cpp Enemy/PlaneEnemy.hpp
     Enemy/BossEnemy.cpp Enemy/BossEnemy.hpp
-
+    Enemy/ArmoredEnemy.cpp Enemy/ArmoredEnemy.hpp
     Engine/Allegro5Exception.cpp Engine/Allegro5Exception.hpp
     Engine/AudioHelper.cpp Engine/AudioHelper.hpp
     Engine/Collider.cpp Engine/Collider.hpp
@@ -53,7 +53,8 @@ add_executable(2025_I2P2_TowerDefense
     Scene/SubmitScene.cpp Scene/SubmitScene.hpp
     Scene/RemotePlayScene.cpp Scene/RemotePlayScene.hpp
     Scene/DrawMapScene.cpp Scene/DrawMapScene.hpp
-
+    Scene/LoadingScene.cpp Scene/LoadingScene.hpp
+    
     Turret/LaserTurret.cpp Turret/LaserTurret.hpp
     Turret/MachineGunTurret.cpp Turret/MachineGunTurret.hpp
     Turret/Turret.cpp Turret/Turret.hpp

@@ -15,13 +15,15 @@ protected:
     float coolDown;
     float reload = 0;
     float rotateRadian = 2 * ALLEGRO_PI;
-    float angle;
-    float delta = 0;
     PlayScene *getPlayScene();
     // Reference: Design Patterns - Factory Method.
     virtual void CreateBullet() = 0;
+    float angle;
+    float delta = 0;
     float animation_tick;
+    int owner_id;
 public:
+    int type;
     bool aim_front = 1;
     bool Enabled = true;
     bool Preview = false;
