@@ -1,6 +1,7 @@
 #define NOMINMAX
 #include <algorithm>
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
 #include <cmath>
 #include <fstream>
 #include <functional>
@@ -19,10 +20,12 @@
 #include "Engine/Resources.hpp"
 #include "UI/Animation/DirtyEffect.hpp"
 #include "UI/Component/Label.hpp"
+#include "UI/Animation/DirtyEffect.hpp"
 #include "Map/Texture.hpp"
 #include "Map/TextureButton.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "Camera/Camera.hpp"
+
 const int DrawMapScene::MapWidth = 50, DrawMapScene::MapHeight = 50;
 const int DrawMapScene::BlockSize = 64;
 const Engine::Point TileSize(65,65);
@@ -36,11 +39,15 @@ static bool isNumber(const std::string& s) {
     return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
 }
 void DrawMapScene::Initialize() {
+    save_cooldown = 0;
+    SelectFile.resize(3);
+
     AddNewObject(TileMapGroup = new Group());
     AddNewControlObject(UIGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(ObstacleGroup = new Group());
     AddNewObject(LabelGroup = new Group);
+    AddNewObject(GroundEffectGroup = new Group);
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(100, 100, game.my_id, MapWidth, MapHeight);
@@ -82,6 +89,8 @@ void DrawMapScene::Terminate() {
     IScene::Terminate();
 }
 void DrawMapScene::Update(float deltaTime) {
+    save_cooldown -= deltaTime;
+    if(save_cooldown < 0)save_cooldown = 0;
     // update client's W, A, S, D
     // PlayerGroup->Update(deltaTime);
 
@@ -295,6 +304,7 @@ int y = worldPos.y / BlockSize;
                     Obstacle_dict.erase(y + x*MapHeight);
                 }
             }
+            //enemy 0
             if(preview->id == 10){
                 MapState[y][x]["Obstacle"]["x"] = 0;
                 MapState[y][x]["Obstacle"]["y"] = 0;
@@ -303,6 +313,56 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Obstacle"]["SizeX"] = 64;
                 MapState[y][x]["Obstacle"]["SizeY"] = 64;
                 MapState[y][x]["SpawnPoint"] = 0;//spawn Enemy 0
+                MapState[y][x]["SpawnCoolDown"] = 5; // if there is no enemy created by this tile, it will create a new enemy after X second
+                
+                if(Obstacle_dict.count(y + x*MapHeight))
+                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                auto* spr = new Engine::Sprite(
+                    MapState[y][x]["Obstacle"]["file_name"],
+                    x * BlockSize, y * BlockSize,       // screen position
+                    0,0,               // draw size
+                    0,0                               // anchor top-left
+                );
+                spr->Size = Engine::Point(64,64);
+                MapState[y][x]["Obstacle"]["w"] = spr->GetBitmapWidth();
+                MapState[y][x]["Obstacle"]["h"] = spr->GetBitmapHeight();
+                ObstacleGroup->AddNewObject(spr);
+                Obstacle_dict[y + x * MapHeight] = spr;
+            }
+            // enemy1
+            if(preview->id == 11){
+                MapState[y][x]["Obstacle"]["x"] = 0;
+                MapState[y][x]["Obstacle"]["y"] = 0;
+                MapState[y][x]["Obstacle"]["file_name"] = "play/logo-nthu.png";
+                MapState[y][x]["Obstacle"]["Penetrable"] = true;
+                MapState[y][x]["Obstacle"]["SizeX"] = 64;
+                MapState[y][x]["Obstacle"]["SizeY"] = 64;
+                MapState[y][x]["SpawnPoint"] = 1;//spawn Enemy 1
+                MapState[y][x]["SpawnCoolDown"] = 5; // if there is no enemy created by this tile, it will create a new enemy after X second
+                
+                if(Obstacle_dict.count(y + x*MapHeight))
+                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                auto* spr = new Engine::Sprite(
+                    MapState[y][x]["Obstacle"]["file_name"],
+                    x * BlockSize, y * BlockSize,       // screen position
+                    0,0,               // draw size
+                    0,0                               // anchor top-left
+                );
+                spr->Size = Engine::Point(64,64);
+                MapState[y][x]["Obstacle"]["w"] = spr->GetBitmapWidth();
+                MapState[y][x]["Obstacle"]["h"] = spr->GetBitmapHeight();
+                ObstacleGroup->AddNewObject(spr);
+                Obstacle_dict[y + x * MapHeight] = spr;
+            }
+            // enemy2
+            if(preview->id == 12){
+                MapState[y][x]["Obstacle"]["x"] = 0;
+                MapState[y][x]["Obstacle"]["y"] = 0;
+                MapState[y][x]["Obstacle"]["file_name"] = "play/logo-nthu.png";
+                MapState[y][x]["Obstacle"]["Penetrable"] = true;
+                MapState[y][x]["Obstacle"]["SizeX"] = 64;
+                MapState[y][x]["Obstacle"]["SizeY"] = 64;
+                MapState[y][x]["SpawnPoint"] = 2;//spawn Enemy 2
                 MapState[y][x]["SpawnCoolDown"] = 5; // if there is no enemy created by this tile, it will create a new enemy after X second
                 
                 if(Obstacle_dict.count(y + x*MapHeight))
@@ -342,6 +402,7 @@ void DrawMapScene::OnKeyUp(int keyCode) {
 
 void DrawMapScene::ReadMap(){
 
+
     for (int i = 0; i < MapHeight; ++i) {
         for (int j = 0; j < MapWidth; ++j) {
             int linearIndex = i + j * MapHeight;
@@ -367,6 +428,7 @@ void DrawMapScene::ReadMap(){
 }
 
 void DrawMapScene::ConstructUI() {
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     Engine::Image * sand = new Engine::Image("play/sand.png", 1280, 0, 320, 832);
     sand->fixed = true;
     UIGroup->AddNewObject(sand);
@@ -463,6 +525,22 @@ void DrawMapScene::ConstructUI() {
         btn->fixed = true;
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 10));
         UIGroup->AddNewControlObject(btn);
+
+        // spawnpoint 1
+        btn = new TextureButton("play/floor.png", "play/dirt.png",
+                            Engine::Sprite("play/logo-nthu.png", 1294 + 5 + 0 + 100, 80 + 5 + 300, 0, 0, 0, 0), 1294 + 0 + 100, 80 + 300);
+        btn->TileTexture.Size = Engine::Point(54,54);
+        btn->fixed = true;
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 11));
+        UIGroup->AddNewControlObject(btn);
+        
+        // spawnpoint 2
+        btn = new TextureButton("play/floor.png", "play/dirt.png",
+                            Engine::Sprite("play/logo-nthu.png", 1294 + 5 + 0 + 200, 80 + 5 + 300, 0, 0, 0, 0), 1294 + 0 + 200, 80 + 300);
+        btn->TileTexture.Size = Engine::Point(54,54);
+        btn->fixed = true;
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, 12));
+        UIGroup->AddNewControlObject(btn);
     }
 
     {
@@ -476,11 +554,46 @@ void DrawMapScene::ConstructUI() {
         lab = new Engine::Label("Save", "pirulen.ttf", 24, 1294+50, 750 + 25, 0, 0, 0, 255, 0.5, 0.5);
         lab->fixed = true;
         UIGroup->AddNewObject(lab);
+
+        //Save button to Map1
+        btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", game.screenW/4-100, game.screenH/2-50, 200, 100,0.5,0.5);
+        btn->fixed = true;
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -3));
+        UIGroup->AddNewControlObject(btn);
+        lab = new Engine::Label("Map1", "pirulen.ttf", 48, game.screenW/4+70-100, game.screenH/2 + 25-50, 0, 0, 0, 255, 0.5, 0.5);
+        lab->fixed = true;
+        btn->Visible = false; btn->Enabled = false; lab->Visible = false;
+        UIGroup->AddNewObject(lab);
+        SelectFile[0] = std::make_pair(btn,lab);
+
+        //Save button to Map2
+        btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", game.screenW/4*2-100, game.screenH/2-50, 200, 100,0.5,0.5);
+        btn->fixed = true;
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -4));
+        UIGroup->AddNewControlObject(btn);
+        lab = new Engine::Label("Map2", "pirulen.ttf", 48, game.screenW/4*2+70-100, game.screenH/2 + 25-50, 0, 0, 0, 255, 0.5, 0.5);
+        lab->fixed = true;
+        btn->Visible = false; btn->Enabled = false; lab->Visible = false;
+        UIGroup->AddNewObject(lab);
+        SelectFile[1] = std::make_pair(btn,lab);
+
+        //Save button to Map3
+        btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", game.screenW/4*3 - 100, game.screenH/2 - 50, 200, 100,0.5,0.5);
+        btn->fixed = true;
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -5));
+        UIGroup->AddNewControlObject(btn);
+        lab = new Engine::Label("Map3", "pirulen.ttf", 48, game.screenW/4*3+70 - 100, game.screenH/2 + 25 -50, 0, 0, 0, 255, 0.5, 0.5);
+        lab->fixed = true;
+        btn->Visible = false; btn->Enabled = false; lab->Visible = false;
+        UIGroup->AddNewObject(lab);
+        SelectFile[2] = std::make_pair(btn,lab);
+
         
+
         //leave button
         btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", 1294 + 150, 750, 100, 50);
         btn->fixed = true;
-        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -3));
+        btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -100));
         UIGroup->AddNewControlObject(btn);
         lab = new Engine::Label("Exit", "pirulen.ttf", 24, 1294+50 + 150, 750 + 25, 0, 0, 0, 255, 0.5, 0.5);
         lab->fixed = true;
@@ -554,10 +667,40 @@ void DrawMapScene::UIBtnClicked(int id){
         preview->id = 10;
         preview->Size = TileSize;
     }
+    if(id == 11){
+        std::cerr<<"id 11\n";
+        preview = new Engine::Sprite("play/logo-nthu.png", 100, 100, 0, 0, 0.5, 0.5, 0, 0, 0, 255, 255, 255, 50);
+        preview->id = 11;
+        preview->Size = TileSize;
+    }
+    if(id == 12){
+        std::cerr<<"id 12\n";
+        preview = new Engine::Sprite("play/logo-nthu.png", 100, 100, 0, 0, 0.5, 0.5, 0, 0, 0, 255, 255, 255, 50);
+        preview->id = 12;
+        preview->Size = TileSize;
+    }
     if(id == -2){
-        SaveMapStateToFile("Resource/map2.json");
+        // SaveMapStateToFile("Resource/map2.json");
+        pause = true;
+        for(int i = 0; i < 3; i++){
+            SelectFile[i].first->Visible = true;
+            SelectFile[i].second->Visible = true;
+            SelectFile[i].first->Enabled = true;
+        }
     }
     if(id == -3){
+        SaveMapStateToFile("Resource/map1.json");
+        // Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    }
+    if(id == -4){
+        SaveMapStateToFile("Resource/map2.json");
+        // Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    }
+    if(id == -5){
+        SaveMapStateToFile("Resource/map3.json");
+        // Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+    }
+    if(id == -100){
         Engine::GameEngine::GetInstance().ChangeScene("stage-select");
     }
     if(!preview)
@@ -571,8 +714,10 @@ void DrawMapScene::UIBtnClicked(int id){
 
 
 void DrawMapScene::SaveMapStateToFile(const std::string& path) {
+    if(save_cooldown > 0)return;
+    save_cooldown = 5.0;
     nlohmann::json output;
-
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     output["MapWidth"] = MapWidth;
     output["MapHeight"] = MapHeight;
     output["MapState"] = MapState; 
@@ -586,6 +731,13 @@ void DrawMapScene::SaveMapStateToFile(const std::string& path) {
     std::cerr<<output.dump(4)<<'\n';
     fout.close();
     std::cerr << "MapState saved to " << path << '\n';
+    // PlayerGroup->AddNewObject(new DirtyEffect("play/correct.png", 3, game.screenW, game.screenH));
+    for(int i = 0; i < 3; i++){
+        SelectFile[i].first->Visible = false;
+        SelectFile[i].first->Enabled = false;
+        SelectFile[i].second->Visible = false;
+    }
+    pause = 0;
 }
 
 void DrawMapScene::RenderVisibleTiles() const {
@@ -612,7 +764,7 @@ void DrawMapScene::RenderVisibleTiles() const {
 
 void DrawMapScene::RenderVisibleObjects() const {
     std::vector<Group*> renderGroups = {
-         PlayerGroup,ObstacleGroup, UIGroup,LabelGroup
+         PlayerGroup,ObstacleGroup,LabelGroup
     };
     
     for (Group* group : renderGroups) {
@@ -631,5 +783,27 @@ void DrawMapScene::RenderVisibleObjects() const {
             }
         }
     }
-   
+    
+    GroundEffectGroup->Draw();
+    // if press save -> draw button and block scene
+    if(pause)
+    al_draw_filled_rectangle(0, 0,
+        Engine::GameEngine::GetInstance().screenW,
+        Engine::GameEngine::GetInstance().screenH,
+        al_map_rgba(0, 0, 0, 128));
+
+    for (auto obj : UIGroup->GetObjects()) {
+            if(!obj->Visible)continue;
+            if(obj->fixed){
+                obj->Draw();
+                continue;
+            }
+            if (camera->IsInView(obj->Position, 64)) { 
+                Engine::Point screenPos = camera->WorldToScreen(obj->Position);
+                Engine::Point originalPos = obj->Position;
+                obj->Position = screenPos;
+                obj->Draw();
+                obj->Position = originalPos;
+            }
+    }
 }

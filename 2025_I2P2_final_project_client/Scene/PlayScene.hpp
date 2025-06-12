@@ -6,12 +6,13 @@
 #include <utility>
 #include <vector>
 #include <nlohmann/json.hpp>
-
+#include <string>
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
 #include <unordered_map>
 #include "Player/Player.hpp"
 #include "Camera/Camera.hpp"
+#include "UI/Component/ImageButton.hpp"
 class Weapon;
 namespace Engine {
     class Group;
@@ -43,9 +44,9 @@ protected:
 
 public:
     std::unordered_map<int, Player*> player_dict;
-    std::unordered_map<int, std::vector<Weapon*>> weapon_dict;
     std::unordered_map<int, Enemy*> enemy_dict;
-    std::unordered_map<int, std::vector<Engine::Label*>> player_UI;
+    std::unordered_map<int, std::vector<Engine::Label*>> player_UI_Label;
+    std::unordered_map<int, std::vector<Engine::ImageButton*>> player_UI_Button;
     static bool DebugMode;
     static const std::vector<Engine::Point> directions;
     static int MapWidth, MapHeight;
@@ -108,6 +109,7 @@ public:
 
     int id_counter;
     int my_id;
+     Engine::Label *upgrade_label_1, *upgrade_label_2;
     Camera* GetCamera() const { return camera.get(); }
 };
 

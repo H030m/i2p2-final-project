@@ -14,7 +14,7 @@ protected:
     Player* centerPlayer;
 
 public:
-    OrbitBullet(float initAngle, float radius, float angularSpeed, Player* centerPlayer);
+    OrbitBullet(float initAngle, float radius, float angularSpeed, Player* centerPlayer, Weapon *parent);
     void Update(float deltaTime) override;
     void Draw() const override;
 };

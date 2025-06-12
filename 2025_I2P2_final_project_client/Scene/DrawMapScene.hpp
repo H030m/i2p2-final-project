@@ -13,6 +13,7 @@
 #include "Player/Player.hpp"
 #include "Engine/Sprite.hpp"
 #include "Camera/Camera.hpp"
+#include "UI/Component/ImageButton.hpp"
 class Turret;
 namespace Engine {
     class Group;
@@ -30,9 +31,12 @@ private:
     };
     static const int MapWidth, MapHeight;
     static const int BlockSize;
+    bool pause = false;
+    float save_cooldown;
     std::unique_ptr<Camera> camera;
     void RenderVisibleTiles() const;
     void RenderVisibleObjects() const;
+    std::string SaveRoute[3] = {"Resource/map1.json", "Resource/map2.json","Resource/map3.json"};
 protected:
 
 
@@ -47,9 +51,10 @@ public:
     Group *UIGroup;
     Group *ObstacleGroup;
     Group *LabelGroup;
+    Group *GroundEffectGroup;
     Engine::Sprite * preview;
     Engine::Image *imgTarget;
-
+    std::vector<std::pair<Engine::ImageButton*,Engine::Label*>> SelectFile;
     explicit DrawMapScene() = default;
     void Initialize() override;
     void Terminate() override;

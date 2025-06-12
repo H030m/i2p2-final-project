@@ -2,17 +2,21 @@
 #include "Engine/GameEngine.hpp"
 #include "Connect/Client.hpp"
 #include "Scene/PlayScene.hpp"
+#include "UI/Component/Label.hpp"
 #include <fstream>
 #include <nlohmann/json.hpp>
+
+static std::string Texts[4] = {"Loading","Loading.","Loading..","Loading..."};
+static std::string Images[2] = {"loading/hutao1.png","loading/hutao2.png"};
 
 void LoadingScene::Initialize() {
     mapSent = false;
     ticks = 0;
     accumulatedTime = 0.0f; // initial time
-    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-    GameClient &client = game.GetSender();
-
-    
+    AddNewObject(UIGroup = new Group());
+    dot_cooldown = 0.5f;
+    ImageLoading.resize(2);
+    ConstructUI();
 }
 
 void LoadingScene::Update(float deltaTime) {
@@ -20,7 +24,6 @@ void LoadingScene::Update(float deltaTime) {
     GameClient &client = game.GetSender();
     ticks += deltaTime;
     accumulatedTime += deltaTime; 
-
     // every 2s send map
     if (accumulatedTime >= 0.5f) {
         accumulatedTime = 0.0f;
@@ -59,4 +62,36 @@ void LoadingScene::Update(float deltaTime) {
         // Switch to PlayScene
         game.ChangeScene("play");
     }
+
+    //UI
+    // text Loading...
+    dot_cooldown -= deltaTime;
+    if(dot_cooldown < 0){
+        dot_num = (dot_num + 1) % 4;
+        TextLoading->Text = Texts[dot_num];
+        int t = rand()%2;
+        ImageLoading[0]->Visible = (t==0);
+        ImageLoading[1]->Visible = (t==1); 
+        dot_cooldown = 0.5f;
+    }
+
+    
+}
+
+void LoadingScene::ConstructUI(){
+    Engine::Label *lab;
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    // text Loading
+    lab = new Engine::Label("Loading", "pirulen.ttf", 56, game.screenW/2, game.screenH/2, 255, 255, 255, 255, 0.5, 0.5);
+    UIGroup->AddNewObject(lab);
+    TextLoading = lab;
+    
+    Engine::Sprite *img;
+    img = new Engine::Sprite(Images[0],  game.screenW/2, game.screenH/2+100,64,64);
+    UIGroup->AddNewObject(img);
+    ImageLoading[0] = img;
+
+    img = new Engine::Sprite(Images[1],  game.screenW/2, game.screenH/2+100,64,64);
+    UIGroup->AddNewObject(img);
+    ImageLoading[1] = img;
 }

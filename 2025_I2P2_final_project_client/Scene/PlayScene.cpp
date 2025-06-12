@@ -51,7 +51,7 @@ static bool isNumber(const std::string& s) {
 
 bool PlayScene::DebugMode = false;
 const std::vector<Engine::Point> PlayScene::directions = { Engine::Point(-1, 0), Engine::Point(0, -1), Engine::Point(1, 0), Engine::Point(0, 1) };
-
+std::unordered_map<int, std::string> weapon_dict = {{1, "Gun Weapon"}, {2, "Shotgun Weapon"}, {3, "Orbit Weapon"}, {4, "Bounce Weapon"}};
 const int PlayScene::BlockSize = 64;
 const Engine::Point TileSize(65,65);
 const float PlayScene::DangerTime = 7.61;
@@ -92,11 +92,7 @@ void PlayScene::Initialize() {
     AddNewControlObject(UIGroup = new Group());
 
     ReadMap();
-    // EnemyGroup->AddNewObject(new ArmoredEnemy("play/enemy-1.png", 200, 200, 10, 5, 50, 100, 50));
-    // WeaponGroup->AddNewObject(new ShotgunWeapon(100, 100));
-    // WeaponGroup->AddNewObject(new CircleWeapon(100, 100));
-    // WeaponGroup->AddNewObject(new GunWeapon(100, 100));
-    // WeaponGroup->AddNewObject(new BounceWeapon(100, 100));
+    
 
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
@@ -107,26 +103,46 @@ void PlayScene::Initialize() {
         
         //some UI
         Engine::Label* label;
-        player_UI[game.my_id].push_back(label = new Engine::Label("YOUUU", "pirulen.ttf", 48, 0, 0, 255, 255, 255, 255, 0, 0));
+        player_UI_Label[game.my_id].push_back(label = new Engine::Label("YOUUU", "pirulen.ttf", 48, 0, 0, 255, 255, 255, 255, 0, 0));
         label->fixed = true;
         UIGroup->AddNewObject(label);
-        player_UI[game.my_id].push_back(label = new Engine::Label("hello", "pirulen.ttf", 24, 0, 50, 255, 255, 255, 255, 0, 0));
+        player_UI_Label[game.my_id].push_back(label = new Engine::Label("hello", "pirulen.ttf", 24, 10, 50, 255, 255, 255, 255, 0, 0));
         label->fixed = true;
         UIGroup->AddNewObject(label);
+
+         // upgrade button
+        Engine::ImageButton* btn;
+        player_UI_Button[game.my_id].push_back(btn = new Engine::ImageButton("play/sand.png", "play/floor.png", 20, game.screenH - 140, 250, 30));
+        btn->fixed = true;
+        btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 1));
+        UIGroup->AddNewControlObject(btn);
+        player_UI_Button[game.my_id].push_back(btn = new Engine::ImageButton("play/sand.png", "play/floor.png", 20, game.screenH - 70, 250, 30));
+        btn->fixed = true;
+        btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 2));
+        UIGroup->AddNewControlObject(btn);
+
         // camera
         
         camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
         camera->SetTarget(newPlayer->Position);
 
-         //Weapon
-        Weapon* k = new ShotgunWeapon(0, 0, my_id);
+        //Weapon
+        Weapon* k = new BounceWeapon(0, 0, my_id, 1);
         WeaponGroup->AddNewObject(k);
         newPlayer->Weapon_hold.push_back(k);
         newPlayer->Weapon_owned.push_back(k);
-        k = new CircleWeapon(0, 0, my_id);
+        k = new ShotgunWeapon(0, 0, my_id, 1);
         WeaponGroup->AddNewObject(k);
         newPlayer->Weapon_hold.push_back(k);
         newPlayer->Weapon_owned.push_back(k);
+
+        upgrade_label_1 = new Engine::Label("", "pirulen.ttf", 15, 30, game.screenH - 130, 0, 0, 0, 255, 0, 0);
+        upgrade_label_1->Text = weapon_dict[newPlayer->Weapon_hold[0]->type] + " (" + std::to_string(newPlayer->Weapon_hold[0]->level) +")";
+        upgrade_label_1->fixed = true; 
+        upgrade_label_2 = new Engine::Label("", "pirulen.ttf", 15, 30, game.screenH - 60, 0, 0, 0, 255, 0, 0);
+        upgrade_label_2->Text = weapon_dict[newPlayer->Weapon_hold[1]->type] + " (" + std::to_string(newPlayer->Weapon_hold[1]->level) +")";
+        upgrade_label_2->fixed = true;
+        UIGroup->AddNewObject(upgrade_label_1); UIGroup->AddNewObject(upgrade_label_2);
     }
 
     
@@ -191,11 +207,11 @@ void PlayScene::Update(float deltaTime) {
             newPlayer->status = client_info["player"][3];
             newPlayer->health = client_info["player"][4];
 
-            player_UI[id].push_back(new Engine::Label("", "pirulen.ttf", 48, 0, 50, 0, 0, 0, 255, 0, 0));
-            player_UI[id].push_back(new Engine::Label("", "pirulen.ttf", 24, 0, 50, 0, 0, 0, 255, 0, 0));
-            player_UI[id][0]->fixed = true; player_UI[id][1]->fixed = true;
-            UIGroup->AddNewObject(player_UI[id][0]);
-            UIGroup->AddNewObject(player_UI[id][1]);
+            player_UI_Label[id].push_back(new Engine::Label("", "pirulen.ttf", 48, 0, 50, 0, 0, 0, 255, 0, 0));
+            player_UI_Label[id].push_back(new Engine::Label("", "pirulen.ttf", 24, 10, 50, 0, 0, 0, 255, 0, 0));
+            player_UI_Label[id][0]->fixed = true; player_UI_Label[id][1]->fixed = true;
+            UIGroup->AddNewObject(player_UI_Label[id][0]);
+            UIGroup->AddNewObject(player_UI_Label[id][1]);
         } else {
             if(id == game.my_id) continue;
             it->second->Position.x = x;
@@ -215,7 +231,8 @@ void PlayScene::Update(float deltaTime) {
 
                 if (!isNewPlayer) {
                     for (Weapon* w : player_dict[id]->Weapon_hold) {
-                        WeaponGroup->RemoveObject(w->GetObjectIterator()); 
+                        WeaponGroup->RemoveObject(w->GetObjectIterator());
+                    
                     }   
                     player_dict[id]->Weapon_hold.clear();
                 }
@@ -223,17 +240,17 @@ void PlayScene::Update(float deltaTime) {
                 Weapon* ww;
                 for (auto weapontype : weapons) {
                     switch(weapontype) {
-                        case(1) : 
-                            WeaponGroup->AddNewObject(ww = new GunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                       case(1) :
+                            WeaponGroup->AddNewObject(ww = new GunWeapon(0, 0, id, 1)); player_dict[id]->Weapon_hold.push_back(ww);
                             break;
-                        case(2) : 
-                            WeaponGroup->AddNewObject(ww = new ShotgunWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                       case(2) :
+                            WeaponGroup->AddNewObject(ww = new ShotgunWeapon(0, 0, id, 1)); player_dict[id]->Weapon_hold.push_back(ww);
                             break;
-                        case(3) : 
-                            WeaponGroup->AddNewObject(ww = new CircleWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                        case(3) :
+                            WeaponGroup->AddNewObject(ww = new CircleWeapon(0, 0, id, 1)); player_dict[id]->Weapon_hold.push_back(ww);
                             break;
-                        case(4) : 
-                            WeaponGroup->AddNewObject(ww = new BounceWeapon(0, 0, id)); player_dict[id]->Weapon_hold.push_back(ww);
+                        case(4) :
+                            WeaponGroup->AddNewObject(ww = new BounceWeapon(0, 0, id, 1)); player_dict[id]->Weapon_hold.push_back(ww);
                             break;
                     }
                 }
@@ -270,13 +287,13 @@ void PlayScene::Update(float deltaTime) {
             it->second->Weapon_hold.clear();
             delete it->second;
 
-            if (player_UI.count(playerId)) {
-                for (auto* label : player_UI[playerId]) {
+            if (player_UI_Label.count(playerId)) {
+                for (auto* label : player_UI_Label[playerId]) {
                     if (UIGroup) {
                         UIGroup->RemoveObject(label->GetObjectIterator());
                     }
                 }
-                player_UI.erase(playerId);
+                player_UI_Label.erase(playerId);
             }
 
             it = player_dict.erase(it);
@@ -288,7 +305,7 @@ void PlayScene::Update(float deltaTime) {
     // update myself
     if (player_dict.find(game.my_id) != player_dict.end()) {
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
-        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state, 
+        sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state,
                                         player_dict[game.my_id]->status, player_dict[game.my_id]->health};
                                     
         for (auto n: player_dict[game.my_id]->Weapon_hold) {
@@ -299,7 +316,7 @@ void PlayScene::Update(float deltaTime) {
 
     // update UI
     int count = 1;
-    for (auto &labels: player_UI) {
+    for (auto &labels: player_UI_Label) {
         int curid = labels.first;
         Engine::Label* name_label = labels.second[0];
         Engine::Label* health_label = labels.second[1];
@@ -312,9 +329,8 @@ void PlayScene::Update(float deltaTime) {
         }
         
         name_label->Position.y = 96*count;
-        name_label->Text = "Player_" + std::to_string(curid);
-        health_label->Position.y = 96*count + 50;
         name_label->Text = "player_" + std::to_string(curid);
+        health_label->Position.y = 96*count + 50;
         health_label->Text = "Health : " + std::to_string(player_dict[curid]->health);
         count++;
     }
@@ -329,7 +345,7 @@ void PlayScene::Update(float deltaTime) {
             if(NotFoundEnemy.count(enemy["id"])){
                 NotFoundEnemy.erase(enemy["id"]);
             }
-            if(enemy_dict.count(enemy["id"])) { 
+            if(enemy_dict.count(enemy["id"])) {
                 // enemy has existed
                 enemy_dict[enemy["id"]]->Position.x = enemy["x"];
                 enemy_dict[enemy["id"]]->Position.y = enemy["y"];
@@ -419,7 +435,7 @@ void PlayScene::RenderVisibleObjects() const {
     
     for (Group* group : renderGroups) {
         for (auto obj : group->GetObjects()) {
-            if (camera->IsInView(obj->Position, 64)) { 
+            if (camera->IsInView(obj->Position, 64)) {
                 Engine::Point screenPos = camera->WorldToScreen(obj->Position);
                 Engine::Point originalPos = obj->Position;
                 obj->Position = screenPos;
@@ -518,7 +534,7 @@ void PlayScene::ReadMap() {
         spr->SourceH = sh - 2;
         TileMapGroup->AddNewObject(spr);
 
-        // === �s�W��ê��ø�s ===
+        // 
         if (map[i][j].contains("Obstacle")) {
             auto& obs = map[i][j]["Obstacle"];
             if (obs.contains("file_name")) {
@@ -568,7 +584,14 @@ void PlayScene::ConstructUI() {
 }
 
 void PlayScene::UIBtnClicked(int id) {
-   
+   if (id == 1) {
+        player_dict[my_id]->Weapon_hold[0]->Upgrade();
+        upgrade_label_1->Text = weapon_dict[player_dict[my_id]->Weapon_hold[0]->type] + " (" + std::to_string(player_dict[my_id]->Weapon_hold[0]->level) +")";
+    }
+    else if (id == 2) {
+        player_dict[my_id]->Weapon_hold[1]->Upgrade();
+        upgrade_label_2->Text = weapon_dict[player_dict[my_id]->Weapon_hold[1]->type] + " (" + std::to_string(player_dict[my_id]->Weapon_hold[1]->level) +")";
+    }
 }
 
 bool PlayScene::CheckSpaceValid(int x, int y) {

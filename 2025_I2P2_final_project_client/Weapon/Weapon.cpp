@@ -66,3 +66,10 @@ void Weapon::Update(float deltaTime) {
 void Weapon::Draw() const {
     Sprite::Draw();
 }
+
+void Weapon::Upgrade() {
+    if (level == 5) {
+        return;
+    }
+    else level++;
+}

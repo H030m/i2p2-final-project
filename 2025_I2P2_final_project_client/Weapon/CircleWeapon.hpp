@@ -6,7 +6,7 @@ class CircleWeapon : public Weapon {
 private:
     bool created;
 public:
-    CircleWeapon(float x, float y, int _owner_id);
+    CircleWeapon(float x, float y, int _owner_id, int _level);
     void CreateBullet() override;
     void Update(float deltaTime) override;
     void Draw() const override;

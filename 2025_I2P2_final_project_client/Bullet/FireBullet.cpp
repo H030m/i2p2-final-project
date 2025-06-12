@@ -11,9 +11,9 @@
 
 class Weapon;
 
-FireBullet::FireBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent) : Bullet("play/Bullet_1.png", 800, 20, position, forwardDirection, rotation + ALLEGRO_PI / 2, parent) {
-    Size.x = 32; Size.y = 32;
-    CollisionRadius = 32;
+FireBullet::FireBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent) : Bullet("play/Bullet_1.png", 800 + parent->level*75, 20 + parent->level*10, position, forwardDirection, rotation + ALLEGRO_PI / 2, parent) {
+    Size.x = 32 * (1+parent->level*0.5); Size.y = 32 * (1+parent->level*0.5);
+    CollisionRadius = 16 * (1+parent->level*0.5);
 }
 void FireBullet::OnExplode(Enemy *enemy) {
     std::random_device dev;

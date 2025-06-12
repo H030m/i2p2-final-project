@@ -4,14 +4,16 @@
 #include "Scene/PlayScene.hpp"
 #include "UI/Animation/DirtyEffect.hpp"
 
-OrbitBullet::OrbitBullet(float initAngle, float radius, float angularSpeed, Player* centerPlayer)
-    : Bullet("play/orbitbullet.png", 0, 0, Engine::Point(0, 0), Engine::Point(0, 0), 0, nullptr),
+OrbitBullet::OrbitBullet(float initAngle, float radius, float angularSpeed, Player* centerPlayer, Weapon *parent)
+    : Bullet("play/orbitbullet.png", 0, 0, Engine::Point(0, 0), Engine::Point(0, 0), 0, parent),
       angle(initAngle), radius(radius), angularSpeed(angularSpeed), centerPlayer(centerPlayer) {
     // ªì©l¤Æ¦ì¸m
     Position.x = centerPlayer->Position.x + radius * cos(angle);
     Position.y = centerPlayer->Position.y + radius * sin(angle);
-    Size.x = 48, Size.y = 48;
-    CollisionRadius = 4;
+    Size.x = 48 * (1+parent->level), Size.y = 48 * (1+parent->level);
+    damage += parent->level * 10;
+    angularSpeed += parent->level * 10;
+    CollisionRadius = 24 * (1+parent->level);
 }
 
 void OrbitBullet::Update(float deltaTime) {
