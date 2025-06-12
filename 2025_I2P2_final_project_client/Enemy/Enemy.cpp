@@ -78,7 +78,7 @@ void Enemy::UpdatePath(const std::vector<std::vector<int>> &mapDistance) {
 }
 
 void Enemy::Update(float deltaTime) {
-    // // Pre-calculate the velocity.Add commentMore actions
+    // // Pre-calculate the velocity.
     // float remainSpeed = speed * deltaTime;
     // while (remainSpeed != 0) {
     //     if (path.empty()) {

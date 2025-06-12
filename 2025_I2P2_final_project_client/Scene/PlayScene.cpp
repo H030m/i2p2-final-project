@@ -12,7 +12,7 @@
 #include <vector>
 #include <iostream>
 #include <set>
-
+#include <unordered_set>
 #include "Enemy/Enemy.hpp"
 #include "Enemy/SoldierEnemy.hpp"
 //TODO HACKATHON-3
@@ -89,7 +89,7 @@ void PlayScene::Initialize() {
     AddNewObject(EffectGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(WeaponGroup = new Group());
-    
+    AddNewControlObject(UIGroup = new Group());
 
     ReadMap();
     // EnemyGroup->AddNewObject(new ArmoredEnemy("play/enemy-1.png", 200, 200, 10, 5, 50, 100, 50));
@@ -105,6 +105,14 @@ void PlayScene::Initialize() {
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
         
+        //some UI
+        Engine::Label* label;
+        player_UI[game.my_id].push_back(label = new Engine::Label("YOUUU", "pirulen.ttf", 48, 0, 0, 255, 255, 255, 255, 0, 0));
+        label->fixed = true;
+        UIGroup->AddNewObject(label);
+        player_UI[game.my_id].push_back(label = new Engine::Label("hello", "pirulen.ttf", 24, 0, 50, 255, 255, 255, 255, 0, 0));
+        label->fixed = true;
+        UIGroup->AddNewObject(label);
         // camera
         
         camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
@@ -121,8 +129,7 @@ void PlayScene::Initialize() {
         newPlayer->Weapon_owned.push_back(k);
     }
 
-    // Should support buttons.
-    AddNewControlObject(UIGroup = new Group());
+    
     
     std::cerr<<"hi\n";
     ReadEnemyWave();
@@ -139,9 +146,9 @@ void PlayScene::Initialize() {
     bgmId = AudioHelper::PlayBGM("play.ogg");
 
     // DEBUG add one enemy
-    ArmoredEnemy* e = new ArmoredEnemy(200, 200);
+    // ArmoredEnemy* e = new ArmoredEnemy(200, 200);
     // e->UpdatePath(mapDistance);
-    EnemyGroup->AddNewObject(e);
+    // EnemyGroup->AddNewObject(e);
 }
 void PlayScene::Terminate() {
     AudioHelper::StopBGM(bgmId);
@@ -168,7 +175,7 @@ void PlayScene::Update(float deltaTime) {
         // player marked active
         activePlayerIds.insert(id);
 
-        if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 3 || client_info["player"][2] != state)
+        if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 4 || client_info["player"][2] != state)
             continue;
 
         float x = client_info["player"][0];
@@ -182,11 +189,19 @@ void PlayScene::Update(float deltaTime) {
             PlayerGroup->AddNewObject(newPlayer);
             player_dict[id] = newPlayer;
             newPlayer->status = client_info["player"][3];
+            newPlayer->health = client_info["player"][4];
+
+            player_UI[id].push_back(new Engine::Label("", "pirulen.ttf", 48, 0, 50, 0, 0, 0, 255, 0, 0));
+            player_UI[id].push_back(new Engine::Label("", "pirulen.ttf", 24, 0, 50, 0, 0, 0, 255, 0, 0));
+            player_UI[id][0]->fixed = true; player_UI[id][1]->fixed = true;
+            UIGroup->AddNewObject(player_UI[id][0]);
+            UIGroup->AddNewObject(player_UI[id][1]);
         } else {
             if(id == game.my_id) continue;
             it->second->Position.x = x;
             it->second->Position.y = y;
             it->second->status = client_info["player"][3];
+            it->second->health = client_info["player"][4];
         }
         //weapon
         if(id != game.my_id){
@@ -265,15 +280,81 @@ void PlayScene::Update(float deltaTime) {
     if (player_dict.find(game.my_id) != player_dict.end()) {
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
         sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state, 
-                                        player_dict[game.my_id]->status};
+                                        player_dict[game.my_id]->status, player_dict[game.my_id]->health};
                                     
         for (auto n: player_dict[game.my_id]->Weapon_hold) {
             sender.output_json["weapon"].push_back(n->type);
         }
+    
     }
+
+    // update UI
+    int count = 1;
+    for (auto &labels: player_UI) {
+        int curid = labels.first;
+        Engine::Label* name_label = labels.second[0];
+        Engine::Label* health_label = labels.second[1];
+
+        if (curid == my_id) {
+            name_label->Position.y = 0;
+            health_label->Position.y = 50;
+            health_label->Text = "Health : " + std::to_string(player_dict[curid]->health);
+            continue;
+        }
+        
+        name_label->Position.y = 96*count;
+        health_label->Position.y = 96*count + 50;
+        health_label->Text = "Health : " + std::to_string(player_dict[curid]->health);
+        count++;
+    }
+
+    // enemy
+    std::unordered_set<int>NotFoundEnemy;
+    for(auto it: enemy_dict)NotFoundEnemy.insert(it.first);
+    if(sender.input_json.contains("-1")) { // -1 is enemy
+        auto enemies = sender.input_json["-1"];
+        
+        for(auto enemy : enemies) {
+            if(NotFoundEnemy.count(enemy["id"])){
+                NotFoundEnemy.erase(enemy["id"]);
+            }
+            if(enemy_dict.count(enemy["id"])) { 
+                // enemy has existed
+                enemy_dict[enemy["id"]]->Position.x = enemy["x"];
+                enemy_dict[enemy["id"]]->Position.y = enemy["y"];
+                enemy_dict[enemy["id"]]->Rotation = enemy["rotation"];
+                enemy_dict[enemy["id"]]->hp = (enemy["alive"] == true)? 1 : 0;
+                enemy_dict[enemy["id"]]->id = enemy["id"];
+                enemy_dict[enemy["id"]]->damage = enemy["damage"];
+
+            } else{
+                //create new enemy
+                Enemy* newEnemy;
+                switch ((int)enemy["enemyType"])
+                {
+                case 0:
+                    newEnemy = new ArmoredEnemy(enemy["x"],enemy["y"]);
+                    EnemyGroup->AddNewObject(newEnemy);
+                    enemy_dict[enemy["id"]] = newEnemy;
+                    break;
+                default:
+                    break;
+                }
+            }
+
+        }
+    }
+    for(auto it:NotFoundEnemy){
+        EnemyGroup->RemoveObject(enemy_dict[it]);
+        enemy_dict.erase(it);
+    }
+
+    // scene
     camera->SetTarget(player_dict[my_id]->Position);
     camera->Update(deltaTime);
     IScene::Update(deltaTime);
+
+
 }
 void PlayScene::Draw() const {
     // IScene::Draw();
@@ -321,8 +402,8 @@ void PlayScene::RenderVisibleTiles() const {
 void PlayScene::RenderVisibleObjects() const {
     // 渲染可見的遊戲物件
     std::vector<Group*> renderGroups = {
-        GroundEffectGroup, DebugIndicatorGroup, EnemyGroup, 
-        BulletGroup, EffectGroup, PlayerGroup, WeaponGroup, ObstacleGroup
+        GroundEffectGroup, DebugIndicatorGroup, ObstacleGroup, EnemyGroup, 
+        BulletGroup, EffectGroup, PlayerGroup, WeaponGroup
     };
     
     for (Group* group : renderGroups) {

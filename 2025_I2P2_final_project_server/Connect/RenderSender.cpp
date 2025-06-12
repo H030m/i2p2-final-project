@@ -107,6 +107,8 @@ void RenderSender::start() {
                     obj["x"] = enemy.x;
                     obj["y"] = enemy.y;
                     obj["rotation"] = enemy.rotation;
+                    obj["alive"] = true;
+                    obj["damage"] = enemy.damage;
                     AddToFrame(obj);
                 }
             }

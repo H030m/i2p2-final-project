@@ -30,7 +30,7 @@ struct EnemyInstance {
     float cooldownTimer = 0;
     bool alive = true;
     float speed = 100.0f;
-
+    int damage = 10;
     std::vector<Point> path;
     Point velocity;
     float rotation = 0;

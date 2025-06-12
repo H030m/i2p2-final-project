@@ -5,8 +5,9 @@
 #include "Scene/PlayScene.hpp"
 #include <algorithm>
 #include "Weapon/Weapon.hpp"
+#include "Engine/LOG.hpp"
 #include <vector>
-
+#include "Enemy/Enemy.hpp"
 class Weapon;
 Player::Player(float x, float y) : 
     speed(250.0f), 
@@ -69,6 +70,7 @@ Player::Player(float x, float y, int id, int MapWidth, int MapHeight):id(id),
 }
 
 void Player::Update(float deltaTime) {
+    
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
 
@@ -103,6 +105,9 @@ void Player::Update(float deltaTime) {
                 SourceX = 0;
             break;
     }
+    //
+    damageCooldown -= deltaTime;
+    if(damageCooldown < 0) damageCooldown = 0;
 }
 
 void Player::UpdateMyPlayer(float deltaTime) {
@@ -177,6 +182,29 @@ void Player::UpdateMyPlayer(float deltaTime) {
 
     Position.x = newX;
     Position.y = newY;
+
+    // interaction with enemy
+    if(Engine::GameEngine::GetInstance().CurrentScene == "play"){
+        PlayScene* scene = dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetActiveScene());
+    
+        if(damageCooldown < 0)damageCooldown = 0;
+        // Check for enemy collisions first
+        for (auto& enemyObj : scene->EnemyGroup->GetObjects()) {
+            Enemy* enemy = dynamic_cast<Enemy*>(enemyObj);
+            if (enemy) {
+                Engine::Point diff = enemy->Position - Position;
+                float distance = diff.Magnitude();
+                if (distance <= enemy->CollisionRadius + CollisionRadius) {
+                    if(damageCooldown <= 0)
+                     Engine::LOG(Engine::INFO) << "Player is hit by enemy at (" << enemy->id << ")";
+                    TakeDamage(enemy->damage); // Apply damage to Player
+                    // std::cerr<<"oh no health "<<health<<'\n';
+                    // Engine::LOG(Engine::INFO) << "Player is hit by enemy at (" << enemy->id << ")";
+                }
+            }
+        }
+    }
+    
 }
 
 void Player::Draw() const {
@@ -227,8 +255,11 @@ void Player::OnKeyUp(int keyCode) {
 }
 
 void Player::TakeDamage(int damage) {
+    if(damageCooldown > 0)return;
     health -= damage;
     if (health < 0) health = 0;
+    damageCooldown = 0.3f;
+    
 }
 
 bool Player::IsAlive() const {

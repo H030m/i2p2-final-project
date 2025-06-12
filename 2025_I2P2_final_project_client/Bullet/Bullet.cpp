@@ -25,7 +25,7 @@ void Bullet::Update(float deltaTime) {
     Sprite::Update(deltaTime);
     PlayScene* scene = getPlayScene();
 
-    // Check for enemy collisions firstAdd commentMore actions
+    // Check for enemy collisions first
     for (auto& enemyObj : scene->EnemyGroup->GetObjects()) {
         Enemy* enemy = dynamic_cast<Enemy*>(enemyObj);
         if (enemy) {
@@ -36,7 +36,7 @@ void Bullet::Update(float deltaTime) {
                 OnExplode(enemy);   // Trigger hit effect
                 scene->BulletGroup->RemoveObject(objectIterator); // Remove bullet
                 Engine::LOG(Engine::INFO) << "Bullet hit enemy at (" << enemy->Position.x << ", " << enemy->Position.y << ")";
-                return; // Stop checking after hitting an enemyAdd commentMore actions
+                return; // Stop checking after hitting an enemy
             }
         }
     }

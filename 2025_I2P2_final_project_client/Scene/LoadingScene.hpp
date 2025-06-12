@@ -2,6 +2,7 @@
 #define LOADINGSCENE_HPP
 
 #include "Engine/IScene.hpp"
+#include "Engine/Group.hpp"
 
 class LoadingScene final : public Engine::IScene {
 private:
@@ -11,6 +12,7 @@ private:
 public:
     void Initialize() override;
     void Update(float deltaTime) override;
+    Group *UIGroup;
 };
 
 #endif // LOADINGSCENE_HPP

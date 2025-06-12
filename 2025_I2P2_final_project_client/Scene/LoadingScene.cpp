@@ -12,7 +12,7 @@ void LoadingScene::Initialize() {
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &client = game.GetSender();
 
-
+    
 }
 
 void LoadingScene::Update(float deltaTime) {

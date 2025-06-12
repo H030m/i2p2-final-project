@@ -24,6 +24,7 @@ private:
 public:
     int id;
     int health;
+    float damageCooldown;
     float speed;
     int maxHealth;
     Engine::Point nextPosition;
