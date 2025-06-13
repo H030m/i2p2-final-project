@@ -29,7 +29,8 @@ void LoadingScene::Update(float deltaTime) {
         accumulatedTime = 0.0f;
 
         // Read Resource/map2.json
-        std::ifstream fin("Resource/map2.json");
+        std::string filename = "Resource/map" + std::to_string(MapNum) + ".json";
+        std::fstream fin(filename);
         if (fin.is_open()) {
             nlohmann::json mapJson;
             fin >> mapJson;
@@ -40,15 +41,17 @@ void LoadingScene::Update(float deltaTime) {
         } else {
             std::cerr << "Failed to open Resource/map2.json\n";
         }
+        std::cerr<<"request "<<filename<<'\n';
     }
     // Wait until map is received back from server
     if (client.input_json.contains("map")) {
         
         const nlohmann::json& receivedMap = client.input_json["map"];
-        std::ofstream fout("Resource/map1.json");
+        std::string filename = "loadingMap.json";
+        std::ofstream fout(filename);
         if (fout.is_open()) {
             fout << receivedMap["map"].dump(4); // Indented output
-            std::cerr<<"hello Map "<<receivedMap["map"].dump()<<'\n';
+            std::cerr<<"hello Map "<< filename<<'\n';
             fout.close();
         } else {
             std::cerr << "Failed to write to Resource/map1.json\n";

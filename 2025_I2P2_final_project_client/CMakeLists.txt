@@ -56,7 +56,10 @@ add_executable(2025_I2P2_TowerDefense
     Scene/RemotePlayScene.cpp Scene/RemotePlayScene.hpp
     Scene/DrawMapScene.cpp Scene/DrawMapScene.hpp
     Scene/LoadingScene.cpp Scene/LoadingScene.hpp
-    
+    Scene/ChooseMapScene.cpp Scene/ChooseMapScene.cpp
+    Scene/ChooseDrawMapScene.cpp Scene/ChooseDrawMapScene.cpp
+    Scene/SettingWHScene.cpp Scene/SettingWHScene.cpp
+
     Turret/LaserTurret.cpp Turret/LaserTurret.hpp
     Turret/MachineGunTurret.cpp Turret/MachineGunTurret.hpp
     Turret/Turret.cpp Turret/Turret.hpp

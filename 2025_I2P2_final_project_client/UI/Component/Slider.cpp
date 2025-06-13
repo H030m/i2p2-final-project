@@ -53,3 +53,6 @@ void Slider::OnMouseMove(int mx, int my) {
         
     }
 }
+float  Slider::GetValue(){
+    return value;
+}

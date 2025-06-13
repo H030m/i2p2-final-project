@@ -487,7 +487,7 @@ void PlayScene::EarnMoney(int money) {
 void PlayScene::ReadMap() {
 
     std::cerr<<"hellow!\n";
-    std::string filename = std::string("Resource/map") + std::to_string(MapId) + ".json"; // or ".json"
+    std::string filename = "loadingMap.json"; // or ".json"
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Failed to open map file: " << filename << '\n';

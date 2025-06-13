@@ -26,7 +26,7 @@
 #include "UI/Component/ImageButton.hpp"
 #include "Camera/Camera.hpp"
 
-const int DrawMapScene::MapWidth = 50, DrawMapScene::MapHeight = 50;
+int DrawMapScene::MapHeight,DrawMapScene::MapWidth;
 const int DrawMapScene::BlockSize = 64;
 const Engine::Point TileSize(65,65);
 const int tileX = 7; 
@@ -46,11 +46,11 @@ void DrawMapScene::Initialize() {
     AddNewControlObject(UIGroup = new Group());
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(ObstacleGroup = new Group());
-    AddNewObject(LabelGroup = new Group);
+    AddNewControlObject(LabelGroup = new Group);
     AddNewObject(GroundEffectGroup = new Group);
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     {
-        Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-        Player* newPlayer = new Player(100, 100, game.my_id, MapWidth, MapHeight);
+        Player* newPlayer = new Player(300, 300, game.my_id, MapWidth, MapHeight);
         PlayerGroup->AddNewObject(newPlayer);
         player_dict[game.my_id] = newPlayer;
         camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
@@ -64,22 +64,33 @@ void DrawMapScene::Initialize() {
     imgTarget->Visible = false;
     imgTarget->fixed = true;
     UIGroup->AddNewObject(imgTarget);
+    
+    // correctpng
+    correct = new Engine::Image("play/target.png",game.screenW/2,100,64,64,0.5f,0.5f);
+    correct->Visible = false;
+    UIGroup->AddNewObject(correct);
+    std::cerr<<"hello correct\n";
     ConstructUI();
 
     //Map
     
-
-    nlohmann::json tile = {
-        {"Tile", {
-            {"file_name", filename},
-            {"x", tileX},
-            {"y", tileY},
-            {"w", tileW},
-            {"h", tileH}
-        }}
-    };
-
-    MapState.resize(MapHeight, std::vector<nlohmann::json>(MapWidth,tile));
+    std::string filename = "Resource/map" + std::to_string(MapNum) + ".json";
+    std::ifstream fin(filename);
+    nlohmann::json mapJson;
+    if (fin.is_open()) {
+        
+        fin >> mapJson;
+    } else {
+        std::cerr << "Failed to open Resource/map2.json\n";
+    }
+    MapWidth = (int)mapJson["MapWidth"];
+    MapHeight = (int)mapJson["MapHeight"];
+    MapState.resize(MapHeight, std::vector<nlohmann::json>(MapWidth));
+    for (int i = 0; i < MapHeight; ++i) {
+        for (int j = 0; j < MapWidth; ++j) {
+            MapState[i][j] = mapJson["MapState"][i][j];
+        }
+    }
     mapState_2.resize(MapHeight, std::vector<int>(MapWidth));
     ReadMap();
 
@@ -91,6 +102,11 @@ void DrawMapScene::Terminate() {
 void DrawMapScene::Update(float deltaTime) {
     save_cooldown -= deltaTime;
     if(save_cooldown < 0)save_cooldown = 0;
+    correct_time -= deltaTime;
+    if(correct_time <= 0 && correct != nullptr){
+        correct->Visible = false;
+        correct = 0;
+    }
     // update client's W, A, S, D
     // PlayerGroup->Update(deltaTime);
 
@@ -404,26 +420,64 @@ void DrawMapScene::ReadMap(){
 
 
     for (int i = 0; i < MapHeight; ++i) {
-        for (int j = 0; j < MapWidth; ++j) {
-            int linearIndex = i + j * MapHeight;
-            std::string key = std::to_string(linearIndex);
-            // Get (tileX, tileY) in tile sheet
-            auto* spr = new Engine::Sprite(
-                MapState[i][j]["Tile"]["file_name"],
-                j * BlockSize, i * BlockSize,       // screen position
-                0,0,               // draw size
-                0,0                                 // anchor top-left
-            );
-            spr->Size = TileSize;
-            spr->SourceH = (float)MapState[i][j]["Tile"]["h"] - 1;
-            spr->SourceW = (float)MapState[i][j]["Tile"]["w"] - 1;
-            spr->SourceX = (float)MapState[i][j]["Tile"]["w"]  * (float)MapState[i][j]["Tile"]["x"] + 1;
-            spr->SourceY = (float)MapState[i][j]["Tile"]["h"]  * (float)MapState[i][j]["Tile"]["y"] + 1;
-            TileMapGroup->AddNewObject(spr);
-            Tile_dict[i + j * MapHeight] = spr;
+    for (int j = 0; j < MapWidth; ++j) {
+        int linearIndex = i + j * MapHeight;
+        std::string key = std::to_string(linearIndex);
+
+        auto& tile = MapState[i][j]["Tile"];
+        auto* spr = new Engine::Sprite(
+            tile["file_name"],
+            j * BlockSize, i * BlockSize,
+            0, 0,
+            0, 0
+        );
+        spr->Size = TileSize;
+        spr->SourceH = (float)tile["h"] - 2;
+        spr->SourceW = (float)tile["w"] - 2;
+        spr->SourceX = (float)tile["w"] * (float)tile["x"] + 1;
+        spr->SourceY = (float)tile["h"] * (float)tile["y"] + 1;
+        TileMapGroup->AddNewObject(spr);
+        Tile_dict[linearIndex] = spr;
+
+        // Obstacle
+        if (MapState[i][j].contains("Obstacle")) {
+            auto& obs = MapState[i][j]["Obstacle"];
+            if (obs.contains("file_name")) {
+                std::string obs_file = obs["file_name"];
+                float ox = obs["x"];
+                float oy = obs["y"];
+                float ow = obs["w"];
+                float oh = obs["h"];
+
+                auto* obs_spr = new Engine::Sprite(
+                    obs_file,
+                    j * BlockSize, i * BlockSize,
+                    0, 0,
+                    0, 0
+                );
+                obs_spr->Size = TileSize;
+                obs_spr->SourceX = ow * ox + 1;
+                obs_spr->SourceY = oh * oy + 1;
+                obs_spr->SourceW = ow - 2;
+                obs_spr->SourceH = oh - 2;
+
+                if (obs.contains("SizeX") && obs.contains("SizeY")) {
+                    obs_spr->Size.x = obs["SizeX"];
+                    obs_spr->Size.y = obs["SizeY"];
+                }
+
+                // offset
+                if (obs.contains("Obstacle")) {
+                    auto& innerObs = obs["Obstacle"];
+                    if (innerObs.contains("OffsetX")) obs_spr->Position.x += (int)innerObs["OffsetX"];
+                    if (innerObs.contains("OffsetY")) obs_spr->Position.y += (int)innerObs["OffsetY"];
+                }
+
+                ObstacleGroup->AddNewObject(obs_spr);
+            }
         }
     }
-
+}
 
 }
 
@@ -556,36 +610,36 @@ void DrawMapScene::ConstructUI() {
         UIGroup->AddNewObject(lab);
 
         //Save button to Map1
-        btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", game.screenW/4-100, game.screenH/2-50, 200, 100,0.5,0.5);
+        btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", game.screenW/4-100, game.screenH/2-50, 200, 100);
         btn->fixed = true;
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -3));
-        UIGroup->AddNewControlObject(btn);
-        lab = new Engine::Label("Map1", "pirulen.ttf", 48, game.screenW/4+70-100, game.screenH/2 + 25-50, 0, 0, 0, 255, 0.5, 0.5);
+        LabelGroup->AddNewControlObject(btn);
+        lab = new Engine::Label("Map1", "pirulen.ttf", 48, game.screenW/4+70-100 - 60, game.screenH/2 + 25-50, 0, 0, 0, 255);
         lab->fixed = true;
         btn->Visible = false; btn->Enabled = false; lab->Visible = false;
-        UIGroup->AddNewObject(lab);
+        LabelGroup->AddNewObject(lab);
         SelectFile[0] = std::make_pair(btn,lab);
 
         //Save button to Map2
-        btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", game.screenW/4*2-100, game.screenH/2-50, 200, 100,0.5,0.5);
+        btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", game.screenW/4*2-100, game.screenH/2-50, 200, 100);
         btn->fixed = true;
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -4));
-        UIGroup->AddNewControlObject(btn);
-        lab = new Engine::Label("Map2", "pirulen.ttf", 48, game.screenW/4*2+70-100, game.screenH/2 + 25-50, 0, 0, 0, 255, 0.5, 0.5);
+        LabelGroup->AddNewControlObject(btn);
+        lab = new Engine::Label("Map2", "pirulen.ttf", 48, game.screenW/4*2+70-100 - 60, game.screenH/2 + 25-50, 0, 0, 0, 255);
         lab->fixed = true;
         btn->Visible = false; btn->Enabled = false; lab->Visible = false;
-        UIGroup->AddNewObject(lab);
+        LabelGroup->AddNewObject(lab);
         SelectFile[1] = std::make_pair(btn,lab);
 
         //Save button to Map3
-        btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", game.screenW/4*3 - 100, game.screenH/2 - 50, 200, 100,0.5,0.5);
+        btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", game.screenW/4*3 - 100, game.screenH/2 - 50, 200, 100);
         btn->fixed = true;
         btn->SetOnClickCallback(std::bind(&DrawMapScene::UIBtnClicked, this, -5));
-        UIGroup->AddNewControlObject(btn);
-        lab = new Engine::Label("Map3", "pirulen.ttf", 48, game.screenW/4*3+70 - 100, game.screenH/2 + 25 -50, 0, 0, 0, 255, 0.5, 0.5);
+        LabelGroup->AddNewControlObject(btn);
+        lab = new Engine::Label("Map3", "pirulen.ttf", 48, game.screenW/4*3+70 - 100  - 70, game.screenH/2 + 25 -50, 0, 0, 0, 255);
         lab->fixed = true;
         btn->Visible = false; btn->Enabled = false; lab->Visible = false;
-        UIGroup->AddNewObject(lab);
+        LabelGroup->AddNewObject(lab);
         SelectFile[2] = std::make_pair(btn,lab);
 
         
@@ -738,6 +792,13 @@ void DrawMapScene::SaveMapStateToFile(const std::string& path) {
         SelectFile[i].second->Visible = false;
     }
     pause = 0;
+    correct_time = 3.0f;
+    if(correct != nullptr){
+        correct->Visible = true;
+    }else{
+        std::cerr<<"shit\n";
+    }
+    
 }
 
 void DrawMapScene::RenderVisibleTiles() const {
@@ -764,7 +825,7 @@ void DrawMapScene::RenderVisibleTiles() const {
 
 void DrawMapScene::RenderVisibleObjects() const {
     std::vector<Group*> renderGroups = {
-         PlayerGroup,ObstacleGroup,LabelGroup
+         PlayerGroup,ObstacleGroup,UIGroup
     };
     
     for (Group* group : renderGroups) {
@@ -792,7 +853,7 @@ void DrawMapScene::RenderVisibleObjects() const {
         Engine::GameEngine::GetInstance().screenH,
         al_map_rgba(0, 0, 0, 128));
 
-    for (auto obj : UIGroup->GetObjects()) {
+    for (auto obj : LabelGroup->GetObjects()) {
             if(!obj->Visible)continue;
             if(obj->fixed){
                 obj->Draw();
@@ -806,4 +867,5 @@ void DrawMapScene::RenderVisibleObjects() const {
                 obj->Position = originalPos;
             }
     }
+    
 }

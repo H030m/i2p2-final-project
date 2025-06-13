@@ -1,16 +1,16 @@
-#ifndef CHOOSEMAPSCENE_HPP
-#define CHOOSEMAPSCENE_HPP
+#ifndef CHOOSEDRAWMAPSCENE_HPP
+#define CHOOSEDRAWMAPSCENE_HPP
 #include <allegro5/allegro_audio.h>
 #include <memory>
 
 #include "Engine/IScene.hpp"
 
-class ChooseMapScene final : public Engine::IScene {
+class ChooseDrawMapScene final : public Engine::IScene {
 private:
 
 
 public:
-    explicit ChooseMapScene() = default;
+    explicit ChooseDrawMapScene() = default;
     void Initialize() override;
     void Terminate() override;
     void PlayOnClick(int stage);

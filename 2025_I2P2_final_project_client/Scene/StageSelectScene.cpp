@@ -73,7 +73,7 @@ void StageSelectScene::BackOnClick(int stage) {
 void StageSelectScene::PlayOnClick(int stage) {
     PlayScene *scene = dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetScene("play"));
     scene->MapId = stage;
-    Engine::GameEngine::GetInstance().ChangeScene("loading");
+    Engine::GameEngine::GetInstance().ChangeScene("ChooseMapScene");
     // Engine::GameEngine::GetInstance().ChangeScene("play");
 }
 void StageSelectScene::ScoreboardOnClick() {
@@ -88,5 +88,5 @@ void StageSelectScene::SFXSlideOnValueChanged(float value) {
 }
 
 void StageSelectScene::MapEditOnClick() {
-    Engine::GameEngine::GetInstance().ChangeScene("DrawMapScene");
+    Engine::GameEngine::GetInstance().ChangeScene("ChooseDrawMapScene");
 }

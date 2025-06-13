@@ -26,7 +26,7 @@ Player::Player(float x, float y) :
 
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
-    
+
 }
 
 Player::Player(float x, float y, int id):id(id), 
@@ -67,6 +67,7 @@ Player::Player(float x, float y, int id, int MapWidth, int MapHeight):id(id),
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
     CollisionRadius = 55;
+     std::cerr<<"new Player at "<<x<<" "<<y<<'\n';
 }
 
 void Player::Update(float deltaTime) {

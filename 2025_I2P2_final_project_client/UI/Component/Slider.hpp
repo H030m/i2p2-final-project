@@ -24,5 +24,6 @@ public:
     void OnMouseDown(int button, int mx, int my) override;
     void OnMouseUp(int button, int mx, int my) override;
     void OnMouseMove(int mx, int my) override;
+    float  GetValue();
 };
 #endif   // SLIDER_HPP

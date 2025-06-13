@@ -14,7 +14,9 @@ private:
     float ticks = 0;
     float accumulatedTime;
     int dot_num; float dot_cooldown;
+    
 public:
+    int MapNum=1;
     Engine::Label *TextLoading;
     std::vector<Engine::Sprite*>ImageLoading;
     void Initialize() override;

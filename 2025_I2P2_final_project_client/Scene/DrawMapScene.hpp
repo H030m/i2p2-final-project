@@ -29,7 +29,7 @@ private:
         TILE_FLOOR,
         TILE_OCCUPIED,
     };
-    static const int MapWidth, MapHeight;
+    static int MapWidth, MapHeight;
     static const int BlockSize;
     bool pause = false;
     float save_cooldown;
@@ -54,6 +54,7 @@ public:
     Group *GroundEffectGroup;
     Engine::Sprite * preview;
     Engine::Image *imgTarget;
+    Engine::Image *correct = nullptr; float correct_time;
     std::vector<std::pair<Engine::ImageButton*,Engine::Label*>> SelectFile;
     explicit DrawMapScene() = default;
     void Initialize() override;
@@ -71,6 +72,7 @@ public:
     void SaveMapStateToFile(const std::string& path);
 
     Camera* GetCamera() const { return camera.get(); }
+    int MapNum = 1;
 };
 
 #endif   // PLAYSCENE_HPP
