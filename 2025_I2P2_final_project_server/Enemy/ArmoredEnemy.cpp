@@ -1,6 +1,6 @@
 #include "ArmoredEnemy.hpp"
 #include <nlohmann/json.hpp>
-
+#include <iostream>
 ArmoredEnemy::ArmoredEnemy(int id, Engine::Point position, Engine::Point spawn)
     : Enemy(1, id, position, spawn, initRadius, initSpeed, initHP, initDamage, initMoney) {
     armor = initArmor;
@@ -22,6 +22,7 @@ void ArmoredEnemy::Update(float deltaTime) {
 void ArmoredEnemy::Hit(float damage) {
     // Apply damage reduction from armor
     float remainingArmor = armor - damage;
+    std::cerr<<"armor! "<<armor<<'\n';
     if (remainingArmor < 0) {
         Enemy::Hit(-remainingArmor);
         armor = 0;

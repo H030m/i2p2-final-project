@@ -42,14 +42,16 @@ void Enemy::UpdateFromServer(float x, float y, float rotation, float hp, bool al
     Rotation = rotation;
     this->hp = hp;
 
-    
+    std::cerr<<"hello alive? "<<this->alive<<' '<<alive<<'\n';
     if (!alive && this->alive) { // Just died
         OnExplode();
-        getPlayScene()->EarnMoney(money);
-        getPlayScene()->EnemyGroup->RemoveObject(objectIterator);
+        // getPlayScene()->EarnMoney(money);
+        // getPlayScene()->EnemyGroup->RemoveObject(objectIterator);
+        this->Visible = false;
     }
     if (alive && !this->alive) { // Just revived
-        getPlayScene()->EnemyGroup->AddNewObject(this);
+        // getPlayScene()->EnemyGroup->AddNewObject(this);
+        this->Visible =true;
     }
 
     this->alive = alive;

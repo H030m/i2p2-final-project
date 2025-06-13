@@ -55,7 +55,7 @@ through communication tools, such as email lists, and via reports and patches at
 as detailed in our community tools document.
 
 Anyone can become a contributor. There is no expectation of commitment to the project, no specific skill requirements
-and no selection process. To become a contributor, a community member simply has to perform one or more actions that are
+and no selection process. To become a contributor, a community member simply has to perform one or  that are
 beneficial to the project.
 
 Some contributors will already be engaging with the project as users, but will also find themselves doing one or more of

@@ -8,6 +8,11 @@
 #include "Engine/LOG.hpp"
 #include <vector>
 #include "Enemy/Enemy.hpp"
+
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 class Weapon;
 Player::Player(float x, float y) : 
     speed(250.0f), 
@@ -212,13 +217,14 @@ void Player::UpdateMyPlayer(float deltaTime) {
         // Check for enemy collisions first
         for (auto& enemyObj : scene->EnemyGroup->GetObjects()) {
             Enemy* enemy = dynamic_cast<Enemy*>(enemyObj);
-            if (enemy) {
+            if (enemy && enemy->alive) {
                 Engine::Point diff = enemy->Position - Position;
                 float distance = diff.Magnitude();
                 if (distance <= enemy->CollisionRadius + CollisionRadius) {
-                    if(damageCooldown <= 0)
-                     Engine::LOG(Engine::INFO) << "Player is hit by enemy at (" << enemy->id << ")";
-                    TakeDamage(enemy->damage); // Apply damage to Player
+                    if(damageCooldown <= 0) {
+                        Engine::LOG(Engine::INFO) << "Player is hit by enemy at (" << enemy->id << ")";
+                       TakeDamage(enemy->damage); // Apply damage to Player
+                    } 
                     // std::cerr<<"oh no health "<<health<<'\n';
                     // Engine::LOG(Engine::INFO) << "Player is hit by enemy at (" << enemy->id << ")";
                 }
@@ -230,6 +236,47 @@ void Player::UpdateMyPlayer(float deltaTime) {
 
 void Player::Draw() const {
     Sprite::Draw();
+
+    
+    // health bar settings
+    const float barWidth = 50.0f;
+    const float barHeight = 6.0f;
+    const float barOffsetY = -30.0f;  
+    const int maxHealth = 100;  
+    
+    // health bar position
+    float barX = Position.x - barWidth / 2;
+    float barY = Position.y + barOffsetY;
+    
+    // health bar percent
+    float healthPercent = static_cast<float>(health) / static_cast<float>(maxHealth);
+    healthPercent = std::max(0.0f, std::min(1.0f, healthPercent));
+    
+    // health bar background (black)
+    al_draw_filled_rectangle(
+        barX - 1, barY - 1,
+        barX + barWidth + 1, barY + barHeight + 1,
+        al_map_rgb(40, 40, 40)
+    );
+    
+    // change health bar color base on percent
+    ALLEGRO_COLOR healthColor;
+    if (healthPercent > 0.6f) {
+        healthColor = al_map_rgb(0, 255, 0);      // green
+    } else if (healthPercent > 0.3f) {
+        healthColor = al_map_rgb(255, 255, 0);    // yellow
+    } else {
+        healthColor = al_map_rgb(255, 0, 0);      // red
+    }
+    
+    // draw health bar
+    if (healthPercent > 0) {
+        al_draw_filled_rectangle(
+            barX + 1, barY + 1,
+            barX + (barWidth - 2) * healthPercent, barY + barHeight - 1,
+            healthColor
+        );
+    }
 }
 // move by input_json
 void Player::OnKeyDown(int keyCode) {

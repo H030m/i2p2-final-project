@@ -3,6 +3,7 @@
 #include "Engine/GameEngine.hpp"
 #include "Scene/PlayScene.hpp"
 #include "UI/Animation/DirtyEffect.hpp"
+#include "Enemy/Enemy.hpp"
 
 OrbitBullet::OrbitBullet(float initAngle, float radius, float angularSpeed, Player* centerPlayer, Weapon *parent)
     : Bullet("play/orbitbullet.png", 0, 0, Engine::Point(0, 0), Engine::Point(0, 0), 0, parent),
@@ -20,14 +21,28 @@ void OrbitBullet::Update(float deltaTime) {
     // 更新角度
     angle += angularSpeed * deltaTime;
 
-    // 根據 player 位置重新設定位置
+
     Position.x = centerPlayer->Position.x + radius * cos(angle);
     Position.y = centerPlayer->Position.y + radius * sin(angle);
 
     Rotation = angle;
 
-    // 不需要 Bullet 的移動邏輯，因此不呼叫 Bullet::Update
+    
     Sprite::Update(deltaTime);
+    PlayScene* scene = dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetActiveScene());
+    for (auto& enemyObj : scene->EnemyGroup->GetObjects()) {
+        Enemy* enemy = dynamic_cast<Enemy*>(enemyObj);
+        if (enemy && enemy->alive) {
+            Engine::Point diff = enemy->Position - Position;
+            float distance = diff.Magnitude();
+            if (distance <= enemy->CollisionRadius + CollisionRadius) {
+                
+                enemy->Hit(damage); // Apply damage to enemy
+                OnExplode(enemy);   // Trigger hit effect
+                return; // Stop checking after hitting an enemy
+            }
+        }
+    }
 }
 
 void OrbitBullet::Draw() const {

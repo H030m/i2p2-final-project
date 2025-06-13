@@ -2,6 +2,7 @@
 #include <cmath>
 #include <nlohmann/json.hpp>
 #include "Engine/Point.hpp"
+#include <iostream>
 Enemy::Enemy(int type, int id, Engine::Point position, Engine::Point spawn, float radius, float speed, float hp, float damage, int money) 
     : type(type), id(id), position(position), spawn(spawn), collisionRadius(radius), speed(speed), hp(hp), damage(damage), money(money) {
 }
@@ -13,7 +14,8 @@ void Enemy::Revive() {
 
 
 void Enemy::Update(float deltaTime) {
-   
+    std::cerr<<"alive?" <<id<<' '<<alive<<'\n';
+    if(!alive)std::cerr<<"cooldown alive"<< cooldown<<'\n';
     if (!alive) {
         if (cooldown <= 0) Enemy::Revive();
         else cooldown -= deltaTime;
@@ -26,8 +28,10 @@ void Enemy::Update(float deltaTime) {
 
 void Enemy::Hit(float damage) {
     hp -= damage;
+    std::cerr<<"id hp "<<id<<' '<<hp<<'\n';
     if (hp <= 0) {
         alive = false;
+        std::cerr<<"die!"<< ' '<<alive<<'\n';
         cooldown = 10.0f;
     }
 }

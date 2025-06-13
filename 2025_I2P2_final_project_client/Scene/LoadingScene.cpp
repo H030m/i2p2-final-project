@@ -8,7 +8,8 @@
 
 static std::string Texts[4] = {"Loading","Loading.","Loading..","Loading..."};
 static std::string Images[2] = {"loading/hutao1.png","loading/hutao2.png"};
-
+std::unordered_map<int, std::string> wd = {{1, "Gun"}, {2, "Shotgun"}, {3, "Bounce"}, {4, "Orbit"}};
+std::unordered_map<int, std::string> wdd = {{1, "AK47.png"}, {2, "shotgun.png"}, {3, "rpg.png"}, {4, "orbitbullet.png"}};
 void LoadingScene::Initialize() {
     mapSent = false;
     ticks = 0;
@@ -72,14 +73,14 @@ void LoadingScene::Update(float deltaTime) {
     //UI
     // text Loading...
     dot_cooldown -= deltaTime;
-    if(dot_cooldown < 0){
+    if(dot_cooldown < 0 && !mapReceived){
         dot_num = (dot_num + 1) % 4;
         TextLoading->Text = Texts[dot_num];
         int t = rand()%2;
         ImageLoading[0]->Visible = (t==0);
         ImageLoading[1]->Visible = (t==1); 
         dot_cooldown = 0.5f;
-    }
+    }else if (mapReceived) TextLoading->Text = "READY!";
 
     UIGroup->Update(deltaTime);
 }
@@ -96,14 +97,26 @@ void LoadingScene::ConstructUI(){
     float startX = game.screenW / 2 - btnSize - 40;
     float startY = 150;
     WeaponButtons.resize(4);
+    WeaponBorders.resize(4);
     weaponSelected = std::vector<bool>(4, false);
     selectedCount = 0;
 
     for (int i = 0; i < 4; ++i) {
         float x = startX + (i % 2) * (btnSize + 80);
         float y = startY + (i / 2) * (btnSize + 80);
-        std::string label = "Weapon " + std::to_string(i + 1);
-
+        std::string label = wd[i+1];
+        std::string imglab = wdd[i+1];
+        
+        // boarder
+        float borderOffset = 8;
+        Engine::Image* border = new Engine::Image(
+            "stage-select/floor.png",
+            x - borderOffset, y - borderOffset,
+            btnSize + 2 * borderOffset, btnSize + 2 * borderOffset
+        );
+        border->Visible = false;
+        WeaponBorders[i] = border;
+        UIGroup->AddNewObject(border);
         Engine::ImageButton* btn = new Engine::ImageButton(
             "stage-select/dirt.png", "stage-select/floor.png",
             x, y, btnSize, btnSize
@@ -112,11 +125,20 @@ void LoadingScene::ConstructUI(){
         WeaponButtons[i] = btn;
         UIGroup->AddNewControlObject(btn);
 
+        // weapon label
         Engine::Label* weaponLabel = new Engine::Label(
             label, "pirulen.ttf", 20,
             x + btnSize / 2, y - 20, 255, 255, 255, 255, 0.5, 0.5
         );
         UIGroup->AddNewObject(weaponLabel);
+        // weapon img
+        Engine::Image* weaponImg = new Engine::Image(
+            "play/"+imglab, x, y, 
+            btnSize, btnSize
+        );
+        UIGroup->AddNewObject(weaponImg);
+        // Image(std::string img, float x, float y, float w = 0, float h = 0, float anchorX = 0, float anchorY = 0, int id = -1);
+    
     }
 
     // --- Confirm Button ---
@@ -138,10 +160,12 @@ void LoadingScene::ConstructUI(){
 void LoadingScene::OnClickWeapon(int index) {
     if (weaponSelected[index]) {
         weaponSelected[index] = false;
+        WeaponBorders[index]->Visible = false;
         selectedCount--;
     } else {
         if (selectedCount >= 2) return;
         weaponSelected[index] = true;
+        WeaponBorders[index]->Visible = true; 
         selectedCount++;
     }
     

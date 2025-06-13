@@ -115,16 +115,25 @@ void RenderSender::start() {
                 if (ctx->active) {
                     frame[std::to_string(ctx->id)] = ctx->lastInput;
                     if(ctx->lastInput.contains("Hit")){
-                        Hitenemy[ctx->lastInput["Hit"]["id"]].push_back(HitInformation(ctx->lastInput["Hit"]["Damage"], ctx->lastInput["Hit"]["HitVx"],ctx->lastInput["Hit"]["HitVy"], ctx->id));
+                        // std::cerr<<"hello "<<ctx->lastInput.dump()<<'\n';
+                        // std::cerr<<"contains id"<<ctx->lastInput["Hit"].contains("id")<<'\n';
+                        // std::cerr<<"contains id"<<ctx->lastInput["Hit"].contains("Damage")<<'\n';
+                        // std::cerr<<"contains id"<<ctx->lastInput["Hit"].contains("HitVx")<<'\n';
+                        // std::cerr<<"contains id"<<ctx->lastInput["Hit"].contains("HitVy")<<'\n';
+                        for(auto it:ctx->lastInput["Hit"]){
+                            Hitenemy[it["id"]].push_back(HitInformation(it["Damage"], it["HitVx"],it["HitVy"], ctx->id));
+                        }
+                        
                     }
                 }
             }
             //update enemy
             
             for (auto& enemy : enemies) {
-                if (enemy->alive) {
+                
                     UpdateEnemyInstance(*enemy, deltaTime, *this);
                     UpdateEnemyHit(*enemy, deltaTime, *this, Hitenemy[enemy->id]);
+                    Hitenemy.clear();
                     // Get the enemy's serialized data
                     nlohmann::json enemyData;
                     switch (enemy->type) {
@@ -142,7 +151,7 @@ void RenderSender::start() {
                     // Add to frame
                     AddToFrame(enemyData);
                     
-                }
+                
             }
             // 3. send to all clients
             for (auto& ctx : clients) {
@@ -265,7 +274,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
 void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
     if (!ctx->active) return;
     // if(frame.contains("map"))
-    //std::cerr<<"frame  "<<frame.dump()<<'\n';
+    // std::cerr<<"frame  "<<frame.dump()<<'\n';
     std::string raw = frame.dump(); // 
     // std::cerr << "[send raw size]: " << raw.size() << " bytes\n";
     // std::cerr << "[send raw content]: " << raw << "\n";

@@ -16,6 +16,7 @@ private:
     int dot_num; float dot_cooldown;
     std::vector<bool>weaponSelected;
     std::vector<Engine::ImageButton*>WeaponButtons;
+    std::vector<Engine::Image*> WeaponBorders;
     int selectedCount = 0;
     bool mapReceived = false;
 public:

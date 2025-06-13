@@ -14,7 +14,7 @@ GunWeapon::GunWeapon(float x, float y, int _owner_id, int _level)
     : Weapon("play/AK47_Sheet.png", x, y, 200, 0.5) {
 // Move center downward, since we the turret head is slightly biased upward.
     // Anchor.y += 8.0f / GetBitmapHeight();
-    Anchor.x += 15.0f / GetBitmapHeight();
+    Anchor.x -= 8.0f / GetBitmapHeight();
     owner_id = _owner_id;
     type = 1;
     SourceW = 135, SourceH = 51, SourceY = 0, SourceX = 0;

@@ -9,10 +9,16 @@
 #include "Engine/Sprite.hpp"
 #include "Scene/PlayScene.hpp"
 #include "Engine/LOG.hpp"
+#include "UI/Animation/DirtyEffect.hpp"
+#include <random>
 PlayScene *Bullet::getPlayScene() {
     return dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetActiveScene());
 }
 void Bullet::OnExplode(Enemy *enemy) {
+    // std::random_device dev;
+    // std::mt19937 rng(dev());
+    // std::uniform_int_distribution<std::mt19937::result_type> dist(2, 5);
+    // getPlayScene()->GroundEffectGroup->AddNewObject(new DirtyEffect("play/dirty-1.png", dist(rng), enemy->Position.x, enemy->Position.y));
 }
 
 Bullet::Bullet(std::string img, float speed, float damage, Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent)
@@ -28,10 +34,11 @@ void Bullet::Update(float deltaTime) {
     // Check for enemy collisions first
     for (auto& enemyObj : scene->EnemyGroup->GetObjects()) {
         Enemy* enemy = dynamic_cast<Enemy*>(enemyObj);
-        if (enemy) {
+        if (enemy && enemy->alive) {
             Engine::Point diff = enemy->Position - Position;
             float distance = diff.Magnitude();
             if (distance <= enemy->CollisionRadius + CollisionRadius) {
+                
                 enemy->Hit(damage); // Apply damage to enemy
                 OnExplode(enemy);   // Trigger hit effect
                 scene->BulletGroup->RemoveObject(objectIterator); // Remove bullet

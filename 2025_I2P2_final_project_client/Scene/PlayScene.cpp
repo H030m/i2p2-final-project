@@ -141,13 +141,13 @@ void PlayScene::Initialize() {
         for(auto it:PlayerWeapon){
             Weapon* k;
             if(it == 0){
-                k = new BounceWeapon(0, 0, my_id, 1); 
+                k = new GunWeapon(0, 0, my_id, 1); 
             }else
             if(it == 1){
                 k = new ShotgunWeapon(0, 0, my_id, 1); 
             }else
             if(it == 2){
-                k = new GunWeapon(0, 0, my_id, 1); 
+                k = new BounceWeapon(0, 0, my_id, 1); 
             }else
             if(it == 3){
                 k = new CircleWeapon(0, 0, my_id, 1); 
@@ -428,6 +428,7 @@ void PlayScene::Update(float deltaTime) {
         auto enemies = sender.input_json["-1"];
         
         // First pass: track all active enemies
+        std::cerr<<"input enemy "<<enemies.dump()<<'\n';
         for (auto& enemyData : enemies) {
             std::cerr<<"update enemy "<<enemyData["id"]<<' '<<enemyData["enemyType"]<<'\n';
             std::cerr<<"bug9\n";
