@@ -22,6 +22,9 @@ public:
     Engine::Point velocity;
     float rotation = 0;
     
+    std::vector<Engine::Point> path;
+    Engine::Point lastTarget;
+
     Enemy(int type, int id, Engine::Point position, Engine::Point spawn, float radius, float speed, float hp, float damage, int money);
     virtual ~Enemy() = default;
     

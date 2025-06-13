@@ -27,6 +27,7 @@ public:
     float damageCooldown;
     float speed;
     int maxHealth;
+    int gold;
     Engine::Point nextPosition;
     float animation_tick;
     Player_Status status;

@@ -13,12 +13,14 @@ class Turret;
 
 class Enemy : public Engine::Sprite {
 protected:
-    std::vector<Engine::Point> path;
     int money;
     PlayScene *getPlayScene();
     virtual void OnExplode();
     
 public:
+    int id;
+    int type;
+    bool alive = true;
     bool tag = 0;
     float hp;
     float speed;
@@ -27,11 +29,9 @@ public:
     float reachEndTime;
     int damage = 10;
     Engine::Point HitV = Engine::Point(0.0, 0.0);
-    std::list<Turret *> lockedTurrets;
-    std::list<Bullet *> lockedBullets;
-    Enemy(std::string img, float x, float y, float radius, float speed, float hp, int money);
+    Enemy(int id, std::string img, float x, float y, float radius, float speed, float hp, int money);
     virtual void Hit(float damage);
-    void UpdatePath(const std::vector<std::vector<int>> &mapDistance);
+    void UpdateFromServer(float x, float y, float rotation, float hp, bool alive);
     void Update(float deltaTime) override;
     void Draw() const override;
 };

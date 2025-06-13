@@ -4,11 +4,17 @@
 #include "Scene/PlayScene.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Connect/Client.hpp"
-ArmoredEnemy::ArmoredEnemy(float x, float y)
-    : Enemy("play/enemy-1.png", x, y, 10, 10, 10, 10), armor(50) {
+ArmoredEnemy::ArmoredEnemy(int id, float x, float y)
+    : Enemy(id, "play/enemy-1.png", x, y, 10, 10, 10, 10) {
+    armor = 50;
+    type = 1;
     Tint = al_map_rgba(150, 150, 255, 255);
 }
-
+void ArmoredEnemy::Draw() const {
+    if (alive) {
+        Enemy::Draw();
+    }
+}
 void ArmoredEnemy::Hit(float damage) {
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.sender;

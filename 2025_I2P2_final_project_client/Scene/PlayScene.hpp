@@ -35,6 +35,8 @@ private:
     std::unique_ptr<Camera> camera;
     void RenderVisibleTiles() const;
     void RenderVisibleObjects() const;
+    void ClearPlayerData();
+    void ClearEnemyData();
 protected:
     int lives;
     int money;

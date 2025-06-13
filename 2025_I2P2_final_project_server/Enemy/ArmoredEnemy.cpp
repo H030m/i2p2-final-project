@@ -13,8 +13,8 @@ void ArmoredEnemy::Hit(float damage) {
 
 nlohmann::json ArmoredEnemy::Serialize() const {
     auto json = Enemy::Serialize();
-    json["type"] = "-1"; // Armored enemy type
-    json["enemyType"] = -1;
+    json["type"] = "-1";
+    json["enemyType"] = 1;
     json["armor"] = armor;
     return json;
 }

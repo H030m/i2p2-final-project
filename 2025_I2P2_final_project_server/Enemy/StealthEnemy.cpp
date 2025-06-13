@@ -29,7 +29,7 @@ void StealthEnemy::Hit(float damage) {
 nlohmann::json StealthEnemy::Serialize() const {
     auto json = Enemy::Serialize();
     json["type"] = "-1"; // Armored enemy type
-    json["enemyType"] = 3;
+    json["enemyType"] = 2;
     json["stealth"] = stealth;
     return json;
 }

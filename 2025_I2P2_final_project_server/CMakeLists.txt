@@ -24,6 +24,7 @@ add_executable(2025_I2P2_TowerDefense
     main.cpp
     Enemy/Move.cpp
     Enemy/Move.hpp
+    # Enemy/OldDirectMove.cpp
     Enemy/ArmoredEnemy.cpp
     Enemy/ArmoredEnemy.hpp
     Enemy/StealthEnemy.cpp

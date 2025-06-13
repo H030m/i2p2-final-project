@@ -4,7 +4,135 @@
 
 #include <algorithm>
 #include <cmath>
+#include <queue>
+#include <unordered_set>
 #include "Engine/Point.hpp"
+
+// Helper struct for A* pathfinding
+struct Node {
+    Engine::Point position;
+    float gCost;  // Cost from start to current node
+    float hCost;  // Heuristic cost to target
+    float fCost() const { return gCost + hCost; }
+    Node* parent = nullptr;
+    
+    bool operator<(const Node& other) const {
+        return fCost() > other.fCost(); // For priority queue (min-heap)
+    }
+};
+
+// Hash function for Point to use in unordered_set
+namespace std {
+    template<> struct hash<Engine::Point> {
+        size_t operator()(const Engine::Point& p) const {
+            return hash<float>()(p.x) ^ hash<float>()(p.y);
+        }
+    };
+}
+
+// Helper function to convert world position to grid coordinates
+Engine::Point WorldToGrid(const Engine::Point& worldPos, int blockSize) {
+    return Engine::Point(
+        static_cast<int>(worldPos.x / blockSize),
+        static_cast<int>(worldPos.y / blockSize)
+    );
+}
+
+// Helper function to convert grid coordinates to world position
+Engine::Point GridToWorld(const Engine::Point& gridPos, int blockSize) {
+    return Engine::Point(
+        gridPos.x * blockSize + blockSize / 2,
+        gridPos.y * blockSize + blockSize / 2
+    );
+}
+
+// A* pathfinding implementation
+std::vector<Engine::Point> FindPath(const Engine::Point& start, const Engine::Point& target, 
+                                   const nlohmann::json& mapState, int blockSize) {
+    std::vector<Engine::Point> path;
+    if (!mapState.contains("map") || !mapState["map"].contains("MapState")) return path;
+
+    const auto& map = mapState["map"]["MapState"];
+    int mapWidth = map[0].size();
+    int mapHeight = map.size();
+
+    Engine::Point startGrid = WorldToGrid(start, blockSize);
+    Engine::Point targetGrid = WorldToGrid(target, blockSize);
+
+    // Check if target is walkable
+    if (targetGrid.x < 0 || targetGrid.y < 0 || 
+        targetGrid.x >= mapWidth || targetGrid.y >= mapHeight ||
+        map[targetGrid.y][targetGrid.x].contains("Obstacle") && 
+        !map[targetGrid.y][targetGrid.x]["Obstacle"].contains("Penetrable")) {
+        return path;
+    }
+
+    std::priority_queue<Node> openSet;
+    std::unordered_set<Engine::Point> closedSet;
+    std::unordered_map<Engine::Point, Node> allNodes;
+
+    Node startNode;
+    startNode.position = startGrid;
+    startNode.gCost = 0;
+    startNode.hCost = std::hypot(targetGrid.x - startGrid.x, targetGrid.y - startGrid.y);
+    allNodes[startGrid] = startNode;
+    openSet.push(startNode);
+
+    const std::vector<Engine::Point> directions = {
+        Engine::Point(-1, 0), Engine::Point(1, 0),  // Left, Right
+        Engine::Point(0, -1), Engine::Point(0, 1),  // Up, Down
+        Engine::Point(-1, -1), Engine::Point(1, -1), // Diagonals
+        Engine::Point(-1, 1), Engine::Point(1, 1)
+    };
+
+    while (!openSet.empty()) {
+        Node current = openSet.top();
+        openSet.pop();
+
+        if (current.position == targetGrid) {
+            // Reconstruct path
+            while (current.parent != nullptr) {
+                path.push_back(GridToWorld(current.position, blockSize));
+                current = *current.parent;
+            }
+            std::reverse(path.begin(), path.end());
+            return path;
+        }
+
+        closedSet.insert(current.position);
+
+        for (const auto& dir : directions) {
+            Engine::Point neighborPos = current.position + dir;
+            
+            // Check bounds and walkability
+            if (neighborPos.x < 0 || neighborPos.y < 0 || 
+                neighborPos.x >= mapWidth || neighborPos.y >= mapHeight ||
+                map[neighborPos.y][neighborPos.x].contains("Obstacle") && 
+                !map[neighborPos.y][neighborPos.x]["Obstacle"].contains("Penetrable") ||
+                closedSet.find(neighborPos) != closedSet.end()) {
+                continue;
+            }
+
+            float moveCost = (dir.x != 0 && dir.y != 0) ? 1.414f : 1.0f; // Diagonal cost
+            float gCost = current.gCost + moveCost;
+            
+            if (allNodes.find(neighborPos) == allNodes.end() || gCost < allNodes[neighborPos].gCost) {
+                Node neighbor;
+                neighbor.position = neighborPos;
+                neighbor.gCost = gCost;
+                neighbor.hCost = std::hypot(targetGrid.x - neighborPos.x, targetGrid.y - neighborPos.y);
+                neighbor.parent = &allNodes[current.position];
+                
+                allNodes[neighborPos] = neighbor;
+                openSet.push(neighbor);
+            }
+        }
+    }
+
+    return path; // Empty if no path found
+}
+
+
 void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
     if (!enemy.alive) return;
     
@@ -18,6 +146,7 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
         for (const auto& ctx : sender.clients) {
             if (ctx->active && sender.frame.contains(std::to_string(ctx->id))) {
                 auto playerData = sender.frame[std::to_string(ctx->id)]["player"];
+                if(playerData.size() < 6)continue;
                 if (playerData.is_array() && playerData.size() >= 2) {
                     Engine::Point playerPos((float)playerData[0], (float)playerData[1]);
                     float distance = std::hypot(enemy.position.x - playerPos.x, enemy.position.y - playerPos.y);
@@ -32,26 +161,55 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
     }
     
     if (!foundPlayer) {
-        // No players found, idle
         enemy.velocity = Engine::Point(0, 0);
         return;
     }
     
-    // Calculate direction to player
-    Engine::Point direction = targetPosition - enemy.position;
-    if (direction.Magnitude() > 0) {
-        direction = direction.Normalize();
+    // Update path if needed (only if player moved significantly or we don't have a path)
+    if (enemy.path.empty() || 
+        std::hypot(targetPosition.x - enemy.lastTarget.x, targetPosition.y - enemy.lastTarget.y) > blockSize * 2) {
+        enemy.path = FindPath(enemy.position, targetPosition, sender.storedMapState.value(), blockSize);
+        enemy.lastTarget = targetPosition;
     }
     
-    // Update velocity and position
-    enemy.velocity = direction * enemy.speed;
-    enemy.position.x += enemy.velocity.x * deltaTime;
-    enemy.position.y += enemy.velocity.y * deltaTime;
     
-    // Update rotation for facing direction
-    enemy.rotation = std::atan2(direction.y, direction.x) * 180.0f / M_PI;
-    
+    if (!enemy.path.empty()) {
+        // Follow the path
+        Engine::Point nextWaypoint = enemy.path.front();
+        Engine::Point direction = nextWaypoint - enemy.position;
+        
+        if (direction.Magnitude() < 5.0f) { // Reached waypoint
+            enemy.path.erase(enemy.path.begin());
+            if (!enemy.path.empty()) {
+                direction = enemy.path.front() - enemy.position;
+            }
+        }
+
+        if (direction.Magnitude() > 0) {
+            direction = direction.Normalize();
+        }
+
+        // Update velocity and position
+        enemy.velocity = direction * enemy.speed;
+        enemy.position.x += enemy.velocity.x * deltaTime;
+        enemy.position.y += enemy.velocity.y * deltaTime;
+        
+        // Update rotation for facing direction
+        enemy.rotation = std::atan2(direction.y, direction.x) * 180.0f / M_PI;
+    } else {
+        // No path found - fallback to direct movement (might get stuck)
+        Engine::Point direction = targetPosition - enemy.position;
+        if (direction.Magnitude() > 0) {
+            direction = direction.Normalize();
+        }
+        enemy.velocity = direction * enemy.speed;
+        enemy.position.x += enemy.velocity.x * deltaTime;
+        enemy.position.y += enemy.velocity.y * deltaTime;
+        enemy.rotation = std::atan2(direction.y, direction.x) * 180.0f / M_PI;
+    }
     // Boundary check
-    enemy.position.x = std::max(0.0f, std::min(enemy.position.x, static_cast<float>(sender.storedMapState.value()["map"]["MapWidth"]) * blockSize));
-    enemy.position.y = std::max(0.0f, std::min(enemy.position.y, static_cast<float>(sender.storedMapState.value()["map"]["MapHeight"]) * blockSize));
+     int mapWidth = sender.storedMapState.value()["map"]["MapWidth"];
+    int mapHeight = sender.storedMapState.value()["map"]["MapHeight"];
+    enemy.position.x = std::max(0.0f, std::min(enemy.position.x, static_cast<float>(mapWidth) * blockSize));
+    enemy.position.y = std::max(0.0f, std::min(enemy.position.y, static_cast<float>(mapHeight) * blockSize));
 }

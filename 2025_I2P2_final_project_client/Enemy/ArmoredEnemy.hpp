@@ -8,5 +8,7 @@ protected:
 public:
     ArmoredEnemy(float x, float y);
     void Hit(float damage) override;
+    ArmoredEnemy(int id, float x, float y);
+    void Draw() const override;
 };
 #endif

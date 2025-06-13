@@ -5,21 +5,21 @@
 #include "Engine/Group.hpp"
 #include "Engine/LOG.hpp"
 
-StealthEnemy::StealthEnemy(float x, float y)
-    : Enemy("play/enemy-2.png", x, y, 10, 10, 10, 10), stealth(true) {
+StealthEnemy::StealthEnemy(int id, float x, float y)
+    : Enemy(id, "play/enemy-2.png", x, y, 10, 10, 10, 10) {
+    stealth = true;
+    type = 2;
 }
 
 void StealthEnemy::Hit(float damage) {
-    if (stealth) {
-        stealth = false; // Reveal when hit by a bullet
-        Engine::LOG(Engine::INFO) << "StealthEnemy revealed by bullet hit";
-    }
-    hp -= damage;
-    if (hp <= 0) {
-        OnExplode();
-        getPlayScene()->EarnMoney(money);
-        getPlayScene()->EnemyGroup->RemoveObject(objectIterator);
-    }
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    GameClient &sender = game.sender;
+    sender.output_json["Hit"].push_back({
+        {"id",id},
+        {"Damage",damage},
+        {"HitVx",HitV.x},
+        {"HitVy",HitV.y}
+    });
 }
 
 void StealthEnemy::Update(float deltaTime) {

@@ -20,12 +20,12 @@ void Camera::Update(float deltaTime) {
     float halfW = viewportSize.x / 2;
     float halfH = viewportSize.y / 2;
    
-    // 平滑移動 camera.position → targetPosition
+    // smooth camera.position → targetPosition
     float speed = 5.0f;
     position.x += (targetPosition.x - position.x) * speed * deltaTime;
     position.y += (targetPosition.y - position.y) * speed * deltaTime;
 
-    // Clamp 最終 position 不要超出邊界（以 margin 為地圖邊界）
+    
     float minX = halfW;
     float maxX = margin.x - halfW;
     float minY = halfH;
@@ -63,8 +63,8 @@ Camera::VisibleArea Camera::GetVisibleTileArea(int tileSize) const {
     float halfWidth = viewportSize.x / 2;
     float halfHeight = viewportSize.y / 2;
     
-    // 計算可見的瓦片範圍，並添加一些邊界
-    int buffer = 0; // 額外渲染的瓦片數量
+    
+    int buffer = 0; 
     
     VisibleArea area;
     area.minX = std::max(0, (int)((position.x - halfWidth) / tileSize) - buffer);

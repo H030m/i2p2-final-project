@@ -45,13 +45,13 @@ void LoadingScene::Update(float deltaTime) {
     }
     // Wait until map is received back from server
     if (client.input_json.contains("map")) {
-        
+        std::cerr<<"GetMap!\n";
         const nlohmann::json& receivedMap = client.input_json["map"];
-        std::string filename = "loadingMap.json";
+        std::string filename = "Resource/loadingMap.json";
         std::ofstream fout(filename);
         if (fout.is_open()) {
             fout << receivedMap["map"].dump(4); // Indented output
-            std::cerr<<"hello Map "<< filename<<'\n';
+            std::cerr<<"hello Map "<< receivedMap.dump()<<'\n';
             fout.close();
         } else {
             std::cerr << "Failed to write to Resource/map1.json\n";
@@ -63,6 +63,7 @@ void LoadingScene::Update(float deltaTime) {
         };
 
         // Switch to PlayScene
+        std::cerr<<"CHANGE!\n";
         game.ChangeScene("play");
     }
 

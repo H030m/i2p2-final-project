@@ -15,11 +15,11 @@
 #include <unordered_set>
 #include "Enemy/Enemy.hpp"
 #include "Enemy/SoldierEnemy.hpp"
-//TODO HACKATHON-3
 #include "Enemy/PlaneEnemy.hpp"
 #include "Enemy/TankEnemy.hpp"
 #include "Enemy/BossEnemy.hpp"
 #include "Enemy/ArmoredEnemy.hpp"
+#include "Enemy/StealthEnemy.hpp"
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Group.hpp"
@@ -90,7 +90,7 @@ void PlayScene::Initialize() {
     AddNewObject(PlayerGroup = new Group());
     AddNewObject(WeaponGroup = new Group());
     AddNewControlObject(UIGroup = new Group());
-
+    std::cerr<<"Initialize play Scene!\n";
     ReadMap();
     
 
@@ -109,7 +109,9 @@ void PlayScene::Initialize() {
         player_UI_Label[game.my_id].push_back(label = new Engine::Label("hello", "pirulen.ttf", 24, 10, 50, 255, 255, 255, 255, 0, 0));
         label->fixed = true;
         UIGroup->AddNewObject(label);
-
+        player_UI_Label[game.my_id].push_back(label = new Engine::Label("hello", "pirulen.ttf", 24, 10, 76, 255, 255, 255, 255, 0, 0));
+        label->fixed = true;
+        UIGroup->AddNewObject(label);
          // upgrade button
         Engine::ImageButton* btn;
         player_UI_Button[game.my_id].push_back(btn = new Engine::ImageButton("play/sand.png", "play/floor.png", 20, game.screenH - 140, 250, 30));
@@ -121,6 +123,15 @@ void PlayScene::Initialize() {
         btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 2));
         UIGroup->AddNewControlObject(btn);
 
+        // back button
+        btn = new Engine::ImageButton("play/sand.png", "play/floor.png", game.screenW - 150, game.screenH - 70, 100, 30);
+        btn->fixed = true;
+        btn->SetOnClickCallback(std::bind(&PlayScene::UIBtnClicked, this, 3));
+        UIGroup->AddNewControlObject(btn);
+        label = new Engine::Label("BACK", "pirulen.ttf", 15, game.screenW - 130, game.screenH - 60, 0, 0, 0, 255, 0, 0);
+        label->fixed = true;
+        UIGroup->AddNewObject(label);
+        
         // camera
         
         camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
@@ -136,6 +147,7 @@ void PlayScene::Initialize() {
         newPlayer->Weapon_hold.push_back(k);
         newPlayer->Weapon_owned.push_back(k);
 
+        // upgrade label
         upgrade_label_1 = new Engine::Label("", "pirulen.ttf", 15, 30, game.screenH - 130, 0, 0, 0, 255, 0, 0);
         upgrade_label_1->Text = weapon_dict[newPlayer->Weapon_hold[0]->type] + " (" + std::to_string(newPlayer->Weapon_hold[0]->level) +")";
         upgrade_label_1->fixed = true; 
@@ -167,14 +179,59 @@ void PlayScene::Initialize() {
     // EnemyGroup->AddNewObject(e);
 }
 void PlayScene::Terminate() {
+     /*
+    // Clean up enemies
+    for (auto& pair : enemy_dict) {
+        EnemyGroup->RemoveObject(pair.second->GetObjectIterator());
+        delete pair.second;
+    }
+    enemy_dict.clear();
+    
+    // Clean up players
+    for (auto& pair : player_dict) {
+        PlayerGroup->RemoveObject(pair.second->GetObjectIterator());
+        delete pair.second;
+    }
+    player_dict.clear();
+    */
     AudioHelper::StopBGM(bgmId);
     AudioHelper::StopSample(deathBGMInstance);
     deathBGMInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
+    // clear player data
+    ClearPlayerData();
+    
+    // clear enemy data
+    ClearEnemyData();
+    
+    // clear other containers
+    mapState.clear();
+    keyStrokes.clear();
+    enemyWaveData.clear();
+    
+    // reset variables
+    ticks = 0;
+    deathCountDown = -1;
+    lives = 10;
+    money = 150;
+    SpeedMult = 1;
+    my_id = -1;
+    
+    // clear UI tag
+    upgrade_label_1 = nullptr;
+    upgrade_label_2 = nullptr;
+    
+    // reset camera
+    camera.reset();
+    
+    // ???
+    if (imgTarget) {
+        imgTarget = nullptr;
+    }
     IScene::Terminate();
 }
 
 void PlayScene::Update(float deltaTime) {
-  
+    // std::cerr<<"UPdateScene\n";
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
     
@@ -188,11 +245,12 @@ void PlayScene::Update(float deltaTime) {
         if (!isNumber(_id)) continue;
         int id = std::stoi(_id);
         
+        
+        if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 6 || client_info["player"][2] != state)
+        continue;
+
         // player marked active
         activePlayerIds.insert(id);
-
-        if (!client_info.contains("player") || !client_info["player"].is_array() || client_info["player"].size() < 4 || client_info["player"][2] != state)
-            continue;
 
         float x = client_info["player"][0];
         float y = client_info["player"][1];
@@ -206,18 +264,22 @@ void PlayScene::Update(float deltaTime) {
             player_dict[id] = newPlayer;
             newPlayer->status = client_info["player"][3];
             newPlayer->health = client_info["player"][4];
+            newPlayer->gold = client_info["player"][5];
 
             player_UI_Label[id].push_back(new Engine::Label("", "pirulen.ttf", 48, 0, 50, 0, 0, 0, 255, 0, 0));
             player_UI_Label[id].push_back(new Engine::Label("", "pirulen.ttf", 24, 10, 50, 0, 0, 0, 255, 0, 0));
-            player_UI_Label[id][0]->fixed = true; player_UI_Label[id][1]->fixed = true;
+            player_UI_Label[id].push_back(new Engine::Label("", "pirulen.ttf", 24, 10, 50, 0, 0, 0, 255, 0, 0));
+            player_UI_Label[id][0]->fixed = true; player_UI_Label[id][1]->fixed = true; player_UI_Label[id][2]->fixed = true;
             UIGroup->AddNewObject(player_UI_Label[id][0]);
             UIGroup->AddNewObject(player_UI_Label[id][1]);
+            UIGroup->AddNewObject(player_UI_Label[id][2]);
         } else {
             if(id == game.my_id) continue;
             it->second->Position.x = x;
             it->second->Position.y = y;
             it->second->status = client_info["player"][3];
             it->second->health = client_info["player"][4];
+            it->second->gold = client_info["player"][5];
         }
         //weapon
         if(id != game.my_id){
@@ -306,7 +368,7 @@ void PlayScene::Update(float deltaTime) {
     if (player_dict.find(game.my_id) != player_dict.end()) {
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
         sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state,
-                                        player_dict[game.my_id]->status, player_dict[game.my_id]->health};
+                                        player_dict[game.my_id]->status, player_dict[game.my_id]->health, player_dict[game.my_id]->gold};
                                     
         for (auto n: player_dict[game.my_id]->Weapon_hold) {
             sender.output_json["weapon"].push_back(n->type);
@@ -320,62 +382,88 @@ void PlayScene::Update(float deltaTime) {
         int curid = labels.first;
         Engine::Label* name_label = labels.second[0];
         Engine::Label* health_label = labels.second[1];
-
+        Engine::Label* money_label = labels.second[2];
         if (curid == my_id) {
             name_label->Position.y = 0;
             health_label->Position.y = 50;
+            money_label->Position.y = 76;
             health_label->Text = "Health : " + std::to_string(player_dict[curid]->health);
+            money_label->Text = "Gold : " + std::to_string(player_dict[curid]->gold);
             continue;
         }
         
-        name_label->Position.y = 96*count;
+        name_label->Position.y = 100*count;;
         name_label->Text = "player_" + std::to_string(curid);
-        health_label->Position.y = 96*count + 50;
+        health_label->Position.y = 100*count + 50;
         health_label->Text = "Health : " + std::to_string(player_dict[curid]->health);
+        money_label->Position.y = 100*count + 76;
+        money_label->Text = "Gold : " + std::to_string(player_dict[curid]->gold);
         count++;
     }
-
-    // enemy
-    std::unordered_set<int>NotFoundEnemy;
-    for(auto it: enemy_dict)NotFoundEnemy.insert(it.first);
-    if(sender.input_json.contains("-1")) { // -1 is enemy
-        auto enemies = sender.input_json["-1"];
-        
-        for(auto enemy : enemies) {
-            if(NotFoundEnemy.count(enemy["id"])){
-                NotFoundEnemy.erase(enemy["id"]);
-            }
-            if(enemy_dict.count(enemy["id"])) {
-                // enemy has existed
-                enemy_dict[enemy["id"]]->Position.x = enemy["x"];
-                enemy_dict[enemy["id"]]->Position.y = enemy["y"];
-                enemy_dict[enemy["id"]]->Rotation = enemy["rotation"];
-                enemy_dict[enemy["id"]]->hp = (enemy["alive"] == true)? 1 : 0;
-                enemy_dict[enemy["id"]]->id = enemy["id"];
-                enemy_dict[enemy["id"]]->damage = enemy["damage"];
-
-            } else{
-                //create new enemy
-                Enemy* newEnemy;
-                switch ((int)enemy["enemyType"])
-                {
-                case 0:
-                    newEnemy = new ArmoredEnemy(enemy["x"],enemy["y"]);
-                    EnemyGroup->AddNewObject(newEnemy);
-                    enemy_dict[enemy["id"]] = newEnemy;
-                    break;
-                default:
-                    break;
-                }
-            }
-
+    // update UI Button
+    for (int i = 0; i < player_UI_Button[my_id].size(); i++) {
+        Engine::ImageButton *btn = player_UI_Button[my_id][i];
+        Player *player = player_dict[my_id];
+        btn->Visible = false;
+        if (player->gold >= player->Weapon_hold[i]->level * 100 && player->Weapon_hold[i]->level != 5) {
+            btn->Visible = true;
         }
     }
-    for(auto it:NotFoundEnemy){
-        EnemyGroup->RemoveObject(enemy_dict[it]);
-        enemy_dict.erase(it);
+    // enemy
+    std::unordered_set<int> activeEnemyIds;
+    if (sender.input_json.contains("-1")) { // -1 is enemy type in network messages
+        auto enemies = sender.input_json["-1"];
+        
+        // First pass: track all active enemies
+        for (auto& enemyData : enemies) {
+            std::cerr<<"update enemy "<<enemyData["id"]<<' '<<enemyData["enemyType"]<<'\n';
+            int enemyId = enemyData["id"];
+            activeEnemyIds.insert(enemyId);
+            
+            // Update existing or create new enemy
+            if (enemy_dict.count(enemyId)) {
+                // Update existing enemy
+                auto* enemy = enemy_dict[enemyId];
+                enemy->UpdateFromServer(
+                    enemyData["x"],
+                    enemyData["y"],
+                    enemyData["rotation"],
+                    enemyData["hp"],
+                    enemyData["alive"]
+                );
+                
+                // Type-specific updates
+                if (enemyData.contains("stealth")) {
+                    // Handle stealth enemy specific visuals
+                }
+            } else {
+                // Create new enemy based on type
+                int type = enemyData["enemyType"].get<int>();
+                if (type == 1) { // Armored
+                    ArmoredEnemy* newEnemy = new ArmoredEnemy(enemyId, 0, 0);
+                    newEnemy->CollisionRadius = 32;
+                    newEnemy->hp = 150;
+                    newEnemy->damage = 10;
+                    EnemyGroup->AddNewObject(newEnemy);
+                    enemy_dict[enemyId] = newEnemy;
+                } else if (type == 2) { // Stealth
+                    // TODO: Handle Stealth enemy here
+                } else { // Basic
+                    // TODO: Handle Basic enemy here
+                }
+            }
+        }
     }
-
+    
+    // Remove enemies not in active set
+    for (auto it = enemy_dict.begin(); it != enemy_dict.end(); ) {
+        if (activeEnemyIds.find(it->first) == activeEnemyIds.end()) {
+            EnemyGroup->RemoveObject(it->second->GetObjectIterator());
+            it = enemy_dict.erase(it);
+        } else {
+            ++it;
+        }
+    }
     // scene
     camera->SetTarget(player_dict[my_id]->Position);
     camera->Update(deltaTime);
@@ -407,17 +495,14 @@ void PlayScene::Draw() const {
 void PlayScene::RenderVisibleTiles() const {
     auto visibleArea = camera->GetVisibleTileArea(BlockSize);
     
-    // �u��V�i�����ˤ�
+   
     for (auto obj : TileMapGroup->GetObjects()) {
         Engine::Sprite* sprite = dynamic_cast<Engine::Sprite*>(obj);
         if (!sprite) continue;
         
-        // �ˬd�ˤ��O�_�b�i���d��
         if (camera->IsInView(sprite->Position, BlockSize)) {
-            // �N�@�ɮy���ഫ���ù��y��
             Engine::Point screenPos = camera->WorldToScreen(sprite->Position);
             
-            // �Ȯɭק���F��m�i���V
             Engine::Point originalPos = sprite->Position;
             sprite->Position = screenPos;
             sprite->Draw();
@@ -487,12 +572,13 @@ void PlayScene::EarnMoney(int money) {
 void PlayScene::ReadMap() {
 
     std::cerr<<"hellow!\n";
-    std::string filename = "loadingMap.json"; // or ".json"
+    std::string filename = "Resource/loadingMap.json"; // or ".json"
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Failed to open map file: " << filename << '\n';
         return;
     }
+
 
     nlohmann::json data;
     file >> data;
@@ -559,8 +645,12 @@ void PlayScene::ReadMap() {
                     obs_spr->Size.x = obs["SizeX"];
                     obs_spr->Size.y = obs["SizeY"];
                 }
-                if(obs["Obstacle"].contains("OffsetX")) obs_spr->Position.x += (int)obs["Obstacle"]["OffsetX"];
-                if(obs["Obstacle"].contains("OffsetY")) obs_spr->Position.x += (int)obs["Obstacle"]["OffsetY"];
+                if(obs.contains("OffsetX")) {
+                    obs_spr->Position.x += (int)obs["OffsetX"];
+                }
+                if(obs.contains("OffsetY")) {
+                    obs_spr->Position.y += (int)obs["OffsetY"];
+                }
                 ObstacleGroup->AddNewObject(obs_spr);
             }
         }
@@ -584,13 +674,24 @@ void PlayScene::ConstructUI() {
 }
 
 void PlayScene::UIBtnClicked(int id) {
-   if (id == 1) {
-        player_dict[my_id]->Weapon_hold[0]->Upgrade();
-        upgrade_label_1->Text = weapon_dict[player_dict[my_id]->Weapon_hold[0]->type] + " (" + std::to_string(player_dict[my_id]->Weapon_hold[0]->level) +")";
-    }
-    else if (id == 2) {
-        player_dict[my_id]->Weapon_hold[1]->Upgrade();
-        upgrade_label_2->Text = weapon_dict[player_dict[my_id]->Weapon_hold[1]->type] + " (" + std::to_string(player_dict[my_id]->Weapon_hold[1]->level) +")";
+    Player* curplayer = player_dict[my_id];
+    std::vector<Engine::Label*> temp = {upgrade_label_1, upgrade_label_2};
+    if (id == 1 || id == 2) {
+        if (curplayer->gold >= curplayer->Weapon_hold[id-1]->level * 100 && curplayer->Weapon_hold[id-1]->level < 5) {
+            curplayer->gold -= curplayer->Weapon_hold[id-1]->level * 100;
+            curplayer->Weapon_hold[id-1]->Upgrade();
+
+            if (curplayer->Weapon_hold[id-1]->level == 5) {
+                temp[id-1]->Text = weapon_dict[curplayer->Weapon_hold[id-1]->type] 
+                                 + " (" + "MAX" +")";
+            }
+            else {
+                temp[id-1]->Text = weapon_dict[curplayer->Weapon_hold[id-1]->type] 
+                                 + " (" + std::to_string(curplayer->Weapon_hold[id-1]->level) +")";
+            }
+        }
+    }else if (id == 3) {
+        Engine::GameEngine::GetInstance().ChangeScene("start");
     }
 }
 
@@ -632,4 +733,54 @@ bool PlayScene::isWalkable(int x, int y, int radius) {
     }
 
     return true; // No blocking tiles found
+}
+void PlayScene::ClearPlayerData() {
+    // clear all players' weapon
+    for (auto& pair : player_dict) {
+        Player* player = pair.second;
+        if (player) {
+            // clear weapon_hold
+            for (Weapon* weapon : player->Weapon_hold) {
+                if (WeaponGroup && weapon) {
+                    WeaponGroup->RemoveObject(weapon->GetObjectIterator());
+                }
+            }
+            player->Weapon_hold.clear();
+            player->Weapon_owned.clear();
+        }
+    }
+    
+    // clear player_dict
+    player_dict.clear();
+    
+    // clear UI Label
+    for (auto& pair : player_UI_Label) {
+        for (Engine::Label* label : pair.second) {
+            if (UIGroup && label) {
+                UIGroup->RemoveObject(label->GetObjectIterator());
+            }
+        }
+    }
+    player_UI_Label.clear();
+    
+    // clear UI button
+    for (auto& pair : player_UI_Button) {
+        for (Engine::ImageButton* button : pair.second) {
+            if (UIGroup && button) {
+                UIGroup->RemoveObject(button->GetObjectIterator());
+            }
+        }
+    }
+    player_UI_Button.clear();
+}
+
+void PlayScene::ClearEnemyData() {
+    // clear enemy_dict
+    for (auto& pair : enemy_dict) {
+        Enemy* enemy = pair.second;
+        if (enemy && EnemyGroup) {
+            EnemyGroup->RemoveObject(enemy->GetObjectIterator());
+        }
+    }
+    enemy_dict.clear();
 }

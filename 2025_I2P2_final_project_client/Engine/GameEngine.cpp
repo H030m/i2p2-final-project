@@ -304,7 +304,7 @@ namespace Engine {
         
         //give a type
         sender.output_json["type"] = "input";
-        
+        sender.output_json["Scene"] = CurrentScene;
         sender.sendOnce();
         
         sender.output_json.clear(); 

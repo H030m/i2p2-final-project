@@ -15,8 +15,8 @@ class Weapon;
 BounceBullet::BounceBullet(Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent)
     : Bullet("play/bouncebullet.png", 300 + parent->level * 100, 10 + parent->level * 10, position, forwardDirection, rotation, parent) {
     bounce_time = 0;
-    Size.x = 64 * (1+parent->level*0.5), Size.y = 64 * (1+parent->level*0.5);
-    CollisionRadius = 32 * (1+parent->level*0.5);
+    Size.x = 48 * (1+parent->level*0.5), Size.y = 48 * (1+parent->level*0.5);
+    CollisionRadius = 24 * (1+parent->level*0.5);
 }
 
 void BounceBullet::Update(float deltaTime) {

@@ -48,29 +48,6 @@ void DrawMapScene::Initialize() {
     AddNewObject(ObstacleGroup = new Group());
     AddNewControlObject(LabelGroup = new Group);
     AddNewObject(GroundEffectGroup = new Group);
-    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-    {
-        Player* newPlayer = new Player(300, 300, game.my_id, MapWidth, MapHeight);
-        PlayerGroup->AddNewObject(newPlayer);
-        player_dict[game.my_id] = newPlayer;
-        camera = std::make_unique<Camera>(game.screenW, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
-        camera->SetTarget(newPlayer->Position);
-    }
-
-    //DrawUI
-    preview = nullptr;
-    imgTarget = new Engine::Image("play/target.png", 0, 0);
-    imgTarget->Size = Engine::Point(64,64);
-    imgTarget->Visible = false;
-    imgTarget->fixed = true;
-    UIGroup->AddNewObject(imgTarget);
-    
-    // correctpng
-    correct = new Engine::Image("play/target.png",game.screenW/2,100,64,64,0.5f,0.5f);
-    correct->Visible = false;
-    UIGroup->AddNewObject(correct);
-    std::cerr<<"hello correct\n";
-    ConstructUI();
 
     //Map
     
@@ -94,6 +71,33 @@ void DrawMapScene::Initialize() {
     mapState_2.resize(MapHeight, std::vector<int>(MapWidth));
     ReadMap();
 
+
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    {
+        Player* newPlayer = new Player(500, 500, game.my_id, MapWidth, MapHeight);
+        PlayerGroup->AddNewObject(newPlayer);
+        player_dict[game.my_id] = newPlayer;
+        //320 -> UI'bound
+        camera = std::make_unique<Camera>(game.screenW - 320, game.screenH, Engine::Point(MapWidth*BlockSize,MapHeight*BlockSize));
+        camera->SetTarget(newPlayer->Position);
+    }
+
+    //DrawUI
+    preview = nullptr;
+    imgTarget = new Engine::Image("play/target.png", 0, 0);
+    imgTarget->Size = Engine::Point(64,64);
+    imgTarget->Visible = false;
+    imgTarget->fixed = true;
+    UIGroup->AddNewObject(imgTarget);
+    
+    // correctpng
+    correct = new Engine::Image("play/target.png",game.screenW/2,100,64,64,0.5f,0.5f);
+    correct->Visible = false;
+    UIGroup->AddNewObject(correct);
+    std::cerr<<"hello correct\n";
+    ConstructUI();
+
+    
 }
 
 void DrawMapScene::Terminate() {
@@ -200,7 +204,7 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Tile"]["y"] = rand()%(Ygap) + 0 + Ygap*0;
                 MapState[y][x]["Tile"]["w"] = tileW;
                 MapState[y][x]["Tile"]["h"] = tileH;
-                TileMapGroup->RemoveObject(Tile_dict[y + x * MapHeight]->GetObjectIterator());
+                TileMapGroup->RemoveObject(Tile_dict[y + x*MapWidth]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Tile"]["file_name"],
                     x * BlockSize, y * BlockSize,       // screen position
@@ -213,7 +217,7 @@ int y = worldPos.y / BlockSize;
                 spr->SourceX = (float)MapState[y][x]["Tile"]["w"]  * (float)MapState[y][x]["Tile"]["x"] + 1;
                 spr->SourceY = (float)MapState[y][x]["Tile"]["h"]  * (float)MapState[y][x]["Tile"]["y"] + 1;
                 TileMapGroup->AddNewObject(spr);
-                Tile_dict[y + x * MapHeight] = spr;
+                Tile_dict[y + x*MapWidth] = spr;
             }
             //sand
             if(preview->id == 1){
@@ -221,7 +225,7 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Tile"]["y"] = rand()%(Ygap) + 0 + Ygap*0;
                 MapState[y][x]["Tile"]["w"] = tileW;
                 MapState[y][x]["Tile"]["h"] = tileH;
-                TileMapGroup->RemoveObject(Tile_dict[y + x * MapHeight]->GetObjectIterator());
+                TileMapGroup->RemoveObject(Tile_dict[y + x*MapWidth]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Tile"]["file_name"],
                     x * BlockSize, y * BlockSize,       // screen position
@@ -234,7 +238,7 @@ int y = worldPos.y / BlockSize;
                 spr->SourceX = (float)MapState[y][x]["Tile"]["w"]  * (float)MapState[y][x]["Tile"]["x"] + 1;
                 spr->SourceY = (float)MapState[y][x]["Tile"]["h"]  * (float)MapState[y][x]["Tile"]["y"] + 1;
                 TileMapGroup->AddNewObject(spr);
-                Tile_dict[y + x * MapHeight] = spr;
+                Tile_dict[y + x*MapWidth] = spr;
             }
             //stone
             if(preview->id == 2){
@@ -242,7 +246,7 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Tile"]["y"] = rand()%(Ygap) + 0 + Ygap*1;
                 MapState[y][x]["Tile"]["w"] = tileW;
                 MapState[y][x]["Tile"]["h"] = tileH;
-                TileMapGroup->RemoveObject(Tile_dict[y + x * MapHeight]->GetObjectIterator());
+                TileMapGroup->RemoveObject(Tile_dict[y + x*MapWidth]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Tile"]["file_name"],
                     x * BlockSize, y * BlockSize,       // screen position
@@ -255,7 +259,7 @@ int y = worldPos.y / BlockSize;
                 spr->SourceX = (float)MapState[y][x]["Tile"]["w"]  * (float)MapState[y][x]["Tile"]["x"] + 1;
                 spr->SourceY = (float)MapState[y][x]["Tile"]["h"]  * (float)MapState[y][x]["Tile"]["y"] + 1;
                 TileMapGroup->AddNewObject(spr);
-                Tile_dict[y + x * MapHeight] = spr;
+                Tile_dict[y + x*MapWidth] = spr;
             }
             // stone obstacle
             if(preview->id == 3){
@@ -266,8 +270,8 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Obstacle"]["h"] = tile["Tile"]["h"];
                 MapState[y][x]["Obstacle"]["file_name"] = obstacle_filename;
                 MapState[y][x]["Obstacle"]["Penetrable"] = false;
-                if(Obstacle_dict.count(y + x*MapHeight))
-                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                if(Obstacle_dict.count(y + x*MapWidth))
+                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapWidth]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Obstacle"]["file_name"],
                     x * BlockSize, y * BlockSize,       // screen position
@@ -280,7 +284,7 @@ int y = worldPos.y / BlockSize;
                 spr->SourceX = (float)MapState[y][x]["Obstacle"]["w"]  * (float)MapState[y][x]["Obstacle"]["x"] + 1;
                 spr->SourceY = (float)MapState[y][x]["Obstacle"]["h"]  * (float)MapState[y][x]["Obstacle"]["y"] + 1;
                 ObstacleGroup->AddNewObject(spr);
-                Obstacle_dict[y + x * MapHeight] = spr;
+                Obstacle_dict[y + x*MapWidth] = spr;
             }
             // tree obstacle
             if(preview->id == 4){
@@ -295,8 +299,8 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Obstacle"]["SizeY"] = 96;
                 MapState[y][x]["Obstacle"]["OffsetX"] = 0;
                 MapState[y][x]["Obstacle"]["OffsetY"] = -32;
-                if(Obstacle_dict.count(y + x*MapHeight))
-                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                if(Obstacle_dict.count(y + x*MapWidth))
+                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapWidth]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Obstacle"]["file_name"],
                     x * BlockSize, y * BlockSize-(32),       // screen position
@@ -309,15 +313,16 @@ int y = worldPos.y / BlockSize;
                 spr->SourceX = (float)MapState[y][x]["Obstacle"]["w"]  * (float)MapState[y][x]["Obstacle"]["x"] + 1;
                 spr->SourceY = (float)MapState[y][x]["Obstacle"]["h"]  * (float)MapState[y][x]["Obstacle"]["y"] + 1;
                 ObstacleGroup->AddNewObject(spr);
-                Obstacle_dict[y + x * MapHeight] = spr;
+                Obstacle_dict[y + x*MapWidth] = spr;
             }
             // eraser
             if(preview->id == 5){
-                
                 MapState[y][x].erase("Obstacle");
-                if(Obstacle_dict.count(y + x*MapHeight)){
-                    ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
-                    Obstacle_dict.erase(y + x*MapHeight);
+                std::cerr<<"sdf "<<x<<' '<<y<<'\n';
+                if(Obstacle_dict.count(y + x*MapWidth)){
+                    std::cerr<<"obstacle eraser"<<x<<' '<<y<<'\n';
+                    ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapWidth]->GetObjectIterator());
+                    Obstacle_dict.erase(y + x*MapWidth);
                 }
             }
             //enemy 0
@@ -331,8 +336,8 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["SpawnPoint"] = 0;//spawn Enemy 0
                 MapState[y][x]["SpawnCoolDown"] = 5; // if there is no enemy created by this tile, it will create a new enemy after X second
                 
-                if(Obstacle_dict.count(y + x*MapHeight))
-                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                if(Obstacle_dict.count(y + x*MapWidth))
+                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapWidth]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Obstacle"]["file_name"],
                     x * BlockSize, y * BlockSize,       // screen position
@@ -343,7 +348,7 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Obstacle"]["w"] = spr->GetBitmapWidth();
                 MapState[y][x]["Obstacle"]["h"] = spr->GetBitmapHeight();
                 ObstacleGroup->AddNewObject(spr);
-                Obstacle_dict[y + x * MapHeight] = spr;
+                Obstacle_dict[y + x*MapWidth] = spr;
             }
             // enemy1
             if(preview->id == 11){
@@ -356,8 +361,8 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["SpawnPoint"] = 1;//spawn Enemy 1
                 MapState[y][x]["SpawnCoolDown"] = 5; // if there is no enemy created by this tile, it will create a new enemy after X second
                 
-                if(Obstacle_dict.count(y + x*MapHeight))
-                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                if(Obstacle_dict.count(y + x*MapWidth))
+                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapWidth]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Obstacle"]["file_name"],
                     x * BlockSize, y * BlockSize,       // screen position
@@ -368,7 +373,7 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Obstacle"]["w"] = spr->GetBitmapWidth();
                 MapState[y][x]["Obstacle"]["h"] = spr->GetBitmapHeight();
                 ObstacleGroup->AddNewObject(spr);
-                Obstacle_dict[y + x * MapHeight] = spr;
+                Obstacle_dict[y + x*MapWidth] = spr;
             }
             // enemy2
             if(preview->id == 12){
@@ -381,8 +386,8 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["SpawnPoint"] = 2;//spawn Enemy 2
                 MapState[y][x]["SpawnCoolDown"] = 5; // if there is no enemy created by this tile, it will create a new enemy after X second
                 
-                if(Obstacle_dict.count(y + x*MapHeight))
-                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapHeight]->GetObjectIterator());
+                if(Obstacle_dict.count(y + x*MapWidth))
+                ObstacleGroup->RemoveObject(Obstacle_dict[y + x*MapWidth]->GetObjectIterator());
                 auto* spr = new Engine::Sprite(
                     MapState[y][x]["Obstacle"]["file_name"],
                     x * BlockSize, y * BlockSize,       // screen position
@@ -393,13 +398,10 @@ int y = worldPos.y / BlockSize;
                 MapState[y][x]["Obstacle"]["w"] = spr->GetBitmapWidth();
                 MapState[y][x]["Obstacle"]["h"] = spr->GetBitmapHeight();
                 ObstacleGroup->AddNewObject(spr);
-                Obstacle_dict[y + x * MapHeight] = spr;
+                Obstacle_dict[y + x*MapWidth] = spr;
             }
         }
     }
-    
-    
-
 }
 void DrawMapScene::OnKeyDown(int keyCode)  {
     IScene::OnKeyDown(keyCode);
@@ -417,11 +419,11 @@ void DrawMapScene::OnKeyUp(int keyCode) {
 }
 
 void DrawMapScene::ReadMap(){
-
+    std::cerr<<"DrawMapScene!!\n";
 
     for (int i = 0; i < MapHeight; ++i) {
     for (int j = 0; j < MapWidth; ++j) {
-        int linearIndex = i + j * MapHeight;
+        int linearIndex = j + i * MapWidth;
         std::string key = std::to_string(linearIndex);
 
         auto& tile = MapState[i][j]["Tile"];
@@ -442,6 +444,7 @@ void DrawMapScene::ReadMap(){
         // Obstacle
         if (MapState[i][j].contains("Obstacle")) {
             auto& obs = MapState[i][j]["Obstacle"];
+
             if (obs.contains("file_name")) {
                 std::string obs_file = obs["file_name"];
                 float ox = obs["x"];
@@ -460,20 +463,31 @@ void DrawMapScene::ReadMap(){
                 obs_spr->SourceY = oh * oy + 1;
                 obs_spr->SourceW = ow - 2;
                 obs_spr->SourceH = oh - 2;
-
+                //eraser
+                std::cerr<<ox<<' '<<oy<<'\n';
+                Obstacle_dict[i + j*MapWidth] = obs_spr;
                 if (obs.contains("SizeX") && obs.contains("SizeY")) {
                     obs_spr->Size.x = obs["SizeX"];
                     obs_spr->Size.y = obs["SizeY"];
                 }
 
                 // offset
-                if (obs.contains("Obstacle")) {
-                    auto& innerObs = obs["Obstacle"];
-                    if (innerObs.contains("OffsetX")) obs_spr->Position.x += (int)innerObs["OffsetX"];
-                    if (innerObs.contains("OffsetY")) obs_spr->Position.y += (int)innerObs["OffsetY"];
+                
+                 {
+                    std::cerr<<"hello obstacle\n";
+                    auto& innerObs = obs;
+                    if (innerObs.contains("OffsetX")) {
+                        obs_spr->Position.x += (float)innerObs["OffsetX"];
+                        std::cerr<<"hello offset X "<<(float)innerObs["OffsetX"]<<'\n';
+                    }
+                    if (innerObs.contains("OffsetY")) {
+                        obs_spr->Position.y += (float)innerObs["OffsetY"];
+                        std::cerr<<"hello offsetY "<<(float)innerObs["OffsetY"]<<'\n';
+                    }
                 }
 
                 ObstacleGroup->AddNewObject(obs_spr);
+                
             }
         }
     }

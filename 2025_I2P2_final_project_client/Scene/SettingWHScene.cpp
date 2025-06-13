@@ -19,7 +19,7 @@ void SettingWHScene::Initialize() {
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
     int halfH = h / 2;
-    W = 30, H = 30;
+    W = 20, H = 20;
     Engine::ImageButton* btn;
 
     // Back «ö¶s
@@ -50,8 +50,8 @@ void SettingWHScene::Initialize() {
 void SettingWHScene::Update(float deltaTime) {
     IScene::Update(deltaTime);
 
-    H = 30 + std::round(SliderH->GetValue() * 20);
-    W = 30 + std::round(SliderW->GetValue() * 20);
+    H = 20 + std::round(SliderH->GetValue() * 30);
+    W = 20 + std::round(SliderW->GetValue() * 30);
     TextH->Text = std::to_string(H);
     TextW->Text = std::to_string(W);
 }

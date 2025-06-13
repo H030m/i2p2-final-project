@@ -81,14 +81,26 @@ void RenderSender::start() {
         auto start_time = steady_clock::now();
         if(clients.size() == 0){
             storedMapState.reset();
+            enemies.clear();
             // std::cerr<<"Clear Map!"<<'\n';
         }
         // 1. recv from all client
         {
             std::lock_guard<std::mutex> lock(clientMutex);
+            bool isPlay = false;
             for (auto& ctx : clients) {
-                if (ctx->active)
+                if (ctx->active){
                     recvOnce(ctx);
+                    if(ctx->lastInput.contains("Scene") && ctx->lastInput["Scene"] == "play" || ctx->lastInput["Scene"] == "loading"){
+                        isPlay = true;
+                    }
+                }
+                    
+            }
+            if(!isPlay){
+                storedMapState.reset();
+                enemies.clear();
+                // std::cerr<<"Clear Map!"<<'\n';
             }
 
             // 2. collect all data
@@ -116,7 +128,7 @@ void RenderSender::start() {
                             enemyData = enemy->Serialize();
                             break;
                     }
-                    std::cerr<<"hello enemy "<<enemyData.dump()<<'\n';
+                    // std::cerr<<"hello enemy "<<enemyData.dump()<<'\n';
                     // Add to frame
                     AddToFrame(enemyData);
                     
@@ -218,7 +230,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
                         // std::cerr << "enemy id: " << enemy->id << ' ' << enemy->position.x << ' ' << enemy->position.y << '\n';
                     }
                 }
-                std::cerr << "Spawned " << enemies.size() << " enemies.\n";
+                // std::cerr << "Spawned " << enemies.size() << " enemies.\n";
             }
 
             
@@ -242,7 +254,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
 void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
     if (!ctx->active) return;
     // if(frame.contains("map"))
-    // std::cerr<<"frame  "<<frame.dump()<<'\n';
+    std::cerr<<"frame  "<<frame.dump()<<'\n';
     std::string raw = frame.dump(); // ��l JSON �r��
     // std::cerr << "[send raw size]: " << raw.size() << " bytes\n";
     // std::cerr << "[send raw content]: " << raw << "\n";

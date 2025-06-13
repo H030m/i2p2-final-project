@@ -68,6 +68,7 @@ Player::Player(float x, float y, int id, int MapWidth, int MapHeight):id(id),
     GameClient &sender = game.GetSender();
     CollisionRadius = 55;
      std::cerr<<"new Player at "<<x<<" "<<y<<'\n';
+    gold = 69;
 }
 
 void Player::Update(float deltaTime) {
@@ -148,7 +149,7 @@ void Player::UpdateMyPlayer(float deltaTime) {
     if (game.CurrentScene == "play") {
         PlayScene* scene = dynamic_cast<PlayScene*>(game.GetActiveScene());
 
-        if (scene) {
+        if (scene&&id==scene->my_id) {
             if (!spawned) {
                 if (!scene->isWalkable(Position.x + errorX, Position.y  + errorY , CollisionRadius)) {
                     // Try to find nearest walkable point (only once)
@@ -176,13 +177,32 @@ void Player::UpdateMyPlayer(float deltaTime) {
             }
 
             // normal movement blocked
-            if (!scene->isWalkable(newX + errorX, newY + errorY, CollisionRadius))
-                return;
-        }
-    }
+            // if (!scene->isWalkable(newX + errorX, newY + errorY, CollisionRadius))
+            //     return;
+            float finalX = Position.x; float finalY = Position.y;
 
-    Position.x = newX;
-    Position.y = newY;
+            if (velocity.x != 0) {
+                if (scene->isWalkable(newX + errorX, Position.y + errorY, CollisionRadius)) {
+                    finalX = newX;
+                }
+            }
+
+            if (velocity.y != 0) {
+                if (scene->isWalkable(finalX + errorX, newY + errorY, CollisionRadius)) {
+                    finalY = newY;
+                }
+            }
+            Position.x = finalX;
+            Position.y = finalY;
+        }
+        else {
+            Position.x = newX;
+            Position.y = newY;
+        }
+    }else {
+        Position.x = newX;
+        Position.y = newY;
+    }
 
     // interaction with enemy
     if(Engine::GameEngine::GetInstance().CurrentScene == "play"){
@@ -231,6 +251,9 @@ void Player::OnKeyDown(int keyCode) {
         case ALLEGRO_KEY_D:
             movingRight = true;
             break;
+        case ALLEGRO_KEY_Q:
+           gold += 100;
+           break;
     }
 }
 

@@ -81,7 +81,6 @@ void GameClient::recvOnce() {
 }
 
 void GameClient::sendOnce() {
-
     std::string data = output_json.dump() + "\n";
     send(sock, data.c_str(), data.size(), 0);
     // std::cerr << "send " << output_json.dump() << '\n';
