@@ -22,11 +22,13 @@ CircleWeapon::CircleWeapon(float x, float y, int _owner_id, int _level)
 void CircleWeapon::CreateBullet() {
     // Change bullet position to the front of the gun barrel.
     Player* player = getPlayScene()->player_dict[getPlayScene()->my_id];
-    int bulletCount = 4 + (level - 1); // Level 1 = 4, Level 2 = 5, ..., Level 5 = 8
+    int bulletCount = 2 + (level - 1);
 
     for (int i = 0; i < bulletCount; i++) {
         float angle = 2 * ALLEGRO_PI * i / bulletCount;
-        getPlayScene()->BulletGroup->AddNewObject(new OrbitBullet(angle, 100 + 20*level, 4, player, this));
+        OrbitBullet* ob = new OrbitBullet(angle, 100 + 20*level, 4, player, this);
+        getPlayScene()->BulletGroup->AddNewObject(ob);
+        oldbullet.push_back(ob);
     }
     // AudioHelper::PlayAudio("gun.wav");
 }
@@ -42,4 +44,14 @@ void CircleWeapon::Update(float Deltatime) {
 
 void CircleWeapon::Draw() const {
     //don't draw
+}
+void CircleWeapon::Upgrade() {
+    Weapon::Upgrade();
+    
+    for (auto ob: oldbullet) {
+        getPlayScene()->BulletGroup->RemoveObject(ob->GetObjectIterator());
+    }
+    oldbullet.clear();
+    
+    CreateBullet();
 }

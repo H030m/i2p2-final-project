@@ -23,7 +23,7 @@ protected:
     float animation_tick;
     int owner_id;
 public:
-    int level = 1;
+    int level;
     int type;
     bool aim_front = 1;
     bool Enabled = true;
@@ -31,6 +31,6 @@ public:
     Weapon(std::string imgWeapon, float x, float y, float radius, float coolDown);
     void Update(float deltaTime) override;
     void Draw() const override;
-    void Upgrade();
+    virtual void Upgrade();
 };
 #endif   // WEAPON_HPP

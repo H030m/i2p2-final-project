@@ -20,7 +20,7 @@ GunWeapon::GunWeapon(float x, float y, int _owner_id, int _level)
     SourceW = 135, SourceH = 51, SourceY = 0, SourceX = 0;
     Size.x = 135, Size.y = 51, Flip = 2;
     level = _level;
-    coolDown -= 0.08 * level;
+    
 }
 void GunWeapon::CreateBullet() {
     Engine::Point diff = Engine::Point(cos(angle - ALLEGRO_PI / 2), sin(angle - ALLEGRO_PI / 2));
@@ -59,4 +59,9 @@ void GunWeapon::Update(float deltaTime) {
     }
 
     Weapon::Update(deltaTime);
+}
+
+void GunWeapon::Upgrade() {
+    Weapon::Upgrade();
+    coolDown = 0.5 - 0.08 * level;
 }

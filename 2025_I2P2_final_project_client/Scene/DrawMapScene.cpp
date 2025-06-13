@@ -318,6 +318,8 @@ int y = worldPos.y / BlockSize;
             // eraser
             if(preview->id == 5){
                 MapState[y][x].erase("Obstacle");
+                if(MapState[y][x].contains("SpawnPoint"))MapState[y][x].erase("SpawnPoint");
+                if(MapState[y][x].contains("SpawnCoolDown"))MapState[y][x].erase("SpawnCoolDown");
                 std::cerr<<"sdf "<<x<<' '<<y<<'\n';
                 if(Obstacle_dict.count(y + x*MapWidth)){
                     std::cerr<<"obstacle eraser"<<x<<' '<<y<<'\n';
