@@ -13,10 +13,11 @@ void LoadingScene::Initialize() {
     mapSent = false;
     ticks = 0;
     accumulatedTime = 0.0f; // initial time
-    AddNewObject(UIGroup = new Group());
+    AddNewControlObject(UIGroup = new Group());
     dot_cooldown = 0.5f;
     ImageLoading.resize(2);
     ConstructUI();
+    weaponSelected = std::vector<bool>(4, false);
 }
 
 void LoadingScene::Update(float deltaTime) {
@@ -25,6 +26,7 @@ void LoadingScene::Update(float deltaTime) {
     ticks += deltaTime;
     accumulatedTime += deltaTime; 
     // every 2s send map
+    if(mapReceived == false)
     if (accumulatedTime >= 0.5f) {
         accumulatedTime = 0.0f;
 
@@ -64,7 +66,7 @@ void LoadingScene::Update(float deltaTime) {
 
         // Switch to PlayScene
         std::cerr<<"CHANGE!\n";
-        game.ChangeScene("play");
+        mapReceived = true;
     }
 
     //UI
@@ -79,23 +81,84 @@ void LoadingScene::Update(float deltaTime) {
         dot_cooldown = 0.5f;
     }
 
-    
+    UIGroup->Update(deltaTime);
 }
 
 void LoadingScene::ConstructUI(){
-    Engine::Label *lab;
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
-    // text Loading
-    lab = new Engine::Label("Loading", "pirulen.ttf", 56, game.screenW/2, game.screenH/2, 255, 255, 255, 255, 0.5, 0.5);
-    UIGroup->AddNewObject(lab);
-    TextLoading = lab;
-    
-    Engine::Sprite *img;
-    img = new Engine::Sprite(Images[0],  game.screenW/2, game.screenH/2+100,64,64);
-    UIGroup->AddNewObject(img);
-    ImageLoading[0] = img;
 
-    img = new Engine::Sprite(Images[1],  game.screenW/2, game.screenH/2+100,64,64);
-    UIGroup->AddNewObject(img);
-    ImageLoading[1] = img;
+    // --- Loading Text (Top) ---
+    TextLoading = new Engine::Label("Loading", "pirulen.ttf", 48, game.screenW / 2, 50, 255, 255, 255, 255, 0.5, 0.5);
+    UIGroup->AddNewObject(TextLoading);
+
+    // --- Weapon Buttons (2 rows x 2) ---
+    float btnSize = 96;
+    float startX = game.screenW / 2 - btnSize - 40;
+    float startY = 150;
+    WeaponButtons.resize(4);
+    weaponSelected = std::vector<bool>(4, false);
+    selectedCount = 0;
+
+    for (int i = 0; i < 4; ++i) {
+        float x = startX + (i % 2) * (btnSize + 80);
+        float y = startY + (i / 2) * (btnSize + 80);
+        std::string label = "Weapon " + std::to_string(i + 1);
+
+        Engine::ImageButton* btn = new Engine::ImageButton(
+            "stage-select/dirt.png", "stage-select/floor.png",
+            x, y, btnSize, btnSize
+        );
+        btn->SetOnClickCallback([this, i]() { OnClickWeapon(i); });
+        WeaponButtons[i] = btn;
+        UIGroup->AddNewControlObject(btn);
+
+        Engine::Label* weaponLabel = new Engine::Label(
+            label, "pirulen.ttf", 20,
+            x + btnSize / 2, y - 20, 255, 255, 255, 255, 0.5, 0.5
+        );
+        UIGroup->AddNewObject(weaponLabel);
+    }
+
+    // --- Confirm Button ---
+    ConfirmButton = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", game.screenW / 2 - 100, startY + 2 * (btnSize + 80), 200, 64);
+    ConfirmButton->SetOnClickCallback(std::bind(&LoadingScene::OnClickConfirm, this));
+    UIGroup->AddNewControlObject(ConfirmButton);
+
+    Engine::Label* confirmLabel = new Engine::Label("Confirm", "pirulen.ttf", 24, game.screenW / 2, startY + 2 * (btnSize + 80) + 32, 255, 255, 255, 255, 0.5, 0.5);
+    UIGroup->AddNewObject(confirmLabel);
+
+    // --- Hutao Animation (bottom)
+    ImageLoading[0] = new Engine::Sprite(Images[0], game.screenW / 2 - 64, game.screenH - 96, 64, 64);
+    ImageLoading[1] = new Engine::Sprite(Images[1], game.screenW / 2 - 64, game.screenH - 96, 64, 64);
+    UIGroup->AddNewObject(ImageLoading[0]);
+    UIGroup->AddNewObject(ImageLoading[1]);
+
+}
+
+void LoadingScene::OnClickWeapon(int index) {
+    if (weaponSelected[index]) {
+        weaponSelected[index] = false;
+        selectedCount--;
+    } else {
+        if (selectedCount >= 2) return;
+        weaponSelected[index] = true;
+        selectedCount++;
+    }
+    
+}
+
+void LoadingScene::OnClickConfirm() {
+    if (selectedCount >= 1 && mapReceived) {
+        auto* play = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetScene("play"));
+        if (play) {
+            play->PlayerWeapon.clear();
+            for (int i = 0; i < 4; ++i) {
+                if (weaponSelected[i]) {
+                    play->PlayerWeapon.insert(i);
+                }
+            }
+        }
+        Engine::GameEngine::GetInstance().ChangeScene("play");
+    }
+
 }

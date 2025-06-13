@@ -7,6 +7,7 @@ protected:
     bool stealth;
 public:
     StealthEnemy(int id, float x, float y);
+    void UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) override;
     void Hit(float damage) override;
     void Update(float deltaTime) override;
     void Draw() const override;

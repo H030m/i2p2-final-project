@@ -10,5 +10,6 @@ public:
     void Hit(float damage) override;
     ArmoredEnemy(int id, float x, float y);
     void Draw() const override;
+    void UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) override;
 };
 #endif

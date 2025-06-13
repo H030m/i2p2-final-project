@@ -31,8 +31,8 @@ public:
     Engine::Point HitV = Engine::Point(0.0, 0.0);
     Enemy(int id, std::string img, float x, float y, float radius, float speed, float hp, int money);
     virtual void Hit(float damage);
-    void UpdateFromServer(float x, float y, float rotation, float hp, bool alive);
     void Update(float deltaTime) override;
     void Draw() const override;
+    virtual void UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth);
 };
 #endif   // ENEMY_HPP

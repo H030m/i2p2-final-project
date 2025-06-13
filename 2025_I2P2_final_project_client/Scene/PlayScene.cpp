@@ -93,7 +93,7 @@ void PlayScene::Initialize() {
     std::cerr<<"Initialize play Scene!\n";
     ReadMap();
     
-
+    std::cerr<<"bug12\n";
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(500, 500, game.my_id,MapWidth, MapHeight);
@@ -138,14 +138,27 @@ void PlayScene::Initialize() {
         camera->SetTarget(newPlayer->Position);
 
         //Weapon
-        Weapon* k = new BounceWeapon(0, 0, my_id, 1);
-        WeaponGroup->AddNewObject(k);
-        newPlayer->Weapon_hold.push_back(k);
-        newPlayer->Weapon_owned.push_back(k);
-        k = new ShotgunWeapon(0, 0, my_id, 1);
-        WeaponGroup->AddNewObject(k);
-        newPlayer->Weapon_hold.push_back(k);
-        newPlayer->Weapon_owned.push_back(k);
+        for(auto it:PlayerWeapon){
+            Weapon* k;
+            if(it == 0){
+                k = new BounceWeapon(0, 0, my_id, 1); 
+            }else
+            if(it == 1){
+                k = new ShotgunWeapon(0, 0, my_id, 1); 
+            }else
+            if(it == 2){
+                k = new GunWeapon(0, 0, my_id, 1); 
+            }else
+            if(it == 3){
+                k = new CircleWeapon(0, 0, my_id, 1); 
+            }else{
+                continue;
+            }
+            WeaponGroup->AddNewObject(k);
+            newPlayer->Weapon_hold.push_back(k);
+            newPlayer->Weapon_owned.push_back(k);
+        }
+        std::cerr<<"bug13\n";
 
         // upgrade label
         upgrade_label_1 = new Engine::Label("", "pirulen.ttf", 15, 30, game.screenH - 130, 0, 0, 0, 255, 0, 0);
@@ -417,8 +430,9 @@ void PlayScene::Update(float deltaTime) {
         // First pass: track all active enemies
         for (auto& enemyData : enemies) {
             std::cerr<<"update enemy "<<enemyData["id"]<<' '<<enemyData["enemyType"]<<'\n';
-            int enemyId = enemyData["id"];
-            activeEnemyIds.insert(enemyId);
+            std::cerr<<"bug9\n";
+            int enemyId = enemyData["id"];std::cerr<<"bug10\n";
+            activeEnemyIds.insert(enemyId);std::cerr<<"bug11\n";
             
             // Update existing or create new enemy
             if (enemy_dict.count(enemyId)) {
@@ -429,7 +443,9 @@ void PlayScene::Update(float deltaTime) {
                     enemyData["y"],
                     enemyData["rotation"],
                     enemyData["hp"],
-                    enemyData["alive"]
+                    enemyData["alive"],
+                    enemyData["armor"],
+                    enemyData["stealth"]
                 );
                 
                 // Type-specific updates
@@ -438,16 +454,20 @@ void PlayScene::Update(float deltaTime) {
                 }
             } else {
                 // Create new enemy based on type
+                std::cerr<<"bug19\n";
                 int type = enemyData["enemyType"].get<int>();
+                std::cerr<<"bug20\n";
                 if (type == 1) { // Armored
-                    ArmoredEnemy* newEnemy = new ArmoredEnemy(enemyId, 0, 0);
-                    newEnemy->CollisionRadius = 32;
-                    newEnemy->hp = 150;
-                    newEnemy->damage = 10;
-                    EnemyGroup->AddNewObject(newEnemy);
-                    enemy_dict[enemyId] = newEnemy;
+                    std::cerr<<"bug1\n";
+                    ArmoredEnemy* newEnemy = new ArmoredEnemy(enemyId, 0, 0);std::cerr<<"bug2\n";
+                    EnemyGroup->AddNewObject(newEnemy);std::cerr<<"bug3\n";
+                    enemy_dict[enemyId] = newEnemy;std::cerr<<"bug4\n";
                 } else if (type == 2) { // Stealth
                     // TODO: Handle Stealth enemy here
+                    std::cerr<<"bug5\n";
+                    StealthEnemy* newEnemy = new StealthEnemy(enemyId, 0, 0);std::cerr<<"bug6\n";
+                    EnemyGroup->AddNewObject(newEnemy);std::cerr<<"bug7\n";
+                    enemy_dict[enemyId] = newEnemy;std::cerr<<"bug8\n";
                 } else { // Basic
                     // TODO: Handle Basic enemy here
                 }

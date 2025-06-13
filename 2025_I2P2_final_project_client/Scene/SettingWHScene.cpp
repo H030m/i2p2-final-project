@@ -22,7 +22,7 @@ void SettingWHScene::Initialize() {
     W = 20, H = 20;
     Engine::ImageButton* btn;
 
-    // Back «ö¶s
+    // Back 
     btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 300, halfH / 2 + 500, 600, 100);
     btn->SetOnClickCallback(std::bind(&SettingWHScene::BackOnClick, this, 1));
     AddNewControlObject(btn);
@@ -88,7 +88,7 @@ void SettingWHScene::GenerateMapAndEnter() {
 
     std::ofstream out("Resource/map5.json");
     if (out.is_open()) {
-        out << map_json.dump(4); // ¬ü¤Æ¿é¥X
+        out << map_json.dump(4); 
         std::cerr<<map_json.dump()<<'\n';
         out.close();
         Engine::GameEngine::GetInstance().ChangeScene("DrawMapScene");

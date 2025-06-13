@@ -17,6 +17,7 @@ public:
     float collisionRadius;
     bool alive = true;
     float cooldown = 0;
+    float hit_cooldown = 0;
     Engine::Point position;
     Engine::Point spawn;
     Engine::Point velocity;
@@ -31,7 +32,7 @@ public:
     // Core functionality
     virtual void Update(float deltaTime);
     virtual void Hit(float damage);
-    
+    virtual void Revive();
     // For network synchronization
     virtual nlohmann::json Serialize() const;
 };

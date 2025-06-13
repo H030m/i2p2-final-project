@@ -7,6 +7,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 #include <string>
+#include <set>
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
 #include <unordered_map>
@@ -37,10 +38,12 @@ private:
     void RenderVisibleObjects() const;
     void ClearPlayerData();
     void ClearEnemyData();
+
 protected:
     int lives;
     int money;
     int SpeedMult;
+    
     time_t StartTime;
     time_t EndTime;
 
@@ -111,8 +114,9 @@ public:
 
     int id_counter;
     int my_id;
-     Engine::Label *upgrade_label_1, *upgrade_label_2;
+    Engine::Label *upgrade_label_1, *upgrade_label_2;
     Camera* GetCamera() const { return camera.get(); }
+    std::set<int>PlayerWeapon;
 };
 
 #endif   // PLAYSCENE_HPP

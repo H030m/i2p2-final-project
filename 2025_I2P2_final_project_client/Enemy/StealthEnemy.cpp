@@ -23,6 +23,7 @@ void StealthEnemy::Hit(float damage) {
 }
 
 void StealthEnemy::Update(float deltaTime) {
+    /*
     // Check for collision with any player in PlayerGroup
     PlayScene* scene = getPlayScene();
     if (stealth && scene->PlayerGroup) {
@@ -38,7 +39,7 @@ void StealthEnemy::Update(float deltaTime) {
                 }
             }
         }
-    }
+    }*/
     Enemy::Update(deltaTime); // Call base class Update for movement and other logic
 }
 
@@ -50,4 +51,8 @@ void StealthEnemy::Draw() const {
         // Draw collision radius even if stealthed for debugging
         al_draw_circle(Position.x, Position.y, CollisionRadius, al_map_rgb(255, 0, 0), 2);
     }
+}
+void StealthEnemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) {
+    this->stealth = stealth;
+    Enemy::UpdateFromServer(x, y, rotation, hp, alive, armor, stealth);
 }

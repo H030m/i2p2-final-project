@@ -15,6 +15,7 @@
 #endif
 
 #include <vector>
+#include <unordered_map>
 #include <memory>
 #include <mutex>
 #include <nlohmann/json.hpp>
@@ -40,6 +41,13 @@ struct ClientContext {
         //camera position
         bool sendMap = false;
 };
+struct HitInformation{
+    int damage;
+    float HitVX;
+    float HitVY;
+    int player_id;
+    HitInformation(int damage, float HitVX, float HitVY, int player_id);
+};
 
 class RenderSender {
 public:
@@ -58,6 +66,7 @@ public:
     }
     friend void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender);
     std::vector<Enemy*> enemies;
+    std::unordered_map<int,std::vector<HitInformation>>Hitenemy;
     std::vector<std::shared_ptr<ClientContext>>& getClients() { return clients; }
     nlohmann::json frame;
     std::vector<std::shared_ptr<ClientContext>> clients;

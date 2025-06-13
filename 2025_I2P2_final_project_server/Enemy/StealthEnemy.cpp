@@ -1,12 +1,24 @@
 #include "StealthEnemy.hpp"
 #include <cmath>
 #include <nlohmann/json.hpp>
+#include <iostream>
 
 StealthEnemy::StealthEnemy(int id, Engine::Point position, Engine::Point spawn)
-    : Enemy(2, id, position, spawn, 10, 10, 10, 10, 10), stealth(true) {
+    : Enemy(2, id, position, spawn, 10, 10, 10, 10, 10) {
+    stealth = true;
+}
+
+void StealthEnemy::Revive() {
+    stealth = initStealth;
+    hp = initHP;
+    Enemy::Revive();
 }
 
 void StealthEnemy::Update(float deltaTime) {
+    if (!alive && cooldown <= 0) {
+        StealthEnemy::Revive();
+    }
+    
     Enemy::Update(deltaTime);
     
     if (!stealth) {
@@ -20,6 +32,7 @@ void StealthEnemy::Update(float deltaTime) {
 
 void StealthEnemy::Hit(float damage) {
     if (stealth) {
+        std::cerr << "StealthEnemy hit when stealth\n";
         stealth = false;
         stealthCooldown = 5.0f;
     }

@@ -8,6 +8,9 @@
 #include <iostream>
 #include <chrono>
 using namespace std::chrono;
+HitInformation::HitInformation(int damage, float HitVX, float HitVY, int player_id): damage(damage), HitVX(HitVX), HitVY(HitVY), player_id(player_id){
+
+}
 std::string compress_string(const std::string& str);
 std::string decompress_string(const std::string& str, uLong estimated_size = 10 * 1024 * 1024);
 void sendCompressedJson(SOCKET sock, const nlohmann::json& j);
@@ -24,6 +27,7 @@ RenderSender::RenderSender(int port) {
     bind(serverSock, (sockaddr*)&serverAddr, sizeof(serverAddr));
     listen(serverSock, NUM);
     std::cout << "Listening on port " << port << "...\n";
+    
 }
 
 RenderSender::~RenderSender() {
@@ -94,12 +98,14 @@ void RenderSender::start() {
                     if(ctx->lastInput.contains("Scene") && ctx->lastInput["Scene"] == "play" || ctx->lastInput["Scene"] == "loading"){
                         isPlay = true;
                     }
+                    
                 }
                     
             }
             if(!isPlay){
                 storedMapState.reset();
                 enemies.clear();
+                Hitenemy.clear();
                 // std::cerr<<"Clear Map!"<<'\n';
             }
 
@@ -108,6 +114,9 @@ void RenderSender::start() {
             for (auto& ctx : clients) {
                 if (ctx->active) {
                     frame[std::to_string(ctx->id)] = ctx->lastInput;
+                    if(ctx->lastInput.contains("Hit")){
+                        Hitenemy[ctx->lastInput["Hit"]["id"]].push_back(HitInformation(ctx->lastInput["Hit"]["Damage"], ctx->lastInput["Hit"]["HitVx"],ctx->lastInput["Hit"]["HitVy"], ctx->id));
+                    }
                 }
             }
             //update enemy
@@ -115,6 +124,7 @@ void RenderSender::start() {
             for (auto& enemy : enemies) {
                 if (enemy->alive) {
                     UpdateEnemyInstance(*enemy, deltaTime, *this);
+                    UpdateEnemyHit(*enemy, deltaTime, *this, Hitenemy[enemy->id]);
                     // Get the enemy's serialized data
                     nlohmann::json enemyData;
                     switch (enemy->type) {
@@ -231,6 +241,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
                     }
                 }
                 // std::cerr << "Spawned " << enemies.size() << " enemies.\n";
+               
             }
 
             
@@ -254,8 +265,8 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
 void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
     if (!ctx->active) return;
     // if(frame.contains("map"))
-    std::cerr<<"frame  "<<frame.dump()<<'\n';
-    std::string raw = frame.dump(); // ��l JSON �r��
+    //std::cerr<<"frame  "<<frame.dump()<<'\n';
+    std::string raw = frame.dump(); // 
     // std::cerr << "[send raw size]: " << raw.size() << " bytes\n";
     // std::cerr << "[send raw content]: " << raw << "\n";
 

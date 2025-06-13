@@ -5,7 +5,9 @@
 #include <algorithm>
 #include <cmath>
 #include <queue>
+#include <vector>
 #include <unordered_set>
+#include <iostream>
 #include "Engine/Point.hpp"
 
 // Helper struct for A* pathfinding
@@ -46,6 +48,22 @@ Engine::Point GridToWorld(const Engine::Point& gridPos, int blockSize) {
     );
 }
 
+bool IsWalkable(const Engine::Point& gridPos, const nlohmann::json& map) {
+    // Check bounds
+    if (gridPos.x < 0 || gridPos.y < 0 || 
+        gridPos.x >= (int)map[0].size() || gridPos.y >= (int)map.size()) {
+        return false;
+    }
+    
+    // Check if tile has an obstacle
+    if (map[gridPos.y][gridPos.x].contains("Obstacle")) {
+        // Only walkable if explicitly marked as penetrable
+        return map[gridPos.y][gridPos.x]["Obstacle"].contains("Penetrable") && 
+               map[gridPos.y][gridPos.x]["Obstacle"]["Penetrable"].get<bool>();
+    }
+    return true;
+}
+
 // A* pathfinding implementation
 std::vector<Engine::Point> FindPath(const Engine::Point& start, const Engine::Point& target, 
                                    const nlohmann::json& mapState, int blockSize) {
@@ -53,17 +71,13 @@ std::vector<Engine::Point> FindPath(const Engine::Point& start, const Engine::Po
     if (!mapState.contains("map") || !mapState["map"].contains("MapState")) return path;
 
     const auto& map = mapState["map"]["MapState"];
-    int mapWidth = map[0].size();
-    int mapHeight = map.size();
+
 
     Engine::Point startGrid = WorldToGrid(start, blockSize);
     Engine::Point targetGrid = WorldToGrid(target, blockSize);
 
-    // Check if target is walkable
-    if (targetGrid.x < 0 || targetGrid.y < 0 || 
-        targetGrid.x >= mapWidth || targetGrid.y >= mapHeight ||
-        map[targetGrid.y][targetGrid.x].contains("Obstacle") && 
-        !map[targetGrid.y][targetGrid.x]["Obstacle"].contains("Penetrable")) {
+    // Early exit if target is not walkable
+    if (!IsWalkable(targetGrid, map)) {
         return path;
     }
 
@@ -79,10 +93,10 @@ std::vector<Engine::Point> FindPath(const Engine::Point& start, const Engine::Po
     openSet.push(startNode);
 
     const std::vector<Engine::Point> directions = {
-        Engine::Point(-1, 0), Engine::Point(1, 0),  // Left, Right
-        Engine::Point(0, -1), Engine::Point(0, 1),  // Up, Down
-        Engine::Point(-1, -1), Engine::Point(1, -1), // Diagonals
-        Engine::Point(-1, 1), Engine::Point(1, 1)
+        Engine::Point(-1, 0),  // Left
+        Engine::Point(1, 0),   // Right
+        Engine::Point(0, -1),  // Up
+        Engine::Point(0, 1)    // Down
     };
 
     while (!openSet.empty()) {
@@ -104,18 +118,16 @@ std::vector<Engine::Point> FindPath(const Engine::Point& start, const Engine::Po
         for (const auto& dir : directions) {
             Engine::Point neighborPos = current.position + dir;
             
-            // Check bounds and walkability
-            if (neighborPos.x < 0 || neighborPos.y < 0 || 
-                neighborPos.x >= mapWidth || neighborPos.y >= mapHeight ||
-                map[neighborPos.y][neighborPos.x].contains("Obstacle") && 
-                !map[neighborPos.y][neighborPos.x]["Obstacle"].contains("Penetrable") ||
-                closedSet.find(neighborPos) != closedSet.end()) {
+            // Skip if not walkable or already evaluated
+            if (!IsWalkable(neighborPos, map) || closedSet.find(neighborPos) != closedSet.end()) {
                 continue;
             }
 
-            float moveCost = (dir.x != 0 && dir.y != 0) ? 1.414f : 1.0f; // Diagonal cost
+            float moveCost = 1.0f; // Uniform cost for 4-direction movement
             float gCost = current.gCost + moveCost;
             
+            // If new path to neighbor is better or neighbor isn't in open set
+
             if (allNodes.find(neighborPos) == allNodes.end() || gCost < allNodes[neighborPos].gCost) {
                 Node neighbor;
                 neighbor.position = neighborPos;
@@ -191,25 +203,34 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
 
         // Update velocity and position
         enemy.velocity = direction * enemy.speed;
-        enemy.position.x += enemy.velocity.x * deltaTime;
-        enemy.position.y += enemy.velocity.y * deltaTime;
-        
-        // Update rotation for facing direction
-        enemy.rotation = std::atan2(direction.y, direction.x) * 180.0f / M_PI;
+        enemy.position.x += (enemy.velocity.x * deltaTime);
+        enemy.position.y += (enemy.velocity.y * deltaTime);
     } else {
-        // No path found - fallback to direct movement (might get stuck)
-        Engine::Point direction = targetPosition - enemy.position;
-        if (direction.Magnitude() > 0) {
-            direction = direction.Normalize();
-        }
-        enemy.velocity = direction * enemy.speed;
-        enemy.position.x += enemy.velocity.x * deltaTime;
-        enemy.position.y += enemy.velocity.y * deltaTime;
-        enemy.rotation = std::atan2(direction.y, direction.x) * 180.0f / M_PI;
+        // No path found - don't move through obstacles
+        enemy.velocity = Engine::Point(0, 0);
     }
     // Boundary check
-     int mapWidth = sender.storedMapState.value()["map"]["MapWidth"];
+    int mapWidth = sender.storedMapState.value()["map"]["MapWidth"];
     int mapHeight = sender.storedMapState.value()["map"]["MapHeight"];
     enemy.position.x = std::max(0.0f, std::min(enemy.position.x, static_cast<float>(mapWidth) * blockSize));
     enemy.position.y = std::max(0.0f, std::min(enemy.position.y, static_cast<float>(mapHeight) * blockSize));
+
+    //hit cooldown
+    enemy.hit_cooldown -= deltaTime;
+    if(enemy.hit_cooldown < 0) enemy.hit_cooldown = 0;
+}
+
+void UpdateEnemyHit(Enemy& enemy, float deltaTime, RenderSender& sender, std::vector<HitInformation>& hit_information){
+    for(auto it:hit_information) {
+        if(enemy.alive&&enemy.hit_cooldown <= 0){
+            enemy.Hit(it.damage);
+            std::cerr<<"hit "<<enemy.id<<' '<<" by "<<it.player_id<<'\n';
+            if(!enemy.alive)
+            for(auto client:sender.clients){
+                if(client->id == it.player_id && client->lastInput.contains("player") && client->lastInput["player"][5])
+                client->lastInput["player"][5] += enemy.money;
+            }
+            enemy.hit_cooldown = 0.01f;
+        
+    }
 }

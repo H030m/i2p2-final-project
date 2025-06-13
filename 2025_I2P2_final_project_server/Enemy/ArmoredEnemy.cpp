@@ -2,13 +2,32 @@
 #include <nlohmann/json.hpp>
 
 ArmoredEnemy::ArmoredEnemy(int id, Engine::Point position, Engine::Point spawn)
-    : Enemy(1, id, position, spawn, 10, 10, 10, 10, 10) {
+    : Enemy(1, id, position, spawn, initRadius, initSpeed, initHP, initDamage, initMoney) {
+    armor = initArmor;
+}
+
+void ArmoredEnemy::Revive() {
+    armor = initArmor;
+    hp = initHP;
+    Enemy::Revive();
+}
+
+void ArmoredEnemy::Update(float deltaTime) {
+    if (!alive && cooldown <= 0) {
+        ArmoredEnemy::Revive();
+    }
+    Enemy::Update(deltaTime);
 }
 
 void ArmoredEnemy::Hit(float damage) {
     // Apply damage reduction from armor
-    float effectiveDamage = damage * (1.0f - armor / 100.0f);
-    Enemy::Hit(effectiveDamage);
+    float remainingArmor = armor - damage;
+    if (remainingArmor < 0) {
+        Enemy::Hit(-remainingArmor);
+        armor = 0;
+    } else {
+        armor = remainingArmor;
+    }
 }
 
 nlohmann::json ArmoredEnemy::Serialize() const {

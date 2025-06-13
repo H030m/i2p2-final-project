@@ -36,18 +36,23 @@ Enemy::Enemy(int id, std::string img, float x, float y, float radius, float spee
     CollisionRadius = radius;
     reachEndTime = 0;
 }
-void Enemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive) {
+void Enemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) {
     Position.x = x;
     Position.y = y;
     Rotation = rotation;
     this->hp = hp;
-    this->alive = alive;
+
     
     if (!alive && this->alive) { // Just died
         OnExplode();
         getPlayScene()->EarnMoney(money);
         getPlayScene()->EnemyGroup->RemoveObject(objectIterator);
     }
+    if (alive && !this->alive) { // Just revived
+        getPlayScene()->EnemyGroup->AddNewObject(this);
+    }
+
+    this->alive = alive;
 }
 
 void Enemy::Update(float deltaTime) {
