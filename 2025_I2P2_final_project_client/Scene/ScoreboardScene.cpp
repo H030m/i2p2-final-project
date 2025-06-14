@@ -37,7 +37,7 @@ void ScoreboardScene::Initialize(){
         int score, gap;
         std::time_t Time;
         std::string name;
-        ss>>name>>score>>Time>>gap;
+        ss>>name>>score;
         scoreboard.push_back(PlayerInformation(name, score, Time, gap));
     }
     fin.close();
@@ -46,7 +46,7 @@ void ScoreboardScene::Initialize(){
     // page
     page = 0;
     label.clear();
-    label.resize(scoreboard.size(), std::vector<Engine::Label*>(3, nullptr));
+    label.resize(scoreboard.size(), std::vector<Engine::Label*>(2, nullptr));
     total_page = scoreboard.size() / NUM_IN_PAGE + (scoreboard.size() % NUM_IN_PAGE != 0);
     this->LoadPage(page);
     
@@ -101,18 +101,21 @@ void ScoreboardScene::LoadPage(int k){
             AddNewObject(label[j][0]);
         }
         if(label[j][1] == nullptr&& i < scoreboard.size()){
-            label[j][1] = new Engine::Label(std::to_string(scoreboard[i].score), pirulen_font, 64, x+600, y + j*75, 100, 255, 100);
+            std::stringstream ss;
+            ss << std::fixed << std::setprecision(1) << scoreboard[i].score / 10.0;
+            label[j][1] = new Engine::Label(ss.str(), pirulen_font, 64, x+600, y + j*75, 100, 255, 100);
             AddNewObject(label[j][1]);
         }
-        if(label[j][2] == nullptr&& i < scoreboard.size()){
-            label[j][2] = new Engine::Label(scoreboard[i].TimeToString_Time(), pirulen_font, 12, x+900, y + j*75 + 40, 100, 255, 100);
-            AddNewObject(label[j][2]);
-        }     
         
         // update
         label[j][0]->Text = (i < scoreboard.size())?scoreboard[i].name:"";
-        label[j][1]->Text = (i < scoreboard.size())?std::to_string(scoreboard[i].score):"";
-        label[j][2]->Text = (i < scoreboard.size())?scoreboard[i].TimeToString_Time():"";
+        std::stringstream ss;
+        if (i < scoreboard.size()) {
+            ss << std::fixed << std::setprecision(1) << scoreboard[i].score / 10.0;
+            label[j][1]->Text = ss.str();
+        } else {
+            label[j][1]->Text = "";
+        }
         
         //Label(const std::string &text, const std::string &font, int fontSize, float x, float y, unsigned char r = 0, unsigned char g = 0, unsigned char b = 0, unsigned char a = 255, float anchorX = 0, float anchorY = 0);
     }

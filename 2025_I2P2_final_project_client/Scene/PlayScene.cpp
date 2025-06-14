@@ -77,6 +77,11 @@ void PlayScene::Initialize() {
     lives = 10;
     money = 150;
     SpeedMult = 1;
+    {
+        Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+        game.DYYscore = 0;
+        game.getscore_cooldown = 0;
+    }
     time(&StartTime); 
     // Add groups from bottom to top.
     AddNewObject(TileMapGroup = new Group());
@@ -244,13 +249,18 @@ void PlayScene::Terminate() {
 }
 
 void PlayScene::Update(float deltaTime) {
+    
     // if win
     if (IsWin) {
-        Engine::GameEngine::GetInstance().ChangeScene("win");
+        Engine::GameEngine::GetInstance().ChangeScene("submit-scene");
     }
 
     // std::cerr<<"UPdateScene\n";
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+
+    game.getscore_cooldown -= deltaTime;
+    if(game.getscore_cooldown < 0)game.getscore_cooldown = 0;
+
     GameClient &sender = game.GetSender();
     
     // record active player
@@ -441,11 +451,19 @@ void PlayScene::Update(float deltaTime) {
         // First pass: track all active enemies
         // std::cerr<<"input enemy "<<enemies.dump()<<'\n';
         for (auto& enemyData : enemies) {
-            // std::cerr<<"update enemy "<<enemyData["id"]<<' '<<enemyData["enemyType"]<<'\n';
-            
+            // std::cerr<<"update enemy "<<enemyData["id"]<<' '<<enemyData["enemyType"]<<' '<<enemyData["alive"]<<'\n';
+            // 
             int enemyId = enemyData["id"];
             activeEnemyIds.insert(enemyId);
             
+            //win!
+            // std::cerr<<IsSeasonMap<<'\n';
+            if(IsSeasonMap && enemyData["enemyType"] == 0 && enemyData["alive"] == false){
+                UIBtnClicked(4);
+                std::cerr<<"BUG1"<<'\n';
+            }
+
+
             // Update existing or create new enemy
             if (enemy_dict.count(enemyId)) {
                 // Update existing enemy
@@ -617,11 +635,17 @@ void PlayScene::ReadMap() {
         std::cerr << "Failed to open map file: " << filename << '\n';
         return;
     }
-
+    
 
     nlohmann::json data;
     file >> data;
     file.close();
+    if(!data.contains("SeasonMap")){
+        IsSeasonMap = true;
+    }
+    // DEBUGGER
+    IsSeasonMap = true;
+
     if (!data.contains("MapState")) {
         std::cerr << "Invalid map format: missing MapState\n";
         return;
@@ -731,6 +755,10 @@ void PlayScene::UIBtnClicked(int id) {
         }
     }else if (id == 3) {
         Engine::GameEngine::GetInstance().ChangeScene("start");
+    }else if(id == 4) {
+        //win
+        std::cerr<<"BUG2"<<'\n';
+        Engine::GameEngine::GetInstance().ChangeScene("submit-scene");
     }
 }
 

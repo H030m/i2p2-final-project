@@ -4,6 +4,18 @@
 #include "Enemy.hpp"
 
 class BossEnemy : public Enemy {
+private:
+    struct AttackAnimation {
+        float radius;
+        float maxRadius;
+        float progress; // 0-1
+        bool active;
+    };
+
+    std::vector<AttackAnimation> attackAnimations;
+    float attackRadius = 1024.0f; // Max attack range
+    float animationDuration = 0.5f; // Time for animation to complete
+
 public:
     float damageInterval = 10.0f;
     float timeSinceLastDamage;

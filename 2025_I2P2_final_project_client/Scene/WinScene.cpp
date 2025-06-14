@@ -17,28 +17,30 @@ void WinScene::Initialize() {
     ticks = 0;
     int w = Engine::GameEngine::GetInstance().GetScreenSize().x;
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     int halfW = w / 2;
     int halfH = h / 2;
     AddNewObject(new Engine::Image("win/benjamin-sad.png", halfW, halfH, 0, 0, 0.5, 0.5));
     // AddNewObject(new Engine::Label("You Win!", "pirulen.ttf", 48, halfW, halfH / 4 - 10, 255, 255, 255, 255, 0.5, 0.5));
     
     Engine::ImageButton *btn;
-    btn = new Engine::ImageButton("win/dirt.png", "win/floor.png", halfW - 450, halfH * 7 / 4 - 50, 400, 100);
+    btn = new Engine::ImageButton("win/dirt.png", "win/floor.png", halfW -200, halfH * 7 / 4 - 50, 400, 100);
     btn->SetOnClickCallback(std::bind(&WinScene::BackOnClick, this, 2));
     AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Back", "pirulen.ttf", 48, halfW - 250, halfH * 7 / 4, 0, 0, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("Back", "pirulen.ttf", 48, halfW, halfH * 7 / 4, 0, 0, 0, 255, 0.5, 0.5));
     bgmId = AudioHelper::PlayAudio("win.wav");
     
-    //switch to submit Scene
-    btn = new Engine::ImageButton("win/dirt.png", "win/floor.png", halfW + 50, halfH * 7 / 4 - 50, 400, 100);
-    btn->SetOnClickCallback(std::bind(&WinScene::SubmitOnClick, this, 2));
-    AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("Submit", "pirulen.ttf", 48, halfW + 250, halfH * 7 / 4, 0, 0, 0, 255, 0.5, 0.5));
-    bgmId = AudioHelper::PlayAudio("win.wav");
+    // //switch to submit Scene
+    // btn = new Engine::ImageButton("win/dirt.png", "win/floor.png", halfW + 50, halfH * 7 / 4 - 50, 400, 100);
+    // btn->SetOnClickCallback(std::bind(&WinScene::SubmitOnClick, this, 2));
+    // AddNewControlObject(btn);
+    // AddNewObject(new Engine::Label("Submit", "pirulen.ttf", 48, halfW + 250, halfH * 7 / 4, 0, 0, 0, 255, 0.5, 0.5));
+    // bgmId = AudioHelper::PlayAudio("win.wav");
     
     // Grade
+
     AddNewObject(new Engine::Label("You Win!", "pirulen.ttf", 110, halfW, 70, 255, 215, 0, 255, 0.5, 0.5));
-    AddNewObject(new Engine::Label("SCORE: " + std::to_string(score), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("YOUR Calc SCORE: " + std::to_string(game.DYYscore/10) + "." + std::to_string(game.DYYscore%10), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
 }
 void WinScene::Terminate() {
     IScene::Terminate();

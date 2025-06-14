@@ -44,7 +44,9 @@ namespace Engine {
         /// Delegate the draw event to all visible objects.
         /// </summary>
         void Draw() const override;
+        
     };
+   
 }
 // TODO-scoreboard
 class PlayerInformation{
@@ -77,5 +79,6 @@ public:
         std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&Time));
         return std::string(buf);
     }
+    
 };  
 #endif   // ISCENE_HPP

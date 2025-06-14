@@ -3,10 +3,15 @@
 #include <fstream>
 #include <vector>
 #include <iostream>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include "Engine/AudioHelper.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Point.hpp"
 #include "PlayScene.hpp"
+#include "Engine/Resources.hpp"
 #include "UI/Component/Image.hpp"
 #include "UI/Component/ImageButton.hpp"
 #include "UI/Component/Label.hpp"
@@ -21,7 +26,10 @@ void SubmitScene::Initialize() {
     int h = Engine::GameEngine::GetInstance().GetScreenSize().y;
     int halfW = w / 2;
     int halfH = h / 2;
-    
+
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+
+
     // Cancel Button
     Engine::ImageButton *btn;
     btn = new Engine::ImageButton("win/dirt.png", "win/floor.png", halfW - 450, halfH * 7 / 4 - 50, 400, 100);
@@ -36,12 +44,18 @@ void SubmitScene::Initialize() {
     AddNewObject(new Engine::Label("Submit", "pirulen.ttf", 48, halfW + 250, halfH * 7 / 4, 0, 0, 0, 255, 0.5, 0.5));
 
     // score label
-    AddNewObject(new Engine::Label("SCORE: " + std::to_string(score) + " Time: " + std::to_string(EndTime - StartTime), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("SCORE: " + std::to_string(game.DYYscore/10) + "." + std::to_string(game.DYYscore%10), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
 
     // input your name
-    AddNewObject(new Engine::Label("Your Name", "pirulen.ttf", 64, halfW, 350, 255, 255, 255, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("High School road", "pirulen.ttf", 64, halfW, 350, 255, 255, 255, 255, 0.5, 0.5));
     NameLabel = new Engine::Label("", "pirulen.ttf", 40, halfW, 450, 255, 255, 255, 255, 0.5, 0.5);
     AddNewObject(NameLabel);
+
+    // Preload Lose Scene
+    deathBGMInstance = Engine::Resources::GetInstance().GetSampleInstance("astronomia.ogg");
+    Engine::Resources::GetInstance().GetBitmap("lose/benjamin-happy.png");
+    // Start BGM.
+    bgmId = AudioHelper::PlayBGM("play.ogg");
 }
 void SubmitScene::Terminate() {
     IScene::Terminate();
@@ -56,19 +70,14 @@ void SubmitScene::Update(float deltaTime) {
 }
 void SubmitScene::BackOnClick(int stage) {
     // Change to select scene.
-    Engine::GameEngine::GetInstance().ChangeScene("stage-select");
+Engine::GameEngine::GetInstance().ChangeScene("lose");
 }
 void SubmitScene::SubmitOnClick(int stage){
-    std::string filename = "../Resource/scoreboard.txt";
-    std::ifstream fin(filename);
-    std::vector<std::string>files;
-    std::string buffer;
-    while(getline(fin, buffer))files.push_back(buffer);
-    fin.close();
-    std::ofstream fout(filename);
-    for(auto it:files)fout<<it<<'\n';
-    fout<<name + " " + std::to_string(score) + " " + std::to_string(EndTime) + " " + std::to_string(EndTime - StartTime)<<'\n';
-    SubmitScene::BackOnClick(1);
+    if(name == "NANHAI")BackOnClick(1);
+    else{
+        Engine::GameEngine::GetInstance().ChangeScene("win");
+    }
+    
 }
 void SubmitScene::CulGrade(){
     if(MapId == 1){

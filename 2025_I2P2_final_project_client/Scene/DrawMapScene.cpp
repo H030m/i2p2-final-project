@@ -812,7 +812,7 @@ void DrawMapScene::SaveMapStateToFile(const std::string& path) {
     if(correct != nullptr){
         correct->Visible = true;
     }else{
-        std::cerr<<"shit\n";
+        
     }
     
 }

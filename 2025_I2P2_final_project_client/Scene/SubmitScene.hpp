@@ -2,6 +2,10 @@
 #define SUBMITSCENE_HPP
 #include "Engine/IScene.hpp"
 #include <allegro5/allegro_audio.h>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include <memory>
 #include <vector>
 class SubmitScene final : public Engine::IScene {
@@ -11,6 +15,7 @@ private:
     Engine::Label* NameLabel;
 
 public:
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> deathBGMInstance;
     int lives;
     int money;
     int SpeedMult;

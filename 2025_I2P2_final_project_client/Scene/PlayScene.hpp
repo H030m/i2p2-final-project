@@ -115,6 +115,7 @@ public:
     int id_counter;
     int my_id;
     bool IsWin = false;
+    bool IsSeasonMap = false;
     Engine::Label *upgrade_label_1, *upgrade_label_2;
     Camera* GetCamera() const { return camera.get(); }
     std::set<int>PlayerWeapon;

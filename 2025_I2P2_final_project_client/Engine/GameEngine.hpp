@@ -184,6 +184,7 @@ namespace Engine {
         ALLEGRO_DISPLAY *display{};
         // Allegro5 settings, frames per second, screen width, screen height, maximum simultaneous audio samples.
         int fps{}, screenW{}, screenH{}, reserveSamples{};
+        int DYYscore = 0; float getscore_cooldown;
     };
 }
 #endif   // GAMEENGINE_HPP

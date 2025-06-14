@@ -111,6 +111,8 @@ void Player::Update(float deltaTime) {
             if (SourceX >= 128) 
                 SourceX = 0;
             break;
+        default:
+            break;
     }
     //
     damageCooldown -= deltaTime;

@@ -40,7 +40,12 @@ void Bullet::Update(float deltaTime) {
             float distance = diff.Magnitude();
 
             if (distance <= enemy->CollisionRadius + CollisionRadius) {
-                scene->player_dict[scene->my_id]->Heal(2);
+                Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+                if(enemy->type == 0 && game.getscore_cooldown <= 0){
+                    scene->player_dict[scene->my_id]->Heal(2);
+                    game.getscore_cooldown = 0.1f;
+                    game.DYYscore += 2;
+                }
                 enemy->Hit(damage); // Apply damage to enemy
                 OnExplode(enemy);   // Trigger hit effect
                 Engine::LOG(Engine::INFO) << "Bullet hit enemy at (" << enemy->Position.x << ", " << enemy->Position.y << ")";

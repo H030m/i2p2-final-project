@@ -90,7 +90,12 @@ void BounceBullet::Update(float deltaTime) {
             Engine::Point diff = enemy->Position - Position;
             float distance = diff.Magnitude();
             if (distance <= enemy->CollisionRadius + CollisionRadius) {
-                
+                Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+                if(enemy->type == 0 && game.getscore_cooldown <= 0){
+                    scene->player_dict[scene->my_id]->Heal(2);
+                    game.getscore_cooldown = 0.1f;
+                    game.DYYscore += 2;
+                }
                 enemy->Hit(damage); // Apply damage to enemy
                 OnExplode(enemy);   // Trigger hit effect
                 // return; // Stop checking after hitting an enemy
