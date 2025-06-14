@@ -11,7 +11,7 @@ void Enemy::Revive() {
     alive = true;
     position = spawn;
     revive_num++;
-
+    path.clear();
 }
 
 

@@ -54,6 +54,8 @@ bool IsWalkable(const Engine::Point& gridPos, const nlohmann::json& map) {
         gridPos.x >= (int)map[0].size() || gridPos.y >= (int)map.size()) {
         return false;
     }
+
+    std::cerr << "json: " << map[gridPos.y][gridPos.x] << '\n';
     
     // Check if tile has an obstacle
     if (map[gridPos.y][gridPos.x].contains("Obstacle")) {
@@ -159,7 +161,7 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
     bool foundPlayer = false;
     
     {
-        std::lock_guard<std::mutex> lock(sender.clientMutex);
+        // std::lock_guard<std::mutex> lock(sender.clientMutex);
         for (const auto& ctx : sender.clients) {
             if (ctx->active) {
                 // std::cerr<<"player! "<<ctx->id<<'\n';

@@ -20,7 +20,7 @@ void WinScene::Initialize() {
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     int halfW = w / 2;
     int halfH = h / 2;
-    AddNewObject(new Engine::Image("win/benjamin-sad.png", halfW, halfH, 0, 0, 0.5, 0.5));
+    AddNewObject(new Engine::Image("win/SR.png", halfW, halfH, 0, 0, 0.5, 0.5));
     // AddNewObject(new Engine::Label("You Win!", "pirulen.ttf", 48, halfW, halfH / 4 - 10, 255, 255, 255, 255, 0.5, 0.5));
     
     Engine::ImageButton *btn;
@@ -39,7 +39,7 @@ void WinScene::Initialize() {
     
     // Grade
 
-    AddNewObject(new Engine::Label("You Win!", "pirulen.ttf", 110, halfW, 70, 255, 215, 0, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("i2p A+!", "pirulen.ttf", 110, halfW, 70, 255, 215, 0, 255, 0.5, 0.5));
     AddNewObject(new Engine::Label("YOUR Calc SCORE: " + std::to_string(game.DYYscore/10) + "." + std::to_string(game.DYYscore%10), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
 }
 void WinScene::Terminate() {

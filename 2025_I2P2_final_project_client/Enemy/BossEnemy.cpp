@@ -3,7 +3,9 @@
 #include "Engine/GameEngine.hpp"
 #include "Player/Player.hpp"
 #include "Engine/LOG.hpp"
+#include "Engine/AudioHelper.hpp"
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_audio.h>
 #include <iostream>
 
 BossEnemy::BossEnemy(int id, float x, float y)
@@ -15,6 +17,12 @@ BossEnemy::BossEnemy(int id, float x, float y)
     Size.y = 128;
     damageInterval = 10.0f;
     damageAmount = 50.0f;
+
+    attackSound = AudioHelper::PlaySample("108.wav", false, 2.5f); // 108
+    al_set_sample_instance_playmode(attackSound.get(), ALLEGRO_PLAYMODE_ONCE);
+
+    hitSound = AudioHelper::PlaySample("add0.2.wav", false, 5.0f); // +0.2
+    al_set_sample_instance_playmode(hitSound.get(), ALLEGRO_PLAYMODE_ONCE);
 }
 
 void BossEnemy::Update(float deltaTime) {
@@ -38,6 +46,11 @@ void BossEnemy::Update(float deltaTime) {
         if (distance <= attackRadius + player->CollisionRadius) {
             player->TakeDamage(damageAmount);
             Engine::LOG(Engine::INFO) << "Boss damaged player!";
+
+            if (attackSound) {
+                al_stop_sample_instance(attackSound.get());
+                al_play_sample_instance(attackSound.get());
+            }
             
             // Start new attack animation
             AttackAnimation anim;
@@ -69,7 +82,14 @@ void BossEnemy::Update(float deltaTime) {
 }
 
 void BossEnemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) {
+    bool wasHit = (this->hp > hp); // Check if HP decreased
+    
     Enemy::UpdateFromServer(x, y, rotation, hp, alive, armor, stealth);
+    
+    // Play hit sound if the boss was damaged
+    if (wasHit && hitSound && !al_get_sample_instance_playing(hitSound.get())) {
+        al_play_sample_instance(hitSound.get());
+    }
 }
 
 void BossEnemy::Draw() const {

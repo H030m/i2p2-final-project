@@ -44,10 +44,10 @@ void SubmitScene::Initialize() {
     AddNewObject(new Engine::Label("Submit", "pirulen.ttf", 48, halfW + 250, halfH * 7 / 4, 0, 0, 0, 255, 0.5, 0.5));
 
     // score label
-    AddNewObject(new Engine::Label("SCORE: " + std::to_string(game.DYYscore/10) + "." + std::to_string(game.DYYscore%10), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
+    // AddNewObject(new Engine::Label("SCORE: " + std::to_string(game.DYYscore/10) + "." + std::to_string(game.DYYscore%10), "pirulen.ttf", 64, halfW, 170, 255, 215, 0, 255, 0.5, 0.5));
 
     // input your name
-    AddNewObject(new Engine::Label("High School road", "pirulen.ttf", 64, halfW, 350, 255, 255, 255, 255, 0.5, 0.5));
+    AddNewObject(new Engine::Label("High School road?", "pirulen.ttf", 64, halfW, 350, 255, 255, 255, 255, 0.5, 0.5));
     NameLabel = new Engine::Label("", "pirulen.ttf", 40, halfW, 450, 255, 255, 255, 255, 0.5, 0.5);
     AddNewObject(NameLabel);
 
@@ -58,6 +58,12 @@ void SubmitScene::Initialize() {
     bgmId = AudioHelper::PlayBGM("play.ogg");
 }
 void SubmitScene::Terminate() {
+    AudioHelper::StopBGM(bgmId);
+    if (deathBGMInstance) {
+        AudioHelper::StopSample(deathBGMInstance);
+        deathBGMInstance.reset();
+    }
+
     IScene::Terminate();
 }
 void SubmitScene::Update(float deltaTime) {

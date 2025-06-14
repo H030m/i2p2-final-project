@@ -62,7 +62,8 @@ std::string keycode_to_name(int code) {
     return "UNKNOWN";
 }
 
-const std::string host = "140.114.196.15";
+// const std::string host = "140.114.196.15";
+const std::string host = "127.0.0.1";
 Engine::GameEngine::GameEngine():sender(){
         //Check System
 	    #ifdef _WIN32

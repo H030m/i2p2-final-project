@@ -2,6 +2,9 @@
 #define BOSSENEMY_HPP
 
 #include "Enemy.hpp"
+#include "Engine/AudioHelper.hpp"
+#include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_audio.h>
 
 class BossEnemy : public Enemy {
 private:
@@ -15,6 +18,8 @@ private:
     std::vector<AttackAnimation> attackAnimations;
     float attackRadius = 1024.0f; // Max attack range
     float animationDuration = 0.5f; // Time for animation to complete
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> attackSound = nullptr;
+    std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> hitSound = nullptr;
 
 public:
     float damageInterval = 10.0f;

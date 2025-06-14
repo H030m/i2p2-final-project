@@ -39,10 +39,10 @@ void StageSelectScene::Initialize() {
     AddNewObject(new Engine::Label("BACK", "pirulen.ttf", 48, halfW, halfH / 2 + 550, 0, 0, 0, 255, 0.5, 0.5));
 
     //TODO Scoreboard
-    btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 300, halfH / 2 + 250, 600, 100);
-    btn->SetOnClickCallback(std::bind(&StageSelectScene::ScoreboardOnClick, this));
-    AddNewControlObject(btn);
-    AddNewObject(new Engine::Label("SCOREBOARD", "pirulen.ttf", 48, halfW, halfH / 2 + 300, 0, 0, 0, 255, 0.5, 0.5));
+    // btn = new Engine::ImageButton("stage-select/dirt.png", "stage-select/floor.png", halfW - 300, halfH / 2 + 250, 600, 100);
+    // btn->SetOnClickCallback(std::bind(&StageSelectScene::ScoreboardOnClick, this));
+    // AddNewControlObject(btn);
+    // AddNewObject(new Engine::Label("SCOREBOARD", "pirulen.ttf", 48, halfW, halfH / 2 + 300, 0, 0, 0, 255, 0.5, 0.5));
     
     // close "BGM" and "SFX"
     // Slider *sliderBGM, *sliderSFX;

@@ -181,10 +181,10 @@ void PlayScene::Initialize() {
     ReadEnemyWave();
     mapDistance = CalculateBFSDistance();
     ConstructUI();
-    imgTarget = new Engine::Image("play/target.png", 0, 0);
-    imgTarget->Visible = false;
+    // imgTarget = new Engine::Image("play/target.png", 0, 0);
+    // imgTarget->Visible = false;
     // preview = nullptr;
-    UIGroup->AddNewObject(imgTarget);
+    // UIGroup->AddNewObject(imgTarget);
     // Preload Lose Scene
     deathBGMInstance = Engine::Resources::GetInstance().GetSampleInstance("astronomia.ogg");
     Engine::Resources::GetInstance().GetBitmap("lose/benjamin-happy.png");
@@ -213,8 +213,10 @@ void PlayScene::Terminate() {
     player_dict.clear();
     */
     AudioHelper::StopBGM(bgmId);
-    AudioHelper::StopSample(deathBGMInstance);
-    deathBGMInstance = std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE>();
+    if (deathBGMInstance) {
+        AudioHelper::StopSample(deathBGMInstance);
+        deathBGMInstance.reset();
+    }
     // clear player data
     ClearPlayerData();
     
@@ -242,9 +244,9 @@ void PlayScene::Terminate() {
     camera.reset();
     
     // ???
-    if (imgTarget) {
-        imgTarget = nullptr;
-    }
+    // if (imgTarget) {
+    //     imgTarget = nullptr;
+    // }
     IScene::Terminate();
 }
 

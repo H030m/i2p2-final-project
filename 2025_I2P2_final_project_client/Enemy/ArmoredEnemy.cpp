@@ -5,6 +5,8 @@
 #include "Scene/PlayScene.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Connect/Client.hpp"
+#include "Engine/AudioHelper.hpp"
+#include <allegro5/allegro_audio.h>
 ArmoredEnemy::ArmoredEnemy(int id, float x, float y)
     : Enemy(id, "play/MWG.png", x, y, 10, 10, 10, 10) {
     armor = 50;
@@ -19,6 +21,9 @@ ArmoredEnemy::ArmoredEnemy(int id, float x, float y)
     NAND->Size.x = 64;
     NAND->Size.y = 41;
     NAND->Visible = true;
+
+    hitSound = AudioHelper::PlaySample("nand.wav", false, true);
+    al_set_sample_instance_playmode(hitSound.get(), ALLEGRO_PLAYMODE_ONCE);
 }
 void ArmoredEnemy::Draw() const {
     if (alive) {
@@ -77,6 +82,10 @@ void ArmoredEnemy::Hit(float damage) {
         {"HitVx",HitV.x},
         {"HitVy",HitV.y}
     });
+
+    if (armor > 0 && hitSound && !al_get_sample_instance_playing(hitSound.get())) {
+        al_play_sample_instance(hitSound.get());
+    }
 }
 void ArmoredEnemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) {
     this->armor = armor;
