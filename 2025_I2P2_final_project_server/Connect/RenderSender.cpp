@@ -53,27 +53,9 @@ void RenderSender::start() {
         std::cout << "Client accept thread started.\n";
         while (true) {
             SOCKET clientSock = accept(serverSock, nullptr, nullptr);
-
-#ifdef _WIN32
             u_long mode = 1;
             ioctlsocket(clientSock, FIONBIO, &mode);
             if (clientSock == INVALID_SOCKET) continue;
-#else
-            int flags = fcntl(clientSock, F_GETFL, 0);
-            if (flags == -1) {
-                perror("fcntl(F_GETFL)");
-                std::cerr << "fcntl(F_GETFL)...\n";
-                close(clientSock);
-                continue;
-            }
-
-            if (fcntl(clientSock, F_SETFL, flags | O_NONBLOCK) == -1) {
-                perror("fcntl(F_SETFL)");
-                std::cerr << "fcntl(F_SETFL)...\n";
-                close(clientSock);
-                continue;
-            }
-#endif
 
             auto context = std::make_shared<ClientContext>();
             context->socket = clientSock;
@@ -111,22 +93,24 @@ void RenderSender::start() {
         // 1. recv from all client
         {
             std::lock_guard<std::mutex> lock(clientMutex);
-            bool isPlay = false;
+            int isPlay = 0;
             for (auto& ctx : clients) {
                 if (ctx->active){
                     recvOnce(ctx);
                     if(ctx->lastInput.contains("Scene") && ctx->lastInput["Scene"] == "play" || ctx->lastInput["Scene"] == "loading"){
-                        isPlay = true;
+                        isPlay ++;
                     }
                     
                 }
                     
             }
-            if(!isPlay){
+            if(isPlay == 0){
                 storedMapState.reset();
                 enemies.clear();
                 Hitenemy.clear();
                 ExistMap = false;
+            }else{
+                Enemy::client_num = isPlay;
             }
              // 2. Hit
             frame.clear();
@@ -178,7 +162,8 @@ void RenderSender::start() {
             for (auto& ctx : clients) {
                 if (ctx->active) {
                     frame[std::to_string(ctx->id)] = ctx->lastInput;
-                    frame[std::to_string(ctx->id)]["player"][5] = ctx->money;
+                    if(ctx->lastInput.contains("player") &&ctx->lastInput["player"].size() >= 6)
+                    frame[std::to_string(ctx->id)]["player"][5] = ctx->money - ((int)ctx->lastInput["player"][5] + (int)ctx->lastInput["player"][6] - 1)*((int)ctx->lastInput["player"][5] + (int)ctx->lastInput["player"][6] -2)/2 *100;
                 }
             }
       
@@ -296,13 +281,8 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
         ctx->active = false;
         closesocket(ctx->socket);
     } else {
-#ifdef _Win32
         int err = WSAGetLastError();
         if (err != WSAEWOULDBLOCK) {
-#else
-        int err = errno;
-        if (err != EWOULDBLOCK) {
-#endif
             // Close only if it is a real error
             std::cerr << "recv error: " << err << "\n";
             ctx->active = false;
@@ -327,13 +307,8 @@ void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
         int body_sent = send(ctx->socket, compressed.data(), compressed.size(), 0);
 
         if (header_sent == SOCKET_ERROR || body_sent == SOCKET_ERROR) {
-#ifdef _Win32
             int err = WSAGetLastError();
             if (err != WSAEWOULDBLOCK) {
-#else
-            int err = errno;
-            if (err != EWOULDBLOCK) {
-#endif
                 std::cerr << "send error: " << err << "\n";
                 ctx->active = false;
                 closesocket(ctx->socket);
@@ -345,7 +320,7 @@ void RenderSender::sendOnce(std::shared_ptr<ClientContext> ctx) {
 }
 
 void RenderSender::cleanupInactiveClients() {
-    // std::lock_guard<std::mutex> lock(clientMutex);
+    std::lock_guard<std::mutex> lock(clientMutex);
     clients.erase(std::remove_if(clients.begin(), clients.end(),
         [](const std::shared_ptr<ClientContext>& ctx) {
             return !ctx->active;
@@ -401,4 +376,3 @@ void sendCompressedJson(SOCKET sock, const nlohmann::json& j) {
     send(sock, (char*)&len, sizeof(len), 0);
     send(sock, compressed.data(), compressed.size(), 0);
 }
-

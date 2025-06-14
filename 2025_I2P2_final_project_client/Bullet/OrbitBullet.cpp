@@ -4,7 +4,7 @@
 #include "Scene/PlayScene.hpp"
 #include "UI/Animation/DirtyEffect.hpp"
 #include "Enemy/Enemy.hpp"
-
+#include "UI/Component/Label.hpp"
 OrbitBullet::OrbitBullet(float initAngle, float radius, float angularSpeed, Player* centerPlayer, Weapon *parent)
     : Bullet("play/orbitbullet.png", 0, 0, Engine::Point(0, 0), Engine::Point(0, 0), 0, parent),
       angle(initAngle), radius(radius), angularSpeed(angularSpeed), centerPlayer(centerPlayer) {
@@ -41,6 +41,8 @@ void OrbitBullet::Update(float deltaTime) {
                     scene->player_dict[scene->my_id]->Heal(2);
                     game.getscore_cooldown = 0.1f;
                     game.DYYscore += 2;
+                    scene->scoreGainLabel->Text = "+0.2";
+                    scene->scoreGainDisplayTime = 0.2f;
                 }
                 enemy->Hit(damage); // Apply damage to enemy
                 OnExplode(enemy);   // Trigger hit effect

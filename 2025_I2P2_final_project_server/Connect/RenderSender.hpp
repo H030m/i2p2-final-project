@@ -9,9 +9,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <fcntl.h>              
-#include <sys/ioctl.h>
-#define SOCKET int
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 #define closesocket close
@@ -65,7 +62,7 @@ public:
     void sendOnce(std::shared_ptr<ClientContext> ctx);
     void cleanupInactiveClients();
     void AddToFrame(const nlohmann::json& object) {
-        // std::lock_guard<std::mutex> lock(clientMutex);
+        std::lock_guard<std::mutex> lock(clientMutex);
         frame[object["type"]].push_back(object);
     }
     friend void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender);

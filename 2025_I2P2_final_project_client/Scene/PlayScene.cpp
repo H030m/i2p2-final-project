@@ -404,7 +404,7 @@ void PlayScene::Update(float deltaTime) {
         }
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
         sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state,
-                                        player_dict[game.my_id]->status, player_dict[game.my_id]->health, player_dict[game.my_id]->gold};
+                                        player_dict[game.my_id]->status, player_dict[game.my_id]->health, player_dict[game.my_id]->Weapon_hold[0]->level, player_dict[game.my_id]->Weapon_hold[1]->level};
                                     
         for (auto n: player_dict[game.my_id]->Weapon_hold) {
             sender.output_json["weapon"].push_back(n->type);
@@ -521,6 +521,13 @@ void PlayScene::Update(float deltaTime) {
             it = enemy_dict.erase(it);
         } else {
             ++it;
+        }
+    }
+    scoreLabel->Text = "Score: " + std::to_string(game.DYYscore/ 10) +"." + std::to_string(game.DYYscore% 10);
+    if (scoreGainDisplayTime > 0) {
+        scoreGainDisplayTime -= deltaTime;
+        if (scoreGainDisplayTime <= 0) {
+            scoreGainLabel->Text = ""; // 時間到清除顯示
         }
     }
     // scene
@@ -735,7 +742,13 @@ void PlayScene::ReadEnemyWave() {
     fin.close();
 }
 void PlayScene::ConstructUI() {
-   
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    scoreLabel = new Engine::Label("Score: 0", "pirulen.ttf", 24, game.screenW-250, 10, 255, 255, 255, 255, 0, 0);
+    scoreLabel->fixed = true;
+    UIGroup->AddNewObject(scoreLabel);
+    scoreGainLabel = new Engine::Label("", "pirulen.ttf", 48, game.screenW-250, 40, 255, 255, 0, 255, 0, 0);
+    scoreGainLabel->fixed = true;
+    UIGroup->AddNewObject(scoreGainLabel);
 }
 
 void PlayScene::UIBtnClicked(int id) {

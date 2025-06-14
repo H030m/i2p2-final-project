@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include "Engine/Point.hpp"
 #include <iostream>
+int Enemy::client_num = 1;
 Enemy::Enemy(int type, int id, Engine::Point position, Engine::Point spawn, float radius, float speed, float hp, float damage, int money) 
     : type(type), id(id), position(position), spawn(spawn), collisionRadius(radius), speed(speed), hp(hp), damage(damage), money(money) {
 }

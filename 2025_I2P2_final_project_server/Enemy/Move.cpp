@@ -55,7 +55,7 @@ bool IsWalkable(const Engine::Point& gridPos, const nlohmann::json& map) {
         return false;
     }
 
-    std::cerr << "json: " << map[gridPos.y][gridPos.x] << '\n';
+    // std::cerr << "json: " << map[gridPos.y][gridPos.x] << '\n';
     
     // Check if tile has an obstacle
     if (map[gridPos.y][gridPos.x].contains("Obstacle")) {
@@ -284,19 +284,19 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
 void UpdateEnemyHit(Enemy& enemy, float deltaTime, RenderSender& sender, std::vector<HitInformation>& hit_information){
     for(auto it:hit_information) {
         if(enemy.alive&&enemy.hit_cooldown <= 0){
-            enemy.Hit(it.damage, sender);
+            enemy.Hit(it.damage/(1 + 0.3*(Enemy::client_num - 1)), sender);
             // std::cerr<<"hit "<<enemy.id<<' '<<" by "<<it.player_id<<'\n';
             if(!enemy.alive)
             for(auto client:sender.clients){
                 // std::cerr<<"enemy die "<<enemy.id<<' '<<client->id<<'\n';
-                if(client->id == it.player_id && client->lastInput.contains("player") && client->lastInput["player"].size() ==6){
+                if(client->id == it.player_id && client->lastInput.contains("player") && client->lastInput["player"].size() >= 6){
                     client->money += enemy.money;
                 }
             }
             enemy.hit_cooldown = 0.05f;
         
         }
-        std::cerr<<"hit!! "<<enemy.type<<' '<<enemy.hp<<"\n";
+        // std::cerr<<"hit!! "<<enemy.type<<' '<<enemy.hp<<"\n";
     }
     
 }

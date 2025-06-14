@@ -1,7 +1,7 @@
 #include <allegro5/base.h>
 #include <random>
 #include <string>
-
+#include "UI/Component/Label.hpp"
 #include "Enemy/Enemy.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Group.hpp"
@@ -95,6 +95,8 @@ void BounceBullet::Update(float deltaTime) {
                     scene->player_dict[scene->my_id]->Heal(2);
                     game.getscore_cooldown = 0.1f;
                     game.DYYscore += 2;
+                    scene->scoreGainLabel->Text = "+0.2";
+                    scene->scoreGainDisplayTime = 0.2f;
                 }
                 enemy->Hit(damage); // Apply damage to enemy
                 OnExplode(enemy);   // Trigger hit effect

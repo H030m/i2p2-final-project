@@ -66,7 +66,7 @@ void Weapon::Draw() const {
 }
 
 void Weapon::Upgrade() {
-    if (level == 5) {
+    if (level == 10) {
         return;
     }
     else level++;

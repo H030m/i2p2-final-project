@@ -5,8 +5,8 @@
 
 const float StealthEnemy::initStealth = false;
 const float StealthEnemy::initRadius = 32;
-const float StealthEnemy::initSpeed = 70;
-const float StealthEnemy::initHP = 100;
+const float StealthEnemy::initSpeed = 50;
+const float StealthEnemy::initHP = 700;
 const float StealthEnemy::initDamage = 10;
 const float StealthEnemy::initMoney = 10;
 StealthEnemy::StealthEnemy(int id, Engine::Point position, Engine::Point spawn)
@@ -17,8 +17,8 @@ StealthEnemy::StealthEnemy(int id, Engine::Point position, Engine::Point spawn)
 void StealthEnemy::Revive() {
     Enemy::Revive();
     stealth = initStealth;
-    hp = initHP * (1 + (float)revive_num/5.0);
-    speed = initSpeed * (1 + (float)revive_num/100.0);
+    hp = initHP * (1 + (float)revive_num);
+    speed = initSpeed * (1 + (float)revive_num/20.0);
     revive_cooldown *= (1 + 0.001);
 }
 
@@ -40,7 +40,7 @@ void StealthEnemy::Update(float deltaTime, RenderSender& sender) {
 
 void StealthEnemy::Hit(float damage, RenderSender& sender) {
     if (stealth) {
-        std::cerr << "StealthEnemy hit when stealth\n";
+        // std::cerr << "StealthEnemy hit when stealth\n";
         stealth = false;
         stealthCooldown =  1.5f;
     }
@@ -52,6 +52,6 @@ nlohmann::json StealthEnemy::Serialize() const {
     json["type"] = "-1"; // Armored enemy type
     json["enemyType"] = 2;
     json["stealth"] = stealth;
-    json["max_hp"] = initHP * (1 + (float)revive_num/5.0);
+    json["max_hp"] = initHP * (1 + (float)revive_num);
     return json;
 }

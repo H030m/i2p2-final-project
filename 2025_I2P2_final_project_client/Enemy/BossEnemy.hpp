@@ -16,15 +16,15 @@ private:
     };
 
     std::vector<AttackAnimation> attackAnimations;
-    float attackRadius = 1024.0f; // Max attack range
+    float attackRadius = 512.0f; // Max attack range
     float animationDuration = 0.5f; // Time for animation to complete
     std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> attackSound = nullptr;
     std::shared_ptr<ALLEGRO_SAMPLE_INSTANCE> hitSound = nullptr;
 
 public:
-    float damageInterval = 10.0f;
+    float damageInterval = 5.0f;
     float timeSinceLastDamage;
-    float damageAmount = 50.0f;
+    float damageAmount = 30.0f;
     
     BossEnemy(int id, float x, float y);
     void UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) override;

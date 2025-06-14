@@ -24,6 +24,7 @@ ArmoredEnemy::ArmoredEnemy(int id, float x, float y)
 
     hitSound = AudioHelper::PlaySample("nand.wav", false, true);
     al_set_sample_instance_playmode(hitSound.get(), ALLEGRO_PLAYMODE_ONCE);
+    al_set_sample_instance_gain(hitSound.get(), 1.5f);
 }
 void ArmoredEnemy::Draw() const {
     if (alive) {

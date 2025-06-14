@@ -6618,7 +6618,7 @@ class lexer : public lexer_base<BasicJsonType>
     */
     bool next_byte_in_range(std::initializer_list<char_int_type> ranges)
     {
-        JSON_ASSERT(ranges.size() == 2 || ranges.size() == 4 || ranges.size() == 6);
+        JSON_ASSERT(ranges.size() == 2 || ranges.size() == 4 || ranges.size() >= 6);
         add(current);
 
         for (auto range = ranges.begin(); range != ranges.end(); ++range)

@@ -7,6 +7,7 @@
 #include "Engine/IScene.hpp"
 #include "Engine/Point.hpp"
 #include "Engine/Sprite.hpp"
+#include "UI/Component/Label.hpp"
 #include "Scene/PlayScene.hpp"
 #include "Engine/LOG.hpp"
 #include "UI/Animation/DirtyEffect.hpp"
@@ -45,6 +46,8 @@ void Bullet::Update(float deltaTime) {
                     scene->player_dict[scene->my_id]->Heal(2);
                     game.getscore_cooldown = 0.1f;
                     game.DYYscore += 2;
+                    scene->scoreGainLabel->Text = "+0.2";
+                    scene->scoreGainDisplayTime = 0.2f;
                 }
                 enemy->Hit(damage); // Apply damage to enemy
                 OnExplode(enemy);   // Trigger hit effect

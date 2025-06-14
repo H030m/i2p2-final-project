@@ -11,6 +11,7 @@ private:
     static const float initHP;
     static const float initDamage;
     static const float initMoney;
+    
 public:
     float armor = 50;
     ArmoredEnemy(int id, Engine::Point position, Engine::Point spawn);

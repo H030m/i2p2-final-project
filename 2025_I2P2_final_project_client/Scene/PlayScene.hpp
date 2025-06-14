@@ -119,6 +119,9 @@ public:
     Engine::Label *upgrade_label_1, *upgrade_label_2;
     Camera* GetCamera() const { return camera.get(); }
     std::set<int>PlayerWeapon;
+    Engine::Label* scoreLabel = nullptr;
+    Engine::Label* scoreGainLabel = nullptr;
+    float scoreGainDisplayTime = 0.0f;  
 };
 
 #endif   // PLAYSCENE_HPP

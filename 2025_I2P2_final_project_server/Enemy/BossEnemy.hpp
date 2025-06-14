@@ -9,7 +9,7 @@ class BossEnemy : public Enemy {
 private:
     float damageInterval;  // Time between damage ticks (10 seconds)
     float timeSinceLastDamage;  // Timer for damage ticks
-    const float damageAmount = 50.0f;  // Damage dealt per tick
+    const float damageAmount = 40.0f;  // Damage dealt per tick
     const float healAmount = 2.0f;     // Healing when attacked
     
 public:
