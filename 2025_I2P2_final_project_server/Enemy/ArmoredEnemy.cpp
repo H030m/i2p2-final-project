@@ -15,7 +15,7 @@ ArmoredEnemy::ArmoredEnemy(int id, Engine::Point position, Engine::Point spawn)
 
 void ArmoredEnemy::Revive() {
     Enemy::Revive();
-    armor = initArmor* (1 + (float)revive_num/3.0);
+    armor = initArmor* (1);
     hp = initHP * (1 + (float)revive_num/3.0);
     speed = initSpeed * (1 + (float)revive_num/100.0);
     revive_cooldown *= (1 + 0.001);
@@ -45,6 +45,6 @@ nlohmann::json ArmoredEnemy::Serialize() const {
     json["type"] = "-1";
     json["enemyType"] = 1;
     json["armor"] = armor;
-    json["max_hp"] = initHP * (1 + (float)revive_num/3.0) + armor* (1 + (float)revive_num/3.0);
+    json["max_hp"] = initHP * (1 + (float)revive_num/3.0);
     return json;
 }

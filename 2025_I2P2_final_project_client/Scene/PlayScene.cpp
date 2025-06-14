@@ -244,6 +244,11 @@ void PlayScene::Terminate() {
 }
 
 void PlayScene::Update(float deltaTime) {
+    // if win
+    if (IsWin) {
+        Engine::GameEngine::GetInstance().ChangeScene("win");
+    }
+
     // std::cerr<<"UPdateScene\n";
     Engine::GameEngine &game = Engine::GameEngine::GetInstance();
     GameClient &sender = game.GetSender();
@@ -382,6 +387,9 @@ void PlayScene::Update(float deltaTime) {
     
     // update myself
     if (player_dict.find(game.my_id) != player_dict.end()) {
+        if (player_dict[game.my_id]->health <= 0) {
+            Engine::GameEngine::GetInstance().ChangeScene("lose");
+        }
         player_dict[game.my_id]->UpdateMyPlayer(deltaTime);
         sender.output_json["player"] = {player_dict[game.my_id]->Position.x, player_dict[game.my_id]->Position.y, state,
                                         player_dict[game.my_id]->status, player_dict[game.my_id]->health, player_dict[game.my_id]->gold};
@@ -454,7 +462,7 @@ void PlayScene::Update(float deltaTime) {
                 enemy->max_hp = enemyData["max_hp"];
                 // Type-specific updates
                 if((int)enemyData["enemyType"] == 2 && (bool)enemyData["alive"] == true){
-                    std::cerr<<"hello 2 "<<enemyData.dump()<<'\n';
+                    // std::cerr<<"hello 2 "<<enemyData.dump()<<'\n';
                 }
                 if (enemyData.contains("stealth")) {
                     // Handle stealth enemy specific visuals
@@ -475,8 +483,12 @@ void PlayScene::Update(float deltaTime) {
                     EnemyGroup->AddNewObject(newEnemy);
                     enemy_dict[enemyId] = newEnemy;
                     newEnemy->max_hp = enemyData["max_hp"];
-                } else { // Basic
-                    // TODO: Handle Basic enemy here
+                } else { // Boss
+                    BossEnemy* newEnemy = new BossEnemy(enemyId,0,0);
+                    std::cerr<<"hello "<<enemyId<<'\n';
+                    EnemyGroup->AddNewObject(newEnemy);
+                    enemy_dict[enemyId] = newEnemy;
+                    newEnemy->max_hp = enemyData["max_hp"];
                 }
             }
         }

@@ -2,7 +2,7 @@
 #include "Connect/RenderSender.hpp"
 
 BossEnemy::BossEnemy(int id, Engine::Point position, Engine::Point spawn)
-    : Enemy(3, id, position, spawn, 70, 0, 500, 0, 0) {  // Type 3 for boss, radius and hp is bigger, speed and damage = 0 so it doesn't hurt players, money is irrelevent
+    : Enemy(0, id, position, spawn, 70, 0, 1500, 0, 0) {  // Type 3 for boss, radius and hp is bigger, speed and damage = 0 so it doesn't hurt players, money is irrelevent
     damageInterval = 10.0f;
     timeSinceLastDamage = 0.0f;
 }
@@ -24,14 +24,14 @@ void BossEnemy::Update(float deltaTime, RenderSender& sender) {
         // Get all players from RenderSender
         std::lock_guard<std::mutex> lock(sender.clientMutex);
         for (auto& ctx : sender.clients) {
-            if (ctx->active && sender.frame.contains(std::to_string(ctx->id))) {
-                auto playerData = sender.frame[std::to_string(ctx->id)]["player"];
-                if (playerData.is_array() && playerData.size() >= 2) {
+            if (ctx->active && ctx->lastInput.contains("player")) {
+                auto playerData = ctx->lastInput["player"];
+                if (playerData.is_array() && playerData.size() == 6) {
                     Engine::Point playerPos((float)playerData[0], (float)playerData[1]);
                     float distance = (playerPos - position).Magnitude();
                     
                     if (distance <= collisionRadius + 20) { // TODO Player's collisionRadius should be passed here, I forgot whether playerData has collisionRadius
-                        sender.frame[std::to_string(ctx->id)]["damageTaken"] = damageAmount;
+                        ctx->lastInput["damageTaken"] = damageAmount;
                     }
                 }
             }
@@ -40,16 +40,6 @@ void BossEnemy::Update(float deltaTime, RenderSender& sender) {
 }
 
 void BossEnemy::Hit(float damage, RenderSender& sender) {
-    auto it = sender.Hitenemy.find(id);
-    // Find the attacking player from hit information
-    if (it != sender.Hitenemy.end()) {
-        for (auto& hitInfo : it->second) {
-            if (sender.frame.contains(std::to_string(hitInfo.player_id))) {
-                sender.frame[std::to_string(hitInfo.player_id)]["healReceived"] = healAmount;
-            }
-        }
-    }
-    
     // Don't call Enemy::Hit() for boss, switch scene after death instead
     hp -= damage;
     if (hp <= 0) {
@@ -61,7 +51,8 @@ void BossEnemy::Hit(float damage, RenderSender& sender) {
 nlohmann::json BossEnemy::Serialize() const {
     auto json = Enemy::Serialize();
     json["type"] = "-1";
-    json["enemyType"] = 3;
-    json["heal"]; // TODO client Enemy::UpdateFromServer has to recieve heal too (add a parameter?) and actually heal the player
+    json["enemyType"] = 0;
+    json["max_hp"] = 1500;
+    // json["heal"]; // TODO client Enemy::UpdateFromServer has to recieve heal too (add a parameter?) and actually heal the player
     return json;
 }

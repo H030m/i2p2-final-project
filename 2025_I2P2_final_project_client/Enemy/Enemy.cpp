@@ -65,14 +65,14 @@ void Enemy::Update(float deltaTime) {
     Sprite::Update(deltaTime);
 }
 void Enemy::Hit(float damage) {
-    /*
-    hp -= damage;
-    if (hp <= 0) {
-        getPlayScene()->EarnMoney(money);
-        getPlayScene()->EnemyGroup->RemoveObject(objectIterator);
-        AudioHelper::PlayAudio("explosion.wav");
-    }
-    */
+    Engine::GameEngine &game = Engine::GameEngine::GetInstance();
+    GameClient &sender = game.sender;
+    sender.output_json["Hit"].push_back({
+        {"id",id},
+        {"Damage",damage},
+        {"HitVx",HitV.x},
+        {"HitVy",HitV.y}
+    });
 }
 
 

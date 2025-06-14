@@ -32,7 +32,7 @@ void StealthEnemy::Update(float deltaTime, RenderSender& sender) {
     if (!stealth) {
         stealthCooldown -= deltaTime;
         if (stealthCooldown <= 0) {
-            // stealth = true;
+            stealth = true;
             stealthCooldown = revive_cooldown; // Re-stealth after 5 seconds
         }
     }

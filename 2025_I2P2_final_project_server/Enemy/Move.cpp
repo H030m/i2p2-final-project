@@ -146,7 +146,9 @@ std::vector<Engine::Point> FindPath(const Engine::Point& start, const Engine::Po
 
 
 void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
+    // std::cerr<<enemy.id<<'\n';
     enemy.Update(deltaTime, sender);
+    
     enemy.hit_cooldown -= deltaTime;
     if(enemy.hit_cooldown < 0) enemy.hit_cooldown = 0;
     // if (!enemy.alive) return;
@@ -214,6 +216,7 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
         // No path found - don't move through obstacles
         enemy.velocity = Engine::Point(0, 0);
     }
+   
     // Boundary check
     int mapWidth = sender.storedMapState.value()["map"]["MapWidth"];
     int mapHeight = sender.storedMapState.value()["map"]["MapHeight"];
@@ -291,5 +294,7 @@ void UpdateEnemyHit(Enemy& enemy, float deltaTime, RenderSender& sender, std::ve
             enemy.hit_cooldown = 0.05f;
         
         }
+        std::cerr<<"hit!! "<<enemy.type<<' '<<enemy.hp<<"\n";
     }
+    
 }

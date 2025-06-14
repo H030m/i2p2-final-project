@@ -3,6 +3,7 @@
 #include "Enemy/Enemy.hpp"
 #include "Enemy/ArmoredEnemy.hpp"
 #include "Enemy/StealthEnemy.hpp"
+#include "Enemy/BossEnemy.hpp"
 #include "Enemy/Move.hpp"
 #include "Engine/Point.hpp"
 #include <iostream>
@@ -109,7 +110,7 @@ void RenderSender::start() {
                 Hitenemy.clear();
                 ExistMap = false;
             }
-             // 2. collect all data
+             // 2. Hit
             frame.clear();
             for (auto& ctx : clients) {
                 if (ctx->active) {
@@ -147,11 +148,12 @@ void RenderSender::start() {
                             enemyData = enemy->Serialize();
                             break;
                     }
+                    
                     // std::cerr<<"hello enemy "<<enemyData.dump()<<'\n';
                     // Add to frame
                     AddToFrame(enemyData);
                     
-                
+               
             }
              Hitenemy.clear();
             // 2. collect all data
@@ -161,7 +163,7 @@ void RenderSender::start() {
                     frame[std::to_string(ctx->id)]["player"][5] = ctx->money;
                 }
             }
-            
+      
             // 3. send to all clients
             for (auto& ctx : clients) {
                 if (ctx->active){
@@ -248,6 +250,11 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
                                 enemy = new StealthEnemy(curid, curpos, curpos);
                                 enemies.push_back(enemy);
                                 std::cerr << "enemy id: " << enemy->id << ' ' << enemy->position.x << ' ' << enemy->position.y << '\n';
+                                break;
+                            case 0:
+                                enemy = new BossEnemy(curid, curpos, curpos);
+                                enemies.push_back(enemy);
+                                std::cerr << "enemy id: " << 0 << ' ' << enemy->position.x << ' ' << enemy->position.y << '\n';
                                 break;
                             default:
                                 // enemy = new Enemy();

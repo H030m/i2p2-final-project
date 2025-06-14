@@ -6,9 +6,11 @@
 #include "Engine/LOG.hpp"
 
 StealthEnemy::StealthEnemy(int id, float x, float y)
-    : Enemy(id, "play/enemy-2.png", x, y, 10, 10, 10, 10) {
+    : Enemy(id, "play/JBS.png", x, y, 10, 10, 10, 10) {
     stealth = true;
     type = 2;
+    Size.x = 64;
+    Size.y = 64;
 }
 
 void StealthEnemy::Hit(float damage) {
