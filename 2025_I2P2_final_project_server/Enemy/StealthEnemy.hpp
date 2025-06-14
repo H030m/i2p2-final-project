@@ -1,6 +1,7 @@
 #ifndef STEALTHENEMY_HPP
 #define STEALTHENEMY_HPP
 #include "Enemy.hpp"
+// #include "Connect/RenderSender.hpp"
 #include <nlohmann/json.hpp>
 
 class StealthEnemy : public Enemy {
@@ -15,9 +16,9 @@ private:
     static const float initMoney;
 public:
     StealthEnemy(int id, Engine::Point position, Engine::Point spawn);
-    void Update(float deltaTime) override;
+    void Update(float deltaTime, RenderSender& sender) override;
     void Revive() override;
-    void Hit(float damage) override;
+    void Hit(float damage, RenderSender& sender) override;
     nlohmann::json Serialize() const override;
 };
 #endif

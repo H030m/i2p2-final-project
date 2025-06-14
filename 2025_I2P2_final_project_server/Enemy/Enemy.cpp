@@ -15,7 +15,7 @@ void Enemy::Revive() {
 }
 
 
-void Enemy::Update(float deltaTime) {
+void Enemy::Update(float deltaTime, RenderSender& sender) {
     // std::cerr<<"alive?" <<id<<' '<<alive<<'\n';
     
     if (!alive) {
@@ -28,7 +28,7 @@ void Enemy::Update(float deltaTime) {
     position.y += velocity.y * deltaTime;
 }
 
-void Enemy::Hit(float damage) {
+void Enemy::Hit(float damage, RenderSender& sender) {
     hp -= damage;
     // std::cerr<<"id hp "<<id<<' '<<hp<<'\n';
     if (hp <= 0) {

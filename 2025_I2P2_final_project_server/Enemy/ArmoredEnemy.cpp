@@ -21,19 +21,19 @@ void ArmoredEnemy::Revive() {
     revive_cooldown *= (1 + 0.001);
 }
 
-void ArmoredEnemy::Update(float deltaTime) {
+void ArmoredEnemy::Update(float deltaTime, RenderSender& sender) {
     if (!alive && cooldown <= 0) {
         ArmoredEnemy::Revive();
     }
-    Enemy::Update(deltaTime);
+    Enemy::Update(deltaTime, sender);
 }
 
-void ArmoredEnemy::Hit(float damage) {
+void ArmoredEnemy::Hit(float damage, RenderSender& sender) {
     // Apply damage reduction from armor
     float remainingArmor = armor - damage;
     std::cerr<<"armor! "<<armor<<'\n';
     if (remainingArmor < 0) {
-        Enemy::Hit(-remainingArmor);
+        Enemy::Hit(-remainingArmor, sender);
         armor = 0;
     } else {
         armor = remainingArmor;

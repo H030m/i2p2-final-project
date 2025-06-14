@@ -22,12 +22,12 @@ void StealthEnemy::Revive() {
     revive_cooldown *= (1 + 0.001);
 }
 
-void StealthEnemy::Update(float deltaTime) {
+void StealthEnemy::Update(float deltaTime, RenderSender& sender) {
     if (!alive && cooldown <= 0) {
         StealthEnemy::Revive();
     }
     
-    Enemy::Update(deltaTime);
+    Enemy::Update(deltaTime, sender);
     
     if (!stealth) {
         stealthCooldown -= deltaTime;
@@ -38,13 +38,13 @@ void StealthEnemy::Update(float deltaTime) {
     }
 }
 
-void StealthEnemy::Hit(float damage) {
+void StealthEnemy::Hit(float damage, RenderSender& sender) {
     if (stealth) {
         std::cerr << "StealthEnemy hit when stealth\n";
         stealth = false;
         stealthCooldown =  1.5f;
     }
-    Enemy::Hit(damage);
+    Enemy::Hit(damage, sender);
 }
 
 nlohmann::json StealthEnemy::Serialize() const {
@@ -52,6 +52,6 @@ nlohmann::json StealthEnemy::Serialize() const {
     json["type"] = "-1"; // Armored enemy type
     json["enemyType"] = 2;
     json["stealth"] = stealth;
-    json["max_hp"] = initHP * (1 + (float)revive_num/3.0);
+    json["max_hp"] = initHP * (1 + (float)revive_num/5.0);
     return json;
 }

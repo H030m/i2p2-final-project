@@ -146,7 +146,7 @@ std::vector<Engine::Point> FindPath(const Engine::Point& start, const Engine::Po
 
 
 void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
-    enemy.Update(deltaTime);
+    enemy.Update(deltaTime, sender);
     enemy.hit_cooldown -= deltaTime;
     if(enemy.hit_cooldown < 0) enemy.hit_cooldown = 0;
     // if (!enemy.alive) return;
@@ -279,7 +279,7 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
 void UpdateEnemyHit(Enemy& enemy, float deltaTime, RenderSender& sender, std::vector<HitInformation>& hit_information){
     for(auto it:hit_information) {
         if(enemy.alive&&enemy.hit_cooldown <= 0){
-            enemy.Hit(it.damage);
+            enemy.Hit(it.damage, sender);
             // std::cerr<<"hit "<<enemy.id<<' '<<" by "<<it.player_id<<'\n';
             if(!enemy.alive)
             for(auto client:sender.clients){

@@ -29,6 +29,8 @@ add_executable(2025_I2P2_TowerDefense
     Enemy/ArmoredEnemy.hpp
     Enemy/StealthEnemy.cpp
     Enemy/StealthEnemy.hpp
+    Enemy/BossEnemy.hpp
+    Enemy/BossEnemy.cpp
 
     Engine/Point.hpp
     Engine/Point.cpp

@@ -1,7 +1,7 @@
 #ifndef ARMOREDENEMY_HPP
 #define ARMOREDENEMY_HPP
 #include "Enemy.hpp"
-
+#include "Connect/RenderSender.hpp"
 class ArmoredEnemy : public Enemy {
 private:
 
@@ -14,9 +14,9 @@ private:
 public:
     float armor = 50;
     ArmoredEnemy(int id, Engine::Point position, Engine::Point spawn);
-    void Hit(float damage) override;
+    void Hit(float damage, RenderSender& sender) override;
     nlohmann::json Serialize() const override;
     void Revive() override;
-    void Update(float deltaTime) override;
+    void Update(float deltaTime, RenderSender& sender) override;
 };
 #endif

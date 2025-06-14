@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 #include "Engine/Point.hpp"
+// #include "Connect/RenderSender.hpp"
 #include <nlohmann/json.hpp>
+class RenderSender;
 class Enemy {
 public:
 
@@ -31,8 +33,8 @@ public:
     virtual ~Enemy() = default;
     
     // Core functionality
-    virtual void Update(float deltaTime);
-    virtual void Hit(float damage);
+    virtual void Update(float deltaTime, RenderSender& sender);
+    virtual void Hit(float damage, RenderSender& sender);
     virtual void Revive();
     // For network synchronization
     virtual nlohmann::json Serialize() const;
