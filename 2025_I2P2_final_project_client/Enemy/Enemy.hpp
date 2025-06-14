@@ -26,6 +26,7 @@ public:
     float speed;
     bool poison = 0;
     float poison_cooldown = 0;
+    float expo_cooldown = 0;
     float reachEndTime;
     int damage = 10;
     float max_hp;

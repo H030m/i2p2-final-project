@@ -34,7 +34,7 @@ void BossEnemy::Update(float deltaTime) {
     timeSinceLastDamage += deltaTime;
     
     // Deal damage to player when in range
-    if (timeSinceLastDamage >= damageInterval) {
+    if (timeSinceLastDamage >= 3.0f) {
         timeSinceLastDamage = 0.0f;
         
         PlayScene* scene = getPlayScene();
@@ -112,7 +112,45 @@ void BossEnemy::Draw() const {
                 );
             }
         }
-        
+        // health bar settings
+    const float barWidth = 50.0f;
+    const float barHeight = 6.0f;
+    const float barOffsetY = -60.0f;  
+    const int maxHealth = max_hp;
+    
+    // health bar position
+    float barX = Position.x - barWidth / 2;
+    float barY = Position.y + barOffsetY;
+    
+    // health bar percent
+    float healthPercent = static_cast<float>(hp) / static_cast<float>(maxHealth);
+    healthPercent = std::max(0.0f, std::min(1.0f, healthPercent));
+    
+    // health bar background (black)
+    al_draw_filled_rectangle(
+        barX - 1, barY - 1,
+        barX + barWidth + 1, barY + barHeight + 1,
+        al_map_rgb(40, 40, 40)
+    );
+    
+    // change health bar color base on percent
+    ALLEGRO_COLOR healthColor;
+    if (healthPercent > 0.6f) {
+        healthColor = al_map_rgb(0, 255, 0);      // green
+    } else if (healthPercent > 0.3f) {
+        healthColor = al_map_rgb(255, 255, 0);    // yellow
+    } else {
+        healthColor = al_map_rgb(255, 0, 0);      // red
+    }
+    
+    // draw health bar
+    if (healthPercent > 0) {
+        al_draw_filled_rectangle(
+            barX + 1, barY + 1,
+            barX + (barWidth - 2) * healthPercent, barY + barHeight - 1,
+            healthColor
+        );
+    }
         if (PlayScene::DebugMode) {
             // Draw attack radius
             al_draw_circle(Position.x, Position.y, attackRadius, al_map_rgba(255, 0, 0, 50), 1);

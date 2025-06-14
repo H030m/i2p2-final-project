@@ -4,7 +4,7 @@
 #include <random>
 #include <string>
 #include <vector>
-
+#include <iostream>
 #include "Bullet/Bullet.hpp"
 #include "Enemy.hpp"
 #include "Engine/AudioHelper.hpp"
@@ -21,6 +21,7 @@ PlayScene *Enemy::getPlayScene() {
     return dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetActiveScene());
 }
 void Enemy::OnExplode() {
+    std::cerr<<"hello explode "<<'\n';
     getPlayScene()->EffectGroup->AddNewObject(new ExplosionEffect(Position.x, Position.y));
     std::random_device dev;
     std::mt19937 rng(dev());
@@ -41,10 +42,15 @@ void Enemy::UpdateFromServer(float x, float y, float rotation, float hp, bool al
     Position.y = y;
     Rotation = rotation;
     this->hp = hp;
-
+    if(!alive && expo_cooldown == 0){
+        OnExplode();
+        expo_cooldown = 100;
+        std::cerr<<"shitt\n";
+    }
+    if(alive)expo_cooldown = 0;
     // std::cerr<<"hello alive? "<<this->alive<<' '<<alive<<'\n';
     if (!alive && this->alive) { // Just died
-        OnExplode();
+        
         // getPlayScene()->EarnMoney(money);
         // getPlayScene()->EnemyGroup->RemoveObject(objectIterator);
         this->Visible = false;
@@ -83,7 +89,7 @@ void Enemy::Draw() const {
         // Draw collision radius.
         al_draw_circle(Position.x, Position.y, 150, al_map_rgb(255, 0, 0), 2);
     }
-    
+    if(type == 0)return;
     // health bar settings
     const float barWidth = 50.0f;
     const float barHeight = 6.0f;

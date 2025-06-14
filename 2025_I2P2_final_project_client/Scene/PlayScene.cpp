@@ -441,7 +441,7 @@ void PlayScene::Update(float deltaTime) {
         Engine::ImageButton *btn = player_UI_Button[my_id][i];
         Player *player = player_dict[my_id];
         btn->Visible = false;
-        if (player->gold >= player->Weapon_hold[i]->level * 100 && player->Weapon_hold[i]->level != 5) {
+        if (player->gold >= player->Weapon_hold[i]->level * 100) {
             btn->Visible = true;
         }
     }
@@ -755,13 +755,13 @@ void PlayScene::UIBtnClicked(int id) {
     Player* curplayer = player_dict[my_id];
     std::vector<Engine::Label*> temp = {upgrade_label_1, upgrade_label_2};
     if (id == 1 || id == 2) {
-        if (curplayer->gold >= curplayer->Weapon_hold[id-1]->level * 100 && curplayer->Weapon_hold[id-1]->level < 5) {
+        if (curplayer->gold >= curplayer->Weapon_hold[id-1]->level * 100 ) {
             curplayer->gold -= curplayer->Weapon_hold[id-1]->level * 100;
             curplayer->Weapon_hold[id-1]->Upgrade();
 
             if (curplayer->Weapon_hold[id-1]->level == 5) {
-                temp[id-1]->Text = weapon_dict[curplayer->Weapon_hold[id-1]->type] 
-                                 + " (" + "MAX" +")";
+                // temp[id-1]->Text = weapon_dict[curplayer->Weapon_hold[id-1]->type] 
+                //                  + " (" + "MAX" +")";
             }
             else {
                 temp[id-1]->Text = weapon_dict[curplayer->Weapon_hold[id-1]->type] 

@@ -3,7 +3,7 @@
 #include <iostream>
 const float ArmoredEnemy::initArmor = 50;
 const float ArmoredEnemy::initRadius = 32;
-const float ArmoredEnemy::initSpeed = 90;
+const float ArmoredEnemy::initSpeed = 70;
 const float ArmoredEnemy::initHP = 300;
 const float ArmoredEnemy::initDamage = 10;
 const float ArmoredEnemy::initMoney = 10;
@@ -16,7 +16,7 @@ ArmoredEnemy::ArmoredEnemy(int id, Engine::Point position, Engine::Point spawn)
 void ArmoredEnemy::Revive() {
     Enemy::Revive();
     armor = initArmor* (1);
-    hp = initHP * (1 + (float)revive_num) ;
+    hp = initHP * (1 + (float)revive_num/3) ;
     speed = initSpeed * (1 + (float)revive_num/20.0)   ;
     revive_cooldown *= (1 + 0.001);
 }
@@ -47,6 +47,6 @@ nlohmann::json ArmoredEnemy::Serialize() const {
     json["type"] = "-1";
     json["enemyType"] = 1;
     json["armor"] = armor;
-    json["max_hp"] = initHP * (1 + (float)revive_num);
+    json["max_hp"] = initHP * (1 + (float)revive_num/3);
     return json;
 }

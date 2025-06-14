@@ -89,7 +89,7 @@ void SettingWHScene::GenerateMapAndEnter() {
     std::ofstream out("Resource/map5.json");
     if (out.is_open()) {
         out << map_json.dump(4); 
-        std::cerr<<map_json.dump()<<'\n';
+        // std::cerr<<map_json.dump()<<'\n';
         out.close();
         Engine::GameEngine::GetInstance().ChangeScene("DrawMapScene");
     } else {

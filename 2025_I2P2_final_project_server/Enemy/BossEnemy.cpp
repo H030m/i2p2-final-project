@@ -8,6 +8,7 @@ BossEnemy::BossEnemy(int id, Engine::Point position, Engine::Point spawn)
 }
 
 void BossEnemy::Update(float deltaTime, RenderSender& sender) {
+    speed = 0;
     if (!alive) {
         return;
     }
