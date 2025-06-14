@@ -10,12 +10,14 @@ Enemy::Enemy(int type, int id, Engine::Point position, Engine::Point spawn, floa
 void Enemy::Revive() {
     alive = true;
     position = spawn;
+    revive_num++;
+
 }
 
 
 void Enemy::Update(float deltaTime) {
-    std::cerr<<"alive?" <<id<<' '<<alive<<'\n';
-    if(!alive)std::cerr<<"cooldown alive"<< cooldown<<'\n';
+    // std::cerr<<"alive?" <<id<<' '<<alive<<'\n';
+    
     if (!alive) {
         if (cooldown <= 0) Enemy::Revive();
         else cooldown -= deltaTime;
@@ -32,7 +34,7 @@ void Enemy::Hit(float damage) {
     if (hp <= 0) {
         alive = false;
         std::cerr<<"die!"<< ' '<<alive<<'\n';
-        cooldown = 10.0f;
+        cooldown = revive_cooldown;
     }
 }
 

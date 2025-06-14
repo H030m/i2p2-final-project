@@ -15,10 +15,10 @@ PlayScene *Bullet::getPlayScene() {
     return dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetActiveScene());
 }
 void Bullet::OnExplode(Enemy *enemy) {
-    // std::random_device dev;
-    // std::mt19937 rng(dev());
-    // std::uniform_int_distribution<std::mt19937::result_type> dist(2, 5);
-    // getPlayScene()->GroundEffectGroup->AddNewObject(new DirtyEffect("play/dirty-1.png", dist(rng), enemy->Position.x, enemy->Position.y));
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(2, 5);
+    getPlayScene()->GroundEffectGroup->AddNewObject(new DirtyEffect("play/dirty-1.png", dist(rng), enemy->Position.x, enemy->Position.y));
 }
 
 Bullet::Bullet(std::string img, float speed, float damage, Engine::Point position, Engine::Point forwardDirection, float rotation, Weapon *parent)

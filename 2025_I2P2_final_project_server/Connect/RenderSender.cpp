@@ -232,7 +232,7 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
                             case 1:
                                 enemy = new ArmoredEnemy(curid, curpos, curpos);
                                 enemies.push_back(enemy);
-                                std::cerr << "enemy id: " << enemy->id << ' ' << enemy->position.x << ' ' << enemy->position.y << '\n';
+                                std::cerr << "enemy id: " << enemy->id << ' ' << enemy->position.x << ' ' << enemy->position.y <<' '<<enemy->speed<< '\n';
                                 break;
                             case 2:
                                 enemy = new StealthEnemy(curid, curpos, curpos);

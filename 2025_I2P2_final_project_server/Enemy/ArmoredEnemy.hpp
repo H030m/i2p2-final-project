@@ -5,12 +5,12 @@
 class ArmoredEnemy : public Enemy {
 private:
 
-    const float initArmor = 50;
-    const float initRadius = 10;
-    const float initSpeed = 10;
-    const float initHP = 10;
-    const float initDamage = 10;
-    const float initMoney = 10;
+    static const float initArmor;
+    static const float initRadius;
+    static const float initSpeed;
+    static const float initHP;
+    static const float initDamage;
+    static const float initMoney;
 public:
     float armor = 50;
     ArmoredEnemy(int id, Engine::Point position, Engine::Point spawn);

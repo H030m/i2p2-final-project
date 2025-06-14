@@ -147,6 +147,8 @@ std::vector<Engine::Point> FindPath(const Engine::Point& start, const Engine::Po
 
 void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
     enemy.Update(deltaTime);
+    enemy.hit_cooldown -= deltaTime;
+    if(enemy.hit_cooldown < 0) enemy.hit_cooldown = 0;
     // if (!enemy.alive) return;
     
     // Find the closest player
@@ -157,8 +159,9 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
     {
         std::lock_guard<std::mutex> lock(sender.clientMutex);
         for (const auto& ctx : sender.clients) {
-            if (ctx->active && sender.frame.contains(std::to_string(ctx->id))) {
-                auto playerData = sender.frame[std::to_string(ctx->id)]["player"];
+            if (ctx->active) {
+                // std::cerr<<"player! "<<ctx->id<<'\n';
+                auto playerData = ctx->lastInput["player"];
                 if(playerData.size() < 6)continue;
                 if (playerData.is_array() && playerData.size() >= 2) {
                     Engine::Point playerPos((float)playerData[0], (float)playerData[1]);
@@ -190,7 +193,7 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
         // Follow the path
         Engine::Point nextWaypoint = enemy.path.front();
         Engine::Point direction = nextWaypoint - enemy.position;
-        
+        // std::cerr<<"next "<<nextWaypoint.x<<' '<<nextWaypoint.y<<'\n';
         if (direction.Magnitude() < 5.0f) { // Reached waypoint
             enemy.path.erase(enemy.path.begin());
             if (!enemy.path.empty()) {
@@ -203,6 +206,7 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
         }
 
         // Update velocity and position
+        // std::cerr<<"speed "<< enemy.speed<<'\n';
         enemy.velocity = direction * enemy.speed;
         enemy.position.x += (enemy.velocity.x * deltaTime);
         enemy.position.y += (enemy.velocity.y * deltaTime);
@@ -215,10 +219,9 @@ void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
     int mapHeight = sender.storedMapState.value()["map"]["MapHeight"];
     enemy.position.x = std::max(0.0f, std::min(enemy.position.x, static_cast<float>(mapWidth) * blockSize));
     enemy.position.y = std::max(0.0f, std::min(enemy.position.y, static_cast<float>(mapHeight) * blockSize));
-
-    // hit cooldown
-    enemy.hit_cooldown -= deltaTime;
-    if(enemy.hit_cooldown < 0) enemy.hit_cooldown = 0;
+    // std::cout<<"enemyid "<<enemy.id<<" nextPosition "<<enemy.position.x<<' '<<enemy.position.y<<' '<<"hp: "<<enemy.hp<<' '<<enemy.alive<<'\n';
+    // hit cooldown 
+    
 }
 // void UpdateEnemyInstance(Enemy& enemy, float deltaTime, RenderSender& sender) {
 //     enemy.Update(deltaTime);

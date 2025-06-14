@@ -18,11 +18,12 @@ public:
     bool alive = true;
     float cooldown = 0;
     float hit_cooldown = 0;
+    float revive_cooldown = 1;
     Engine::Point position;
     Engine::Point spawn;
     Engine::Point velocity;
     float rotation = 0;
-    
+    int revive_num = 0;
     std::vector<Engine::Point> path;
     Engine::Point lastTarget;
 

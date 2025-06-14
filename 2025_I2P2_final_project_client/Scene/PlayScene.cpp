@@ -93,7 +93,7 @@ void PlayScene::Initialize() {
     std::cerr<<"Initialize play Scene!\n";
     ReadMap();
     
-    std::cerr<<"bug12\n";
+    
     {
         Engine::GameEngine &game = Engine::GameEngine::GetInstance();
         Player* newPlayer = new Player(500, 500, game.my_id,MapWidth, MapHeight);
@@ -158,7 +158,7 @@ void PlayScene::Initialize() {
             newPlayer->Weapon_hold.push_back(k);
             newPlayer->Weapon_owned.push_back(k);
         }
-        std::cerr<<"bug13\n";
+        
 
         // upgrade label
         upgrade_label_1 = new Engine::Label("", "pirulen.ttf", 15, 30, game.screenH - 130, 0, 0, 0, 255, 0, 0);
@@ -431,9 +431,9 @@ void PlayScene::Update(float deltaTime) {
         std::cerr<<"input enemy "<<enemies.dump()<<'\n';
         for (auto& enemyData : enemies) {
             std::cerr<<"update enemy "<<enemyData["id"]<<' '<<enemyData["enemyType"]<<'\n';
-            std::cerr<<"bug9\n";
-            int enemyId = enemyData["id"];std::cerr<<"bug10\n";
-            activeEnemyIds.insert(enemyId);std::cerr<<"bug11\n";
+            
+            int enemyId = enemyData["id"];
+            activeEnemyIds.insert(enemyId);
             
             // Update existing or create new enemy
             if (enemy_dict.count(enemyId)) {
@@ -455,20 +455,17 @@ void PlayScene::Update(float deltaTime) {
                 }
             } else {
                 // Create new enemy based on type
-                std::cerr<<"bug19\n";
+                
                 int type = enemyData["enemyType"].get<int>();
-                std::cerr<<"bug20\n";
                 if (type == 1) { // Armored
-                    std::cerr<<"bug1\n";
-                    ArmoredEnemy* newEnemy = new ArmoredEnemy(enemyId, 0, 0);std::cerr<<"bug2\n";
-                    EnemyGroup->AddNewObject(newEnemy);std::cerr<<"bug3\n";
-                    enemy_dict[enemyId] = newEnemy;std::cerr<<"bug4\n";
+                    ArmoredEnemy* newEnemy = new ArmoredEnemy(enemyId, 0, 0);
+                    EnemyGroup->AddNewObject(newEnemy);
+                    enemy_dict[enemyId] = newEnemy;
                 } else if (type == 2) { // Stealth
                     // TODO: Handle Stealth enemy here
-                    std::cerr<<"bug5\n";
-                    StealthEnemy* newEnemy = new StealthEnemy(enemyId, 0, 0);std::cerr<<"bug6\n";
-                    EnemyGroup->AddNewObject(newEnemy);std::cerr<<"bug7\n";
-                    enemy_dict[enemyId] = newEnemy;std::cerr<<"bug8\n";
+                    StealthEnemy* newEnemy = new StealthEnemy(enemyId, 0, 0);
+                    EnemyGroup->AddNewObject(newEnemy);
+                    enemy_dict[enemyId] = newEnemy;
                 } else { // Basic
                     // TODO: Handle Basic enemy here
                 }

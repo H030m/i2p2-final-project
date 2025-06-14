@@ -7,12 +7,12 @@ class StealthEnemy : public Enemy {
 private:
     bool stealth;
     float stealthCooldown = 0;
-    const float initStealth = true;
-    const float initRadius = 10;
-    const float initSpeed = 10;
-    const float initHP = 10;
-    const float initDamage = 10;
-    const float initMoney = 10;
+    static const float initStealth;
+    static const float initRadius;
+    static const float initSpeed;
+    static const float initHP;
+    static const float initDamage;
+    static const float initMoney;
 public:
     StealthEnemy(int id, Engine::Point position, Engine::Point spawn);
     void Update(float deltaTime) override;

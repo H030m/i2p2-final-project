@@ -55,6 +55,9 @@ void Enemy::UpdateFromServer(float x, float y, float rotation, float hp, bool al
     }
 
     this->alive = alive;
+    if (stealth == false && alive) {
+        this->Visible = true;
+    }
 }
 
 void Enemy::Update(float deltaTime) {

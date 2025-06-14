@@ -44,7 +44,7 @@ void StealthEnemy::Update(float deltaTime) {
 }
 
 void StealthEnemy::Draw() const {
-    if (!stealth) {
+    if (!stealth && alive) {
         Enemy::Draw(); // Only draw if not stealthed
     }
     if (PlayScene::DebugMode) {

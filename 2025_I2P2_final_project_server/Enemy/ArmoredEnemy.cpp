@@ -1,15 +1,24 @@
 #include "ArmoredEnemy.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
+const float ArmoredEnemy::initArmor = 50;
+const float ArmoredEnemy::initRadius = 32;
+const float ArmoredEnemy::initSpeed = 50;
+const float ArmoredEnemy::initHP = 100;
+const float ArmoredEnemy::initDamage = 10;
+const float ArmoredEnemy::initMoney = 10;
 ArmoredEnemy::ArmoredEnemy(int id, Engine::Point position, Engine::Point spawn)
     : Enemy(1, id, position, spawn, initRadius, initSpeed, initHP, initDamage, initMoney) {
     armor = initArmor;
 }
 
+
 void ArmoredEnemy::Revive() {
-    armor = initArmor;
-    hp = initHP;
     Enemy::Revive();
+    armor = initArmor* (1 + (float)revive_num/3.0);
+    hp = initHP * (1 + (float)revive_num/3.0);
+    speed = initSpeed * (1 + (float)revive_num/100.0);
+    revive_cooldown *= (1 + 0.001);
 }
 
 void ArmoredEnemy::Update(float deltaTime) {

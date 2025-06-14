@@ -3,15 +3,23 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 
+const float StealthEnemy::initStealth = true;
+const float StealthEnemy::initRadius = 32;
+const float StealthEnemy::initSpeed = 70;
+const float StealthEnemy::initHP = 50;
+const float StealthEnemy::initDamage = 10;
+const float StealthEnemy::initMoney = 10;
 StealthEnemy::StealthEnemy(int id, Engine::Point position, Engine::Point spawn)
-    : Enemy(2, id, position, spawn, 10, 10, 10, 10, 10) {
+    : Enemy(2, id, position, spawn, initRadius, initSpeed, initHP, initDamage, initMoney) {
     stealth = true;
 }
 
 void StealthEnemy::Revive() {
-    stealth = initStealth;
-    hp = initHP;
     Enemy::Revive();
+    stealth = initStealth;
+    hp = initHP * (1 + (float)revive_num/5.0);
+    speed = initSpeed * (1 + (float)revive_num/100.0);
+    revive_cooldown *= (1 + 0.001);
 }
 
 void StealthEnemy::Update(float deltaTime) {
@@ -25,7 +33,7 @@ void StealthEnemy::Update(float deltaTime) {
         stealthCooldown -= deltaTime;
         if (stealthCooldown <= 0) {
             stealth = true;
-            stealthCooldown = 5.0f; // Re-stealth after 5 seconds
+            stealthCooldown = revive_cooldown; // Re-stealth after 5 seconds
         }
     }
 }
