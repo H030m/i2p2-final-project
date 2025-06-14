@@ -30,7 +30,7 @@ void BossEnemy::Update(float deltaTime, RenderSender& sender) {
                     Engine::Point playerPos((float)playerData[0], (float)playerData[1]);
                     float distance = (playerPos - position).Magnitude();
                     
-                    if (distance <= collisionRadius + 20) { // TODO Player's collisionRadius should be passed here, I forgot whether playerData has collisionRadius
+                    if (distance <= collisionRadius + 20) {
                         sender.frame[std::to_string(ctx->id)]["damageTaken"] = damageAmount;
                     }
                 }
@@ -62,6 +62,6 @@ nlohmann::json BossEnemy::Serialize() const {
     auto json = Enemy::Serialize();
     json["type"] = "-1";
     json["enemyType"] = 3;
-    json["heal"]; // TODO client Enemy::UpdateFromServer has to recieve heal too (add a parameter?) and actually heal the player
+    json["heal"] = healAmount; // TODO client Enemy::UpdateFromServer has to recieve heal too (add a parameter?) and actually heal the player
     return json;
 }

@@ -449,7 +449,8 @@ void PlayScene::Update(float deltaTime) {
                     enemyData["hp"],
                     enemyData["alive"],
                     enemyData["armor"],
-                    enemyData["stealth"]
+                    enemyData["stealth"],
+                    enemyData["heal"]
                 );
                 enemy->max_hp = enemyData["max_hp"];
                 // Type-specific updates

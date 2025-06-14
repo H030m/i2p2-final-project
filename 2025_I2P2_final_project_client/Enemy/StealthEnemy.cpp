@@ -54,7 +54,7 @@ void StealthEnemy::Draw() const {
         al_draw_circle(Position.x, Position.y, CollisionRadius, al_map_rgb(255, 0, 0), 2);
     }
 }
-void StealthEnemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) {
+void StealthEnemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth, int heal) {
     this->stealth = stealth;
-    Enemy::UpdateFromServer(x, y, rotation, hp, alive, armor, stealth);
+    Enemy::UpdateFromServer(x, y, rotation, hp, alive, armor, stealth, heal);
 }

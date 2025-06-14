@@ -36,7 +36,7 @@ Enemy::Enemy(int id, std::string img, float x, float y, float radius, float spee
     CollisionRadius = radius;
     reachEndTime = 0;
 }
-void Enemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) {
+void Enemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth, int heal) {
     Position.x = x;
     Position.y = y;
     Rotation = rotation;

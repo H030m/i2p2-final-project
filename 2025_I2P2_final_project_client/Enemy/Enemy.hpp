@@ -34,6 +34,6 @@ public:
     virtual void Hit(float damage);
     void Update(float deltaTime) override;
     void Draw() const override;
-    virtual void UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth);
+    virtual void UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth, int heal);
 };
 #endif   // ENEMY_HPP

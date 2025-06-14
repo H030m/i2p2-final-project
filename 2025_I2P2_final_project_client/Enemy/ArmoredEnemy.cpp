@@ -25,7 +25,7 @@ void ArmoredEnemy::Hit(float damage) {
         {"HitVy",HitV.y}
     });
 }
-void ArmoredEnemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) {
+void ArmoredEnemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth, int heal) {
     this->armor = armor;
-    Enemy::UpdateFromServer(x, y, rotation, hp, alive, armor, stealth);
+    Enemy::UpdateFromServer(x, y, rotation, hp, alive, armor, stealth, heal);
 }
