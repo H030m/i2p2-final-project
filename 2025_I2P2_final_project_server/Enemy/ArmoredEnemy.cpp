@@ -4,7 +4,7 @@
 const float ArmoredEnemy::initArmor = 50;
 const float ArmoredEnemy::initRadius = 32;
 const float ArmoredEnemy::initSpeed = 70;
-const float ArmoredEnemy::initHP = 300;
+const float ArmoredEnemy::initHP = 100;
 const float ArmoredEnemy::initDamage = 10;
 const float ArmoredEnemy::initMoney = 10;
 ArmoredEnemy::ArmoredEnemy(int id, Engine::Point position, Engine::Point spawn)

@@ -63,6 +63,7 @@ std::string keycode_to_name(int code) {
 }
 
 const std::string host = "140.114.196.15";
+// const std::string host = "192.168.107.15";
 // const std::string host = "127.0.0.1";
 Engine::GameEngine::GameEngine():sender(){
         //Check System
@@ -101,7 +102,7 @@ namespace Engine {
         if (!al_install_mouse()) throw Allegro5Exception("failed to install mouse");
 
         // Setup game display.
-        // #define FULL_SCREEN
+        #define FULL_SCREEN
 
         #ifdef FULL_SCREEN
                 al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);

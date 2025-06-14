@@ -6,7 +6,7 @@
 const float StealthEnemy::initStealth = false;
 const float StealthEnemy::initRadius = 32;
 const float StealthEnemy::initSpeed = 40;
-const float StealthEnemy::initHP = 700;
+const float StealthEnemy::initHP = 200;
 const float StealthEnemy::initDamage = 10;
 const float StealthEnemy::initMoney = 10;
 StealthEnemy::StealthEnemy(int id, Engine::Point position, Engine::Point spawn)

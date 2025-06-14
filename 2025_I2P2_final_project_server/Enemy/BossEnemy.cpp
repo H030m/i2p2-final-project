@@ -2,7 +2,7 @@
 #include "Connect/RenderSender.hpp"
 
 BossEnemy::BossEnemy(int id, Engine::Point position, Engine::Point spawn)
-    : Enemy(0, id, position, spawn, 70, 0, 10000, 0, 0) {  // Type 0 for boss, radius and hp is bigger, speed and damage = 0 so it doesn't hurt players, money is irrelevent
+    : Enemy(0, id, position, spawn, 70, 0, 5000, 0, 0) {  // Type 0 for boss, radius and hp is bigger, speed and damage = 0 so it doesn't hurt players, money is irrelevent
     damageInterval = 5.0f;
     timeSinceLastDamage = 0.0f;
 }
@@ -12,8 +12,8 @@ void BossEnemy::Update(float deltaTime, RenderSender& sender) {
     if (!alive) {
         return;
     }
-    if(hp < 10000) { 
-        hp = (hp+1 > 10000)?10000: hp + 1;
+    if(hp < 5000) { 
+        hp = (hp+1 > 5000)?5000: hp + 1;
     }
     // Update damage timer
     timeSinceLastDamage += deltaTime;
@@ -52,6 +52,6 @@ nlohmann::json BossEnemy::Serialize() const {
     auto json = Enemy::Serialize();
     json["type"] = "-1";
     json["enemyType"] = 0;
-    json["max_hp"] = 10000;
+    json["max_hp"] = 5000;
     return json;
 }

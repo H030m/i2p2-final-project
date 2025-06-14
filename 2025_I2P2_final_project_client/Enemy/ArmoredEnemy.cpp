@@ -86,6 +86,7 @@ void ArmoredEnemy::Hit(float damage) {
 
     if (armor > 0 && hitSound && !al_get_sample_instance_playing(hitSound.get())) {
         al_play_sample_instance(hitSound.get());
+        al_set_sample_instance_gain(hitSound.get(), 1.5f);
     }
 }
 void ArmoredEnemy::UpdateFromServer(float x, float y, float rotation, float hp, bool alive, float armor, bool stealth) {
