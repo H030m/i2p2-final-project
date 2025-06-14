@@ -20,7 +20,7 @@ void BossEnemy::Update(float deltaTime, RenderSender& sender) {
         timeSinceLastDamage = 0.0f;
         
         // Get all players from RenderSender
-        std::lock_guard<std::mutex> lock(sender.clientMutex);
+        // std::lock_guard<std::mutex> lock(sender.clientMutex);
         for (auto& ctx : sender.clients) {
             if (ctx->active && ctx->lastInput.contains("player")) {
                 auto playerData = ctx->lastInput["player"];
