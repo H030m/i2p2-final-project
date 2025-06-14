@@ -280,14 +280,15 @@ void UpdateEnemyHit(Enemy& enemy, float deltaTime, RenderSender& sender, std::ve
     for(auto it:hit_information) {
         if(enemy.alive&&enemy.hit_cooldown <= 0){
             enemy.Hit(it.damage);
-            std::cerr<<"hit "<<enemy.id<<' '<<" by "<<it.player_id<<'\n';
+            // std::cerr<<"hit "<<enemy.id<<' '<<" by "<<it.player_id<<'\n';
             if(!enemy.alive)
             for(auto client:sender.clients){
-                std::cerr<<"enemy die "<<enemy.id<<' '<<client->id<<'\n';
-                if(client->id == it.player_id && client->lastInput.contains("player") && client->lastInput["player"].size() ==6)
-                std::cerr<<client->lastInput["player"][5]<<'\n';
+                // std::cerr<<"enemy die "<<enemy.id<<' '<<client->id<<'\n';
+                if(client->id == it.player_id && client->lastInput.contains("player") && client->lastInput["player"].size() ==6){
+                    client->money += enemy.money;
+                }
             }
-            enemy.hit_cooldown = 0.001f;
+            enemy.hit_cooldown = 0.05f;
         
         }
     }

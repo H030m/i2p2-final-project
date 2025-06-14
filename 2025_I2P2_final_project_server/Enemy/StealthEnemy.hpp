@@ -6,7 +6,7 @@
 class StealthEnemy : public Enemy {
 private:
     bool stealth;
-    float stealthCooldown = 0;
+    float stealthCooldown;
     static const float initStealth;
     static const float initRadius;
     static const float initSpeed;

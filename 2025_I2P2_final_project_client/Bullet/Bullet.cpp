@@ -32,20 +32,27 @@ void Bullet::Update(float deltaTime) {
     PlayScene* scene = getPlayScene();
 
     // Check for enemy collisions first
+    bool remove = false;
     for (auto& enemyObj : scene->EnemyGroup->GetObjects()) {
         Enemy* enemy = dynamic_cast<Enemy*>(enemyObj);
         if (enemy && enemy->alive) {
             Engine::Point diff = enemy->Position - Position;
             float distance = diff.Magnitude();
+
             if (distance <= enemy->CollisionRadius + CollisionRadius) {
                 
                 enemy->Hit(damage); // Apply damage to enemy
                 OnExplode(enemy);   // Trigger hit effect
-                scene->BulletGroup->RemoveObject(objectIterator); // Remove bullet
                 Engine::LOG(Engine::INFO) << "Bullet hit enemy at (" << enemy->Position.x << ", " << enemy->Position.y << ")";
-                return; // Stop checking after hitting an enemy
+                // return; // Stop checking after hitting an enemy
+                remove = true;
             }
+            
         }
+    }
+    if(remove){
+        scene->BulletGroup->RemoveObject(objectIterator);
+        return;
     }
 
     // Compute new position

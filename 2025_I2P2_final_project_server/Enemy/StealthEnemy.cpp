@@ -3,10 +3,10 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 
-const float StealthEnemy::initStealth = true;
+const float StealthEnemy::initStealth = false;
 const float StealthEnemy::initRadius = 32;
 const float StealthEnemy::initSpeed = 70;
-const float StealthEnemy::initHP = 50;
+const float StealthEnemy::initHP = 100;
 const float StealthEnemy::initDamage = 10;
 const float StealthEnemy::initMoney = 10;
 StealthEnemy::StealthEnemy(int id, Engine::Point position, Engine::Point spawn)
@@ -32,7 +32,7 @@ void StealthEnemy::Update(float deltaTime) {
     if (!stealth) {
         stealthCooldown -= deltaTime;
         if (stealthCooldown <= 0) {
-            stealth = true;
+            // stealth = true;
             stealthCooldown = revive_cooldown; // Re-stealth after 5 seconds
         }
     }
@@ -42,7 +42,7 @@ void StealthEnemy::Hit(float damage) {
     if (stealth) {
         std::cerr << "StealthEnemy hit when stealth\n";
         stealth = false;
-        stealthCooldown = 5.0f;
+        stealthCooldown =  1.5f;
     }
     Enemy::Hit(damage);
 }
@@ -52,5 +52,6 @@ nlohmann::json StealthEnemy::Serialize() const {
     json["type"] = "-1"; // Armored enemy type
     json["enemyType"] = 2;
     json["stealth"] = stealth;
+    json["max_hp"] = initHP * (1 + (float)revive_num/3.0);
     return json;
 }

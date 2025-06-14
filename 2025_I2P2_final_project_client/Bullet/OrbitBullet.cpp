@@ -39,7 +39,7 @@ void OrbitBullet::Update(float deltaTime) {
                 
                 enemy->Hit(damage); // Apply damage to enemy
                 OnExplode(enemy);   // Trigger hit effect
-                return; // Stop checking after hitting an enemy
+                // return; // Stop checking after hitting an enemy
             }
         }
     }

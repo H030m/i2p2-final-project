@@ -85,6 +85,7 @@ void RenderSender::start() {
         auto start_time = steady_clock::now();
         if(clients.size() == 0){
             storedMapState.reset();
+            for(auto it:enemies)delete it;
             enemies.clear();
             // std::cerr<<"Clear Map!"<<'\n';
         }
@@ -106,14 +107,13 @@ void RenderSender::start() {
                 storedMapState.reset();
                 enemies.clear();
                 Hitenemy.clear();
-                // std::cerr<<"Clear Map!"<<'\n';
+                ExistMap = false;
             }
-
-            // 2. collect all data
+             // 2. collect all data
             frame.clear();
             for (auto& ctx : clients) {
                 if (ctx->active) {
-                    frame[std::to_string(ctx->id)] = ctx->lastInput;
+                    
                     if(ctx->lastInput.contains("Hit")){
                         // std::cerr<<"hello "<<ctx->lastInput.dump()<<'\n';
                         // std::cerr<<"contains id"<<ctx->lastInput["Hit"].contains("id")<<'\n';
@@ -121,6 +121,7 @@ void RenderSender::start() {
                         // std::cerr<<"contains id"<<ctx->lastInput["Hit"].contains("HitVx")<<'\n';
                         // std::cerr<<"contains id"<<ctx->lastInput["Hit"].contains("HitVy")<<'\n';
                         for(auto it:ctx->lastInput["Hit"]){
+                           
                             Hitenemy[it["id"]].push_back(HitInformation(it["Damage"], it["HitVx"],it["HitVy"], ctx->id));
                         }
                         
@@ -133,7 +134,6 @@ void RenderSender::start() {
                 
                     UpdateEnemyInstance(*enemy, deltaTime, *this);
                     UpdateEnemyHit(*enemy, deltaTime, *this, Hitenemy[enemy->id]);
-                    Hitenemy.clear();
                     // Get the enemy's serialized data
                     nlohmann::json enemyData;
                     switch (enemy->type) {
@@ -153,6 +153,15 @@ void RenderSender::start() {
                     
                 
             }
+             Hitenemy.clear();
+            // 2. collect all data
+            for (auto& ctx : clients) {
+                if (ctx->active) {
+                    frame[std::to_string(ctx->id)] = ctx->lastInput;
+                    frame[std::to_string(ctx->id)]["player"][5] = ctx->money;
+                }
+            }
+            
             // 3. send to all clients
             for (auto& ctx : clients) {
                 if (ctx->active){
@@ -164,6 +173,7 @@ void RenderSender::start() {
                         frame.erase("map");
                     } 
                     ctx->sendMap = false;
+                    
                     sendOnce(ctx);
                     
                 }
@@ -205,10 +215,10 @@ void RenderSender::recvOnce(std::shared_ptr<ClientContext> ctx) {
         // std::cerr<<"recv: "<<ctx->lastInput<<'\n';
 
         if(ctx->lastInput.contains("map")){
-            if(clients.size() == 1 || !storedMapState.has_value()){
+            if(!ExistMap){
                 storedMapState = ctx->lastInput;
 
-                enemies.clear();
+                
 
                 const auto& map = storedMapState.value()["map"]["MapState"];
                 int h = map.size();

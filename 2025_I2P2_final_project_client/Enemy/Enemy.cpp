@@ -42,7 +42,7 @@ void Enemy::UpdateFromServer(float x, float y, float rotation, float hp, bool al
     Rotation = rotation;
     this->hp = hp;
 
-    std::cerr<<"hello alive? "<<this->alive<<' '<<alive<<'\n';
+    // std::cerr<<"hello alive? "<<this->alive<<' '<<alive<<'\n';
     if (!alive && this->alive) { // Just died
         OnExplode();
         // getPlayScene()->EarnMoney(money);
@@ -82,5 +82,45 @@ void Enemy::Draw() const {
     if (PlayScene::DebugMode) {
         // Draw collision radius.
         al_draw_circle(Position.x, Position.y, 150, al_map_rgb(255, 0, 0), 2);
+    }
+    
+    // health bar settings
+    const float barWidth = 50.0f;
+    const float barHeight = 6.0f;
+    const float barOffsetY = -30.0f;  
+    const int maxHealth = max_hp;
+    
+    // health bar position
+    float barX = Position.x - barWidth / 2;
+    float barY = Position.y + barOffsetY;
+    
+    // health bar percent
+    float healthPercent = static_cast<float>(hp) / static_cast<float>(maxHealth);
+    healthPercent = std::max(0.0f, std::min(1.0f, healthPercent));
+    
+    // health bar background (black)
+    al_draw_filled_rectangle(
+        barX - 1, barY - 1,
+        barX + barWidth + 1, barY + barHeight + 1,
+        al_map_rgb(40, 40, 40)
+    );
+    
+    // change health bar color base on percent
+    ALLEGRO_COLOR healthColor;
+    if (healthPercent > 0.6f) {
+        healthColor = al_map_rgb(0, 255, 0);      // green
+    } else if (healthPercent > 0.3f) {
+        healthColor = al_map_rgb(255, 255, 0);    // yellow
+    } else {
+        healthColor = al_map_rgb(255, 0, 0);      // red
+    }
+    
+    // draw health bar
+    if (healthPercent > 0) {
+        al_draw_filled_rectangle(
+            barX + 1, barY + 1,
+            barX + (barWidth - 2) * healthPercent, barY + barHeight - 1,
+            healthColor
+        );
     }
 }

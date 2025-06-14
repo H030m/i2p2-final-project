@@ -35,6 +35,7 @@ struct ClientContext {
         int id;
         int enemy_id;
         int x, y;
+        int money = 0;
         ClientContext(){
             x = 0, y = 0;
         }
@@ -73,7 +74,7 @@ public:
     std::optional<nlohmann::json> storedMapState;
     std::mutex clientMutex;
     int nextClientId = 1; 
-    
+    bool ExistMap = false;
 private:
 
     SOCKET serverSock;

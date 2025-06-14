@@ -172,7 +172,7 @@ void LoadingScene::OnClickWeapon(int index) {
 }
 
 void LoadingScene::OnClickConfirm() {
-    if (selectedCount >= 1 && mapReceived) {
+    if (selectedCount == 2 && mapReceived) {
         auto* play = dynamic_cast<PlayScene*>(Engine::GameEngine::GetInstance().GetScene("play"));
         if (play) {
             play->PlayerWeapon.clear();
@@ -182,6 +182,7 @@ void LoadingScene::OnClickConfirm() {
                 }
             }
         }
+        mapReceived = 0;
         Engine::GameEngine::GetInstance().ChangeScene("play");
     }
 

@@ -44,8 +44,10 @@ void StealthEnemy::Update(float deltaTime) {
 }
 
 void StealthEnemy::Draw() const {
+    
     if (!stealth && alive) {
         Enemy::Draw(); // Only draw if not stealthed
+        // std::cerr<<"hello "<<id<<'\n';
     }
     if (PlayScene::DebugMode) {
         // Draw collision radius even if stealthed for debugging

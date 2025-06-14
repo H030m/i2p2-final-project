@@ -30,10 +30,10 @@ void Enemy::Update(float deltaTime) {
 
 void Enemy::Hit(float damage) {
     hp -= damage;
-    std::cerr<<"id hp "<<id<<' '<<hp<<'\n';
+    // std::cerr<<"id hp "<<id<<' '<<hp<<'\n';
     if (hp <= 0) {
         alive = false;
-        std::cerr<<"die!"<< ' '<<alive<<'\n';
+        // std::cerr<<"die!"<< ' '<<alive<<'\n';
         cooldown = revive_cooldown;
     }
 }

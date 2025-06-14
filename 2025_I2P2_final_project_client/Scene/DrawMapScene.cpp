@@ -425,7 +425,7 @@ void DrawMapScene::ReadMap(){
 
     for (int i = 0; i < MapHeight; ++i) {
     for (int j = 0; j < MapWidth; ++j) {
-        int linearIndex = j + i * MapWidth;
+        int linearIndex = i + j * MapWidth;
         std::string key = std::to_string(linearIndex);
 
         auto& tile = MapState[i][j]["Tile"];
@@ -441,7 +441,7 @@ void DrawMapScene::ReadMap(){
         spr->SourceX = (float)tile["w"] * (float)tile["x"] + 1;
         spr->SourceY = (float)tile["h"] * (float)tile["y"] + 1;
         TileMapGroup->AddNewObject(spr);
-        Tile_dict[linearIndex] = spr;
+        Tile_dict[i + j*MapWidth] = spr;
 
         // Obstacle
         if (MapState[i][j].contains("Obstacle")) {

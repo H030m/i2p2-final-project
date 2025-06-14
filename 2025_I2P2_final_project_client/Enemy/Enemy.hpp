@@ -28,6 +28,7 @@ public:
     float poison_cooldown = 0;
     float reachEndTime;
     int damage = 10;
+    float max_hp;
     Engine::Point HitV = Engine::Point(0.0, 0.0);
     Enemy(int id, std::string img, float x, float y, float radius, float speed, float hp, int money);
     virtual void Hit(float damage);

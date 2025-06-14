@@ -45,5 +45,6 @@ nlohmann::json ArmoredEnemy::Serialize() const {
     json["type"] = "-1";
     json["enemyType"] = 1;
     json["armor"] = armor;
+    json["max_hp"] = initHP * (1 + (float)revive_num/3.0) + armor* (1 + (float)revive_num/3.0);
     return json;
 }

@@ -305,6 +305,8 @@ namespace Engine {
         //give a type
         sender.output_json["type"] = "input";
         sender.output_json["Scene"] = CurrentScene;
+        if(sender.output_json.contains("Hit"))
+        std::cerr<<"HITTTT!!! "<<sender.output_json["Hit"].dump()<<'\n';
         sender.sendOnce();
         
         sender.output_json.clear(); 

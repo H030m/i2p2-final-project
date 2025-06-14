@@ -83,6 +83,20 @@ void BounceBullet::Update(float deltaTime) {
 
     Sprite::Update(deltaTime);
     }
+    PlayScene* scene = dynamic_cast<PlayScene *>(Engine::GameEngine::GetInstance().GetActiveScene());
+    for (auto& enemyObj : scene->EnemyGroup->GetObjects()) {
+        Enemy* enemy = dynamic_cast<Enemy*>(enemyObj);
+        if (enemy && enemy->alive) {
+            Engine::Point diff = enemy->Position - Position;
+            float distance = diff.Magnitude();
+            if (distance <= enemy->CollisionRadius + CollisionRadius) {
+                
+                enemy->Hit(damage); // Apply damage to enemy
+                OnExplode(enemy);   // Trigger hit effect
+                // return; // Stop checking after hitting an enemy
+            }
+        }
+    }
 }
 
 void BounceBullet::Draw() const {

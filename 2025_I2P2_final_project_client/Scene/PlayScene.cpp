@@ -287,13 +287,16 @@ void PlayScene::Update(float deltaTime) {
             UIGroup->AddNewObject(player_UI_Label[id][1]);
             UIGroup->AddNewObject(player_UI_Label[id][2]);
         } else {
-            if(id == game.my_id) continue;
+            if(id == game.my_id) {
+                player_dict[game.my_id]->gold = client_info["player"][5];
+                continue;
+            }
             it->second->Position.x = x;
             it->second->Position.y = y;
             it->second->status = client_info["player"][3];
             it->second->health = client_info["player"][4];
-            it->second->gold = client_info["player"][5];
         }
+        
         //weapon
         if(id != game.my_id){
             if (client_info.contains("weapon") && client_info["weapon"].is_array()) {
@@ -428,9 +431,9 @@ void PlayScene::Update(float deltaTime) {
         auto enemies = sender.input_json["-1"];
         
         // First pass: track all active enemies
-        std::cerr<<"input enemy "<<enemies.dump()<<'\n';
+        // std::cerr<<"input enemy "<<enemies.dump()<<'\n';
         for (auto& enemyData : enemies) {
-            std::cerr<<"update enemy "<<enemyData["id"]<<' '<<enemyData["enemyType"]<<'\n';
+            // std::cerr<<"update enemy "<<enemyData["id"]<<' '<<enemyData["enemyType"]<<'\n';
             
             int enemyId = enemyData["id"];
             activeEnemyIds.insert(enemyId);
@@ -448,8 +451,11 @@ void PlayScene::Update(float deltaTime) {
                     enemyData["armor"],
                     enemyData["stealth"]
                 );
-                
+                enemy->max_hp = enemyData["max_hp"];
                 // Type-specific updates
+                if((int)enemyData["enemyType"] == 2 && (bool)enemyData["alive"] == true){
+                    std::cerr<<"hello 2 "<<enemyData.dump()<<'\n';
+                }
                 if (enemyData.contains("stealth")) {
                     // Handle stealth enemy specific visuals
                 }
@@ -461,11 +467,14 @@ void PlayScene::Update(float deltaTime) {
                     ArmoredEnemy* newEnemy = new ArmoredEnemy(enemyId, 0, 0);
                     EnemyGroup->AddNewObject(newEnemy);
                     enemy_dict[enemyId] = newEnemy;
+                    newEnemy->max_hp = enemyData["max_hp"];
                 } else if (type == 2) { // Stealth
                     // TODO: Handle Stealth enemy here
                     StealthEnemy* newEnemy = new StealthEnemy(enemyId, 0, 0);
+                    std::cerr<<"hello "<<enemyId<<'\n';
                     EnemyGroup->AddNewObject(newEnemy);
                     enemy_dict[enemyId] = newEnemy;
+                    newEnemy->max_hp = enemyData["max_hp"];
                 } else { // Basic
                     // TODO: Handle Basic enemy here
                 }
@@ -589,7 +598,7 @@ void PlayScene::EarnMoney(int money) {
 }
 void PlayScene::ReadMap() {
 
-    std::cerr<<"hellow!\n";
+    // std::cerr<<"hellow!\n";
     std::string filename = "Resource/loadingMap.json"; // or ".json"
     std::ifstream file(filename);
     if (!file.is_open()) {
