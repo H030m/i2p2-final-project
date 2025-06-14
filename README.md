@@ -2,7 +2,7 @@
 
 ## 🧠 Overview
 
-This is a cross-platform (Windows/Linux) 2D **multiplayer survival game** developed for the I2P-2 course. Players control characters to battle various unique enemies, earn coins, and upgrade weapons. Defeat the **final boss (Yan Dong-Yong)** to win!
+This is a cross-platform (Windows/Linux) 2D **multiplayer survival game** developed for the I2P-2 course. Players control characters to battle various NTHU prof. , earn coins, and upgrade weapons. Defeat the **final boss (Yan Dong-Yong)** to win!
 
 ---
 
