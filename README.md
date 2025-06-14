@@ -110,10 +110,3 @@ This is a cross-platform (Windows/Linux) 2D **multiplayer survival game** develo
 - Libraries: Allegro5, JSON, Socket networking
 - Developers: Samuel, Ryan & Ray.
 
----
-
-## 📸 Screenshots
-
-> _Feel free to insert gameplay screenshots or GIFs here_
-
----
